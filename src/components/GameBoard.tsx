@@ -6,7 +6,10 @@ import {
   AmmoType,
   Reward,
   PlayerState,
+  BoostCard,
+  GunLevel,
   AMMO_TYPES,
+  GUN_LEVELS,
   GRID_ROWS,
   GRID_COLS,
 } from '@/lib/gameTypes';
@@ -47,8 +50,21 @@ export default function GameBoard() {
   const [cooldown, setCooldown] = useState(0);
   const cooldownRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
+  // Gun level & card boost
+  const [gunLevel, setGunLevel] = useState<GunLevel>(GUN_LEVELS[0]);
+  const [equippedCard, setEquippedCard] = useState<BoostCard | null>(null);
+
+  // Aim angle for cannon rotation
+  const [aimAngle, setAimAngle] = useState(0);
+  const shooterRef = useRef<HTMLDivElement>(null);
+
   const totalBalls = GRID_ROWS * GRID_COLS;
   const ballsRemaining = balls.filter((b) => !b.isPopping && b.hp > 0).length;
+
+  // Calculate actual damage
+  const calcDamage = useCallback(() => {
+    return Math.floor(selectedAmmo.damage * gunLevel.damageMultiplier) + (equippedCard?.bonusDamage || 0);
+  }, [selectedAmmo, gunLevel, equippedCard]);
 
   // Energy regeneration
   useEffect(() => {
@@ -112,6 +128,33 @@ export default function GameBoard() {
     total: rewards.length,
   };
 
+  // Calculate aim angle toward clicked ball
+  const updateAimAngle = useCallback((ballElement: HTMLElement) => {
+    const cannonEl = document.getElementById('shooter-cannon');
+    if (!cannonEl || !ballElement) return;
+
+    const cannonRect = cannonEl.getBoundingClientRect();
+    const ballRect = ballElement.getBoundingClientRect();
+
+    const cannonCenterX = cannonRect.left + cannonRect.width / 2;
+    const cannonTopY = cannonRect.top;
+
+    const ballCenterX = ballRect.left + ballRect.width / 2;
+    const ballCenterY = ballRect.top + ballRect.height / 2;
+
+    const dx = ballCenterX - cannonCenterX;
+    const dy = cannonTopY - ballCenterY; // inverted Y
+
+    // Angle from vertical (0 = straight up)
+    const angleRad = Math.atan2(dx, dy);
+    let angleDeg = (angleRad * 180) / Math.PI;
+
+    // Clamp angle to ±45 degrees
+    angleDeg = Math.max(-45, Math.min(45, angleDeg));
+
+    setAimAngle(angleDeg);
+  }, []);
+
   const handleBallClick = useCallback(
     (ball: BallType) => {
       if (ball.isPopping || ball.hp <= 0) return;
@@ -124,6 +167,12 @@ export default function GameBoard() {
 
       // Check energy
       if (player.energy < selectedAmmo.energyCost) return;
+
+      // Calculate aim angle
+      const ballElement = document.getElementById(`ball-wrapper-${ball.id}`);
+      if (ballElement) {
+        updateAimAngle(ballElement);
+      }
 
       // Play shoot sound
       playShootSound();
@@ -147,12 +196,12 @@ export default function GameBoard() {
       setIsFiring(true);
       setTimeout(() => setIsFiring(false), 200);
 
-      // Apply damage
-      const updatedBall = applyDamage(ball, selectedAmmo.damage);
+      // Apply damage with gun level multiplier + card bonus
+      const totalDamage = calcDamage();
+      const updatedBall = applyDamage(ball, totalDamage);
 
       // Show floating damage number
       const damageId = `dmg-${Date.now()}-${Math.random()}`;
-      const ballElement = document.getElementById(`ball-wrapper-${ball.id}`);
       if (ballElement) {
         const rect = ballElement.getBoundingClientRect();
         setDamageNumbers((prev) => [
@@ -161,7 +210,7 @@ export default function GameBoard() {
             id: damageId,
             x: rect.left + rect.width / 2,
             y: rect.top,
-            damage: selectedAmmo.damage,
+            damage: totalDamage,
             color: selectedAmmo.color,
           },
         ]);
@@ -217,7 +266,7 @@ export default function GameBoard() {
         });
       }
     },
-    [selectedAmmo, player.energy, cooldown, durability]
+    [selectedAmmo, player.energy, cooldown, durability, calcDamage, updateAimAngle]
   );
 
   const handleReset = useCallback(() => {
@@ -235,6 +284,7 @@ export default function GameBoard() {
     setDurability(MAX_DURABILITY);
     setCooldown(0);
     setActiveReward(null);
+    setAimAngle(0);
   }, [player.coins]);
 
   const handleRewardComplete = useCallback(() => {
@@ -322,6 +372,15 @@ export default function GameBoard() {
               </div>
             </div>
 
+            {/* Ammo Selector */}
+            <div className="max-w-md mx-auto w-full">
+              <AmmoSelector
+                selectedAmmo={selectedAmmo}
+                onSelectAmmo={setSelectedAmmo}
+                currentEnergy={player.energy}
+              />
+            </div>
+
             {/* Target Grid */}
             <div className="flex-1 min-h-0">
               <div className="max-w-lg mx-auto">
@@ -332,24 +391,22 @@ export default function GameBoard() {
               </div>
             </div>
 
-            {/* Shooter with status bars */}
-            <div className="flex items-end justify-center">
-              <div className="flex-1 max-w-xs">
-                <AmmoSelector
-                  selectedAmmo={selectedAmmo}
-                  onSelectAmmo={setSelectedAmmo}
-                  currentEnergy={player.energy}
-                />
-              </div>
+            {/* Shooter - Centered */}
+            <div className="flex justify-center" ref={shooterRef}>
               <Shooter
                 selectedAmmo={selectedAmmo}
                 isFiring={isFiring}
+                aimAngle={aimAngle}
                 energy={player.energy}
                 maxEnergy={player.maxEnergy}
                 durability={durability}
                 maxDurability={MAX_DURABILITY}
                 cooldown={cooldown}
                 maxCooldown={COOLDOWN_MS}
+                gunLevel={gunLevel}
+                onGunLevelChange={setGunLevel}
+                equippedCard={equippedCard}
+                onEquipCard={setEquippedCard}
               />
             </div>
           </div>

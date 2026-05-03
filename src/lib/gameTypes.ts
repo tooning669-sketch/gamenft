@@ -157,3 +157,44 @@ export const DROP_RATES: Record<Tier, Record<RewardRarity, number>> = {
   2: { Common: 0.50, Rare: 0.35, Legendary: 0.15 },
   3: { Common: 0.25, Rare: 0.40, Legendary: 0.35 },
 };
+
+// ==========================================
+// Gun Level System
+// ==========================================
+
+export interface GunLevel {
+  level: number;
+  name: string;
+  icon: string;
+  damageMultiplier: number;
+  color: string;
+  glowColor: string;
+}
+
+export const GUN_LEVELS: GunLevel[] = [
+  { level: 1, name: 'Iron Cannon', icon: '🔫', damageMultiplier: 1.0, color: '#64748b', glowColor: 'rgba(100,116,139,0.4)' },
+  { level: 2, name: 'Silver Cannon', icon: '🔫', damageMultiplier: 1.5, color: '#818cf8', glowColor: 'rgba(129,140,248,0.5)' },
+  { level: 3, name: 'Gold Cannon', icon: '🔫', damageMultiplier: 2.0, color: '#fbbf24', glowColor: 'rgba(251,191,36,0.5)' },
+];
+
+// ==========================================
+// Boost Card System
+// ==========================================
+
+export interface BoostCard {
+  id: string;
+  name: string;
+  icon: string;
+  bonusDamage: number;
+  rarity: RewardRarity;
+  description: string;
+}
+
+export const AVAILABLE_CARDS: BoostCard[] = [
+  { id: 'card-fire-spirit', name: 'Fire Spirit', icon: '🔥', bonusDamage: 5, rarity: 'Common', description: '+5 DMG per shot' },
+  { id: 'card-ice-golem', name: 'Ice Golem', icon: '🧊', bonusDamage: 10, rarity: 'Rare', description: '+10 DMG per shot' },
+  { id: 'card-thunder-dragon', name: 'Thunder Dragon', icon: '🐉', bonusDamage: 20, rarity: 'Rare', description: '+20 DMG per shot' },
+  { id: 'card-dark-wizard', name: 'Dark Wizard', icon: '🧙', bonusDamage: 15, rarity: 'Rare', description: '+15 DMG per shot' },
+  { id: 'card-angel-knight', name: 'Angel Knight', icon: '⚔️', bonusDamage: 30, rarity: 'Legendary', description: '+30 DMG per shot' },
+  { id: 'card-cosmic-cat', name: 'Cosmic Cat', icon: '🐱', bonusDamage: 50, rarity: 'Legendary', description: '+50 DMG per shot' },
+];
