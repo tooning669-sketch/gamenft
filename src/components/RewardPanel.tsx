@@ -1,15 +1,49 @@
 'use client';
 
-import React from 'react';
-import { Reward, DROP_RATES } from '@/lib/gameTypes';
-import { getRarityColor, formatTimestamp } from '@/lib/gameUtils';
+import React, { useMemo } from 'react';
+import { Reward, DROP_RATES, PlayerState } from '@/lib/gameTypes';
+import { getRarityColor } from '@/lib/gameUtils';
 
 interface RewardPanelProps {
   rewards: Reward[];
   stats: { common: number; rare: number; legendary: number; total: number };
+  player: PlayerState;
+  onRandomize: () => void;
+  randomizeCost: number;
 }
 
-export default function RewardPanel({ rewards, stats }: RewardPanelProps) {
+interface AggregatedReward {
+  name: string;
+  icon: string;
+  rarity: Reward['rarity'];
+  count: number;
+  description: string;
+}
+
+export default function RewardPanel({ rewards, stats, player, onRandomize, randomizeCost }: RewardPanelProps) {
+  const canAffordRandomize = player.coins >= randomizeCost;
+
+  // Aggregate same-type rewards
+  const aggregatedRewards = useMemo(() => {
+    const map = new Map<string, AggregatedReward>();
+    rewards.forEach((r) => {
+      const key = r.name;
+      const existing = map.get(key);
+      if (existing) {
+        existing.count += 1;
+      } else {
+        map.set(key, {
+          name: r.name,
+          icon: r.icon,
+          rarity: r.rarity,
+          count: 1,
+          description: r.description,
+        });
+      }
+    });
+    return Array.from(map.values());
+  }, [rewards]);
+
   return (
     <div
       className="h-full rounded-2xl p-3 sm:p-4 flex flex-col"
@@ -26,7 +60,7 @@ export default function RewardPanel({ rewards, stats }: RewardPanelProps) {
       </h2>
 
       {/* Drop rate bars */}
-      <div className="space-y-2 mb-4">
+      <div className="space-y-2 mb-3">
         {(['Common', 'Rare', 'Legendary'] as const).map((rarity) => {
           const color = getRarityColor(rarity);
           const avgRate = ((DROP_RATES[1][rarity] + DROP_RATES[2][rarity] + DROP_RATES[3][rarity]) / 3) * 100;
@@ -60,6 +94,34 @@ export default function RewardPanel({ rewards, stats }: RewardPanelProps) {
         })}
       </div>
 
+      {/* Randomize Map Button */}
+      <button
+        onClick={onRandomize}
+        disabled={!canAffordRandomize}
+        className={`
+          w-full py-2.5 rounded-xl text-xs font-bold uppercase tracking-wider
+          transition-all duration-200 cursor-pointer mb-3
+          flex items-center justify-center gap-2
+          ${canAffordRandomize
+            ? 'hover:scale-105 active:scale-95'
+            : 'opacity-40 cursor-not-allowed'
+          }
+        `}
+        style={{
+          background: canAffordRandomize
+            ? 'linear-gradient(135deg, #8b5cf6, #6366f1, #3b82f6)'
+            : 'linear-gradient(135deg, #475569, #334155)',
+          boxShadow: canAffordRandomize
+            ? '0 4px 20px rgba(99, 102, 241, 0.4), inset 0 1px 0 rgba(255,255,255,0.1)'
+            : 'none',
+          border: '1px solid rgba(139, 92, 246, 0.3)',
+        }}
+      >
+        <span className="text-lg">🎲</span>
+        <span className="text-white">Randomize Map</span>
+        <span className="text-yellow-300 text-[10px]">🪙{randomizeCost}</span>
+      </button>
+
       {/* Divider */}
       <div className="h-px bg-gradient-to-r from-transparent via-indigo-500/30 to-transparent mb-3" />
 
@@ -68,18 +130,18 @@ export default function RewardPanel({ rewards, stats }: RewardPanelProps) {
         🎁 Rewards ({stats.total})
       </h3>
 
-      {/* Reward list */}
+      {/* Aggregated reward list */}
       <div className="flex-1 overflow-y-auto space-y-1.5 pr-1 custom-scrollbar min-h-0">
-        {rewards.length === 0 ? (
+        {aggregatedRewards.length === 0 ? (
           <div className="text-center text-slate-500 text-xs py-8">
-            Pop balls to earn rewards!
+            Pop balloons to earn rewards!
           </div>
         ) : (
-          [...rewards].reverse().map((reward) => {
+          aggregatedRewards.map((reward, idx) => {
             const rarityColor = getRarityColor(reward.rarity);
             return (
               <div
-                key={reward.id}
+                key={`${reward.name}-${idx}`}
                 className="flex items-center gap-2 rounded-lg p-2 transition-all duration-200 hover:scale-[1.02] animate-slide-in"
                 style={{
                   background: 'rgba(15,23,42,0.6)',
@@ -88,18 +150,27 @@ export default function RewardPanel({ rewards, stats }: RewardPanelProps) {
               >
                 <div className="text-lg sm:text-xl flex-shrink-0">{reward.icon}</div>
                 <div className="flex-1 min-w-0">
-                  <div className="text-xs font-semibold text-white truncate">{reward.name}</div>
-                  <div className="flex items-center gap-1">
-                    <span
-                      className="text-[9px] sm:text-[10px] font-bold uppercase"
-                      style={{ color: rarityColor }}
-                    >
-                      {reward.rarity}
-                    </span>
-                    <span className="text-[9px] text-slate-500">
-                      {formatTimestamp(reward.timestamp)}
-                    </span>
+                  <div className="text-xs font-semibold text-white truncate">
+                    {reward.name}
                   </div>
+                  <span
+                    className="text-[9px] sm:text-[10px] font-bold uppercase"
+                    style={{ color: rarityColor }}
+                  >
+                    {reward.rarity}
+                  </span>
+                </div>
+                {/* Count badge */}
+                <div
+                  className="flex-shrink-0 px-2 py-0.5 rounded-full text-[10px] sm:text-xs font-black"
+                  style={{
+                    background: `${rarityColor}20`,
+                    color: rarityColor,
+                    border: `1px solid ${rarityColor}40`,
+                    textShadow: `0 0 6px ${rarityColor}60`,
+                  }}
+                >
+                  ×{reward.count}
                 </div>
               </div>
             );

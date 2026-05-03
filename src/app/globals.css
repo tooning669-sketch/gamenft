@@ -28,17 +28,29 @@ body {
   background: var(--bg-primary);
   color: var(--text-primary);
   overflow-x: hidden;
+  position: relative;
 }
 
-/* Animated background gradient */
+/* Background Image */
+body::after {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background: url('/bg.png') center center / cover no-repeat;
+  opacity: 0.15;
+  pointer-events: none;
+  z-index: 0;
+}
+
+/* Animated background gradient overlay */
 body::before {
   content: '';
   position: fixed;
   inset: 0;
   background: 
-    radial-gradient(ellipse at 20% 20%, rgba(99, 102, 241, 0.08) 0%, transparent 50%),
-    radial-gradient(ellipse at 80% 80%, rgba(168, 85, 247, 0.06) 0%, transparent 50%),
-    radial-gradient(ellipse at 50% 50%, rgba(234, 179, 8, 0.03) 0%, transparent 50%);
+    radial-gradient(ellipse at 20% 20%, rgba(99, 102, 241, 0.1) 0%, transparent 50%),
+    radial-gradient(ellipse at 80% 80%, rgba(168, 85, 247, 0.08) 0%, transparent 50%),
+    radial-gradient(ellipse at 50% 50%, rgba(234, 179, 8, 0.04) 0%, transparent 50%);
   pointer-events: none;
   z-index: 0;
   animation: bg-shift 20s ease-in-out infinite alternate;
@@ -105,6 +117,30 @@ body::before {
 
 .animate-ball-pop {
   animation: ball-pop 0.5s ease-out forwards;
+}
+
+/* Balloon float / bobbing idle animation */
+@keyframes balloon-float {
+  0%, 100% { transform: translateY(0) rotate(0deg); }
+  25% { transform: translateY(-3px) rotate(1deg); }
+  50% { transform: translateY(-5px) rotate(0deg); }
+  75% { transform: translateY(-2px) rotate(-1deg); }
+}
+
+.animate-balloon-float {
+  animation: balloon-float 3s ease-in-out infinite;
+}
+
+/* String sway for balloon ribbon */
+@keyframes string-sway {
+  0%, 100% { transform: rotate(0deg); }
+  25% { transform: rotate(3deg); }
+  75% { transform: rotate(-3deg); }
+}
+
+.animate-string-sway {
+  animation: string-sway 2.5s ease-in-out infinite;
+  transform-origin: top center;
 }
 
 /* Particle burst from ball pop */
@@ -210,6 +246,24 @@ body::before {
 
 .animate-energy-shine {
   animation: energy-shine 3s ease-in-out infinite;
+}
+
+/* Floating particles in background */
+@keyframes float-up {
+  0% {
+    transform: translateY(100vh) scale(0);
+    opacity: 0;
+  }
+  10% {
+    opacity: 0.6;
+  }
+  90% {
+    opacity: 0.4;
+  }
+  100% {
+    transform: translateY(-10vh) scale(1);
+    opacity: 0;
+  }
 }
 
 /* ==========================================

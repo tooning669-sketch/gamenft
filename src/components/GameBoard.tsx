@@ -17,6 +17,7 @@ import AmmoSelector from './AmmoSelector';
 import RewardDrop from './RewardDrop';
 import RewardPanel from './RewardPanel';
 import PlayerPanel from './PlayerPanel';
+import SoundToggle, { playShootSound, playPopSound, playRewardSound, playClickSound } from './SoundManager';
 
 const INITIAL_PLAYER: PlayerState = {
   energy: 100,
@@ -28,6 +29,10 @@ const INITIAL_PLAYER: PlayerState = {
   maxXp: 100,
 };
 
+const MAX_DURABILITY = 100;
+const COOLDOWN_MS = 800; // 0.8 second cooldown between shots
+const RANDOMIZE_COST = 500;
+
 export default function GameBoard() {
   const [balls, setBalls] = useState<BallType[]>(() => generateGrid());
   const [selectedAmmo, setSelectedAmmo] = useState<AmmoType>(AMMO_TYPES[0]);
@@ -36,6 +41,11 @@ export default function GameBoard() {
   const [isFiring, setIsFiring] = useState(false);
   const [activeReward, setActiveReward] = useState<Reward | null>(null);
   const [damageNumbers, setDamageNumbers] = useState<{ id: string; x: number; y: number; damage: number; color: string }[]>([]);
+
+  // Gun status states
+  const [durability, setDurability] = useState(MAX_DURABILITY);
+  const [cooldown, setCooldown] = useState(0);
+  const cooldownRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
   const totalBalls = GRID_ROWS * GRID_COLS;
   const ballsRemaining = balls.filter((b) => !b.isPopping && b.hp > 0).length;
@@ -50,6 +60,25 @@ export default function GameBoard() {
     }, 1000);
     return () => clearInterval(interval);
   }, []);
+
+  // Cooldown timer
+  useEffect(() => {
+    if (cooldown > 0) {
+      cooldownRef.current = setInterval(() => {
+        setCooldown((prev) => {
+          const next = prev - 50;
+          if (next <= 0) {
+            if (cooldownRef.current) clearInterval(cooldownRef.current);
+            return 0;
+          }
+          return next;
+        });
+      }, 50);
+      return () => {
+        if (cooldownRef.current) clearInterval(cooldownRef.current);
+      };
+    }
+  }, [cooldown > 0]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // Clear hit animation
   useEffect(() => {
@@ -87,8 +116,17 @@ export default function GameBoard() {
     (ball: BallType) => {
       if (ball.isPopping || ball.hp <= 0) return;
 
+      // Check cooldown
+      if (cooldown > 0) return;
+
+      // Check durability
+      if (durability <= 0) return;
+
       // Check energy
       if (player.energy < selectedAmmo.energyCost) return;
+
+      // Play shoot sound
+      playShootSound();
 
       // Deduct energy
       if (selectedAmmo.energyCost > 0) {
@@ -97,6 +135,13 @@ export default function GameBoard() {
           energy: prev.energy - selectedAmmo.energyCost,
         }));
       }
+
+      // Reduce durability
+      const duraCost = selectedAmmo.id === 'basic' ? 1 : selectedAmmo.id === 'heavy' ? 3 : 5;
+      setDurability((prev) => Math.max(0, prev - duraCost));
+
+      // Start cooldown
+      setCooldown(COOLDOWN_MS);
 
       // Fire animation
       setIsFiring(true);
@@ -131,10 +176,18 @@ export default function GameBoard() {
 
       // Check if ball popped
       if (updatedBall.isPopping) {
+        // Play pop sound
+        playPopSound();
+
         // Roll reward
         const reward = rollReward(ball.tier);
         setRewards((prev) => [...prev, reward]);
         setActiveReward(reward);
+
+        // Play reward sound
+        setTimeout(() => {
+          playRewardSound(reward.rarity === 'Legendary');
+        }, 200);
 
         // Add coins/gems from reward
         setPlayer((prev) => {
@@ -164,22 +217,32 @@ export default function GameBoard() {
         });
       }
     },
-    [selectedAmmo, player.energy]
+    [selectedAmmo, player.energy, cooldown, durability]
   );
 
   const handleReset = useCallback(() => {
+    // Check coin cost
+    if (player.coins < RANDOMIZE_COST) return;
+
+    playClickSound();
+
+    setPlayer((prev) => ({
+      ...prev,
+      coins: prev.coins - RANDOMIZE_COST,
+    }));
     setBalls(generateGrid());
     setRewards([]);
-    setPlayer(INITIAL_PLAYER);
+    setDurability(MAX_DURABILITY);
+    setCooldown(0);
     setActiveReward(null);
-  }, []);
+  }, [player.coins]);
 
   const handleRewardComplete = useCallback(() => {
     setActiveReward(null);
   }, []);
 
   return (
-    <div className="min-h-screen flex flex-col bg-[#0a0e1a]">
+    <div className="min-h-screen flex flex-col relative z-10">
       {/* Header */}
       <header
         className="py-2 sm:py-3 px-4 sm:px-6 flex items-center justify-between border-b"
@@ -198,7 +261,7 @@ export default function GameBoard() {
         </div>
 
         <nav className="hidden md:flex items-center gap-4 text-xs font-semibold text-slate-400">
-          {['HOME', 'GAME', 'NFT', 'MARKETPLACE', 'RANKING'].map((item, i) => (
+          {['HOME', 'GAME', 'NFT', 'MARKETPLACE', 'TOP EARNING'].map((item, i) => (
             <button
               key={item}
               className={`px-3 py-1.5 rounded-lg transition-all cursor-pointer ${
@@ -213,6 +276,7 @@ export default function GameBoard() {
         </nav>
 
         <div className="flex items-center gap-2 sm:gap-3">
+          <SoundToggle />
           <div className="hidden sm:flex items-center gap-2 px-3 py-1.5 rounded-lg bg-slate-800/50 border border-slate-700/50 text-xs">
             <span className="text-green-400">●</span>
             <span className="text-slate-300 font-mono">0x8F...7a3B</span>
@@ -229,7 +293,6 @@ export default function GameBoard() {
               player={player}
               ballsRemaining={ballsRemaining}
               totalBalls={totalBalls}
-              onReset={handleReset}
             />
           </aside>
 
@@ -255,12 +318,7 @@ export default function GameBoard() {
               </div>
               <div className="flex items-center gap-2">
                 <span className="text-[10px] text-amber-400">⚡{player.energy}/{player.maxEnergy}</span>
-                <button
-                  onClick={handleReset}
-                  className="px-2 py-1 rounded text-[10px] font-bold text-white bg-indigo-600 hover:bg-indigo-500 cursor-pointer"
-                >
-                  🔄 Reset
-                </button>
+                <span className="text-[10px] text-cyan-400">🔧{durability}/{MAX_DURABILITY}</span>
               </div>
             </div>
 
@@ -274,8 +332,8 @@ export default function GameBoard() {
               </div>
             </div>
 
-            {/* Shooter */}
-            <div className="flex items-end justify-center gap-4 sm:gap-8">
+            {/* Shooter with status bars */}
+            <div className="flex items-end justify-center">
               <div className="flex-1 max-w-xs">
                 <AmmoSelector
                   selectedAmmo={selectedAmmo}
@@ -283,14 +341,28 @@ export default function GameBoard() {
                   currentEnergy={player.energy}
                 />
               </div>
-              <Shooter selectedAmmo={selectedAmmo} isFiring={isFiring} />
-              <div className="flex-1 max-w-[100px] sm:max-w-xs" />
+              <Shooter
+                selectedAmmo={selectedAmmo}
+                isFiring={isFiring}
+                energy={player.energy}
+                maxEnergy={player.maxEnergy}
+                durability={durability}
+                maxDurability={MAX_DURABILITY}
+                cooldown={cooldown}
+                maxCooldown={COOLDOWN_MS}
+              />
             </div>
           </div>
 
           {/* Right Panel - Rewards */}
           <aside className="lg:block">
-            <RewardPanel rewards={rewards} stats={rewardStats} />
+            <RewardPanel
+              rewards={rewards}
+              stats={rewardStats}
+              player={player}
+              onRandomize={handleReset}
+              randomizeCost={RANDOMIZE_COST}
+            />
           </aside>
         </div>
       </main>
