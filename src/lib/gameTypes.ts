@@ -185,18 +185,17 @@ export interface BoostCard {
   id: string;
   name: string;
   icon: string;
+  image: string; // card image path in public/cards/
   bonusDamage: number;
   rarity: RewardRarity;
   description: string;
 }
 
 export const AVAILABLE_CARDS: BoostCard[] = [
-  { id: 'card-fire-spirit', name: 'Fire Spirit', icon: '🔥', bonusDamage: 5, rarity: 'Common', description: '+5 DMG per shot' },
-  { id: 'card-ice-golem', name: 'Ice Golem', icon: '🧊', bonusDamage: 10, rarity: 'Rare', description: '+10 DMG per shot' },
-  { id: 'card-thunder-dragon', name: 'Thunder Dragon', icon: '🐉', bonusDamage: 20, rarity: 'Rare', description: '+20 DMG per shot' },
-  { id: 'card-dark-wizard', name: 'Dark Wizard', icon: '🧙', bonusDamage: 15, rarity: 'Rare', description: '+15 DMG per shot' },
-  { id: 'card-angel-knight', name: 'Angel Knight', icon: '⚔️', bonusDamage: 30, rarity: 'Legendary', description: '+30 DMG per shot' },
-  { id: 'card-cosmic-cat', name: 'Cosmic Cat', icon: '🐱', bonusDamage: 50, rarity: 'Legendary', description: '+50 DMG per shot' },
+  { id: 'card-free-blast', name: 'Free Blast Ticket', icon: '🎟️', image: '/cards/card_01_free_blast_ticket.png', bonusDamage: 5, rarity: 'Common', description: 'Free Shot ×1' },
+  { id: 'card-discount-coupon', name: 'Discount Coupon', icon: '🏷️', image: '/cards/card_02_discount_coupon.png', bonusDamage: 10, rarity: 'Rare', description: '50% OFF Shop' },
+  { id: 'card-free-blast-epic', name: 'Free Blast Ticket ×10', icon: '🎫', image: '/cards/card_03_free_blast_ticket_epic.png', bonusDamage: 30, rarity: 'Legendary', description: 'Free Shot ×10' },
+  { id: 'card-item-box', name: 'Free Item Box', icon: '📦', image: '/cards/card_04_free_item_box.png', bonusDamage: 15, rarity: 'Rare', description: 'Random Item ×1' },
 ];
 
 // ==========================================
@@ -210,20 +209,83 @@ export interface GunSkin {
   rarity: RewardRarity;
   color: string;      // theme color for UI accents
   glowColor: string;
+  // Stats from gun_stats_design
+  dmg: number;
+  energy: number;
+  durability: number;
+  cooldownSec: number; // seconds
 }
 
 export const GUN_SKINS: GunSkin[] = [
-  { id: 'skin-vine-cannon', name: 'Vine Cannon', image: '/guns/gun_01_vine_cannon.png', rarity: 'Common', color: '#22c55e', glowColor: 'rgba(34,197,94,0.5)' },
-  { id: 'skin-kawaii-tank', name: 'Kawaii Tank', image: '/guns/gun_02_kawaii_tank.png', rarity: 'Common', color: '#f472b6', glowColor: 'rgba(244,114,182,0.5)' },
-  { id: 'skin-candy-tank', name: 'Candy Tank', image: '/guns/gun_03_candy_tank.png', rarity: 'Common', color: '#fb923c', glowColor: 'rgba(251,146,60,0.5)' },
-  { id: 'skin-dragon-cannon', name: 'Dragon Cannon', image: '/guns/gun_04_dragon_cannon.png', rarity: 'Rare', color: '#ef4444', glowColor: 'rgba(239,68,68,0.5)' },
-  { id: 'skin-crystal-fortress', name: 'Crystal Fortress', image: '/guns/gun_05_crystal_fortress.png', rarity: 'Rare', color: '#a78bfa', glowColor: 'rgba(167,139,250,0.5)' },
-  { id: 'skin-golden-knight', name: 'Golden Knight', image: '/guns/gun_06_golden_knight.png', rarity: 'Rare', color: '#fbbf24', glowColor: 'rgba(251,191,36,0.5)' },
-  { id: 'skin-mecha-turret', name: 'Mecha Turret', image: '/guns/gun_07_mecha_turret.png', rarity: 'Rare', color: '#38bdf8', glowColor: 'rgba(56,189,248,0.5)' },
-  { id: 'skin-ice-golem', name: 'Ice Golem', image: '/guns/gun_08_ice_golem.png', rarity: 'Rare', color: '#22d3ee', glowColor: 'rgba(34,211,238,0.5)' },
-  { id: 'skin-steampunk', name: 'Steampunk', image: '/guns/gun_09_steampunk.png', rarity: 'Rare', color: '#a16207', glowColor: 'rgba(161,98,7,0.5)' },
-  { id: 'skin-fire-demon', name: 'Fire Demon', image: '/guns/gun_10_fire_demon.png', rarity: 'Legendary', color: '#dc2626', glowColor: 'rgba(220,38,38,0.6)' },
-  { id: 'skin-ocean-beast', name: 'Ocean Beast', image: '/guns/gun_11_ocean_beast.png', rarity: 'Legendary', color: '#0ea5e9', glowColor: 'rgba(14,165,233,0.6)' },
-  { id: 'skin-shadow-cannon', name: 'Shadow Cannon', image: '/guns/gun_12_shadow_cannon.png', rarity: 'Legendary', color: '#7c3aed', glowColor: 'rgba(124,58,237,0.6)' },
-  { id: 'skin-neon-blaster', name: 'Neon Blaster', image: '/guns/gun_13_neon_blaster.png', rarity: 'Legendary', color: '#e879f9', glowColor: 'rgba(232,121,249,0.6)' },
+  // --- COMMON ---
+  { id: 'skin-vine-cannon', name: 'Vine Cannon', image: '/guns/gun_01_vine_cannon.png', rarity: 'Common', color: '#22c55e', glowColor: 'rgba(34,197,94,0.5)', dmg: 30, energy: 100, durability: 120, cooldownSec: 1.8 },
+  { id: 'skin-kawaii-tank', name: 'Kawaii Tank', image: '/guns/gun_02_kawaii_tank.png', rarity: 'Common', color: '#f472b6', glowColor: 'rgba(244,114,182,0.5)', dmg: 20, energy: 120, durability: 80, cooldownSec: 1.2 },
+  { id: 'skin-candy-tank', name: 'Candy Tank', image: '/guns/gun_03_candy_tank.png', rarity: 'Common', color: '#fb923c', glowColor: 'rgba(251,146,60,0.5)', dmg: 25, energy: 100, durability: 100, cooldownSec: 1.5 },
+  // --- RARE ---
+  { id: 'skin-dragon-cannon', name: 'Dragon Cannon', image: '/guns/gun_04_dragon_cannon.png', rarity: 'Rare', color: '#ef4444', glowColor: 'rgba(239,68,68,0.5)', dmg: 75, energy: 120, durability: 100, cooldownSec: 2.2 },
+  { id: 'skin-crystal-fortress', name: 'Crystal Fortress', image: '/guns/gun_05_crystal_fortress.png', rarity: 'Rare', color: '#a78bfa', glowColor: 'rgba(167,139,250,0.5)', dmg: 45, energy: 100, durability: 180, cooldownSec: 2.5 },
+  { id: 'skin-golden-knight', name: 'Golden Knight', image: '/guns/gun_06_golden_knight.png', rarity: 'Rare', color: '#fbbf24', glowColor: 'rgba(251,191,36,0.5)', dmg: 60, energy: 140, durability: 130, cooldownSec: 1.6 },
+  { id: 'skin-mecha-turret', name: 'Mecha Turret', image: '/guns/gun_07_mecha_turret.png', rarity: 'Rare', color: '#38bdf8', glowColor: 'rgba(56,189,248,0.5)', dmg: 35, energy: 160, durability: 110, cooldownSec: 0.9 },
+  { id: 'skin-ice-golem', name: 'Ice Golem', image: '/guns/gun_08_ice_golem.png', rarity: 'Rare', color: '#22d3ee', glowColor: 'rgba(34,211,238,0.5)', dmg: 50, energy: 110, durability: 160, cooldownSec: 1.8 },
+  { id: 'skin-steampunk', name: 'Steampunk', image: '/guns/gun_09_steampunk.png', rarity: 'Rare', color: '#a16207', glowColor: 'rgba(161,98,7,0.5)', dmg: 65, energy: 150, durability: 120, cooldownSec: 1.4 },
+  // --- LEGENDARY ---
+  { id: 'skin-fire-demon', name: 'Fire Demon', image: '/guns/gun_10_fire_demon.png', rarity: 'Legendary', color: '#dc2626', glowColor: 'rgba(220,38,38,0.6)', dmg: 140, energy: 150, durability: 140, cooldownSec: 2.0 },
+  { id: 'skin-ocean-beast', name: 'Ocean Beast', image: '/guns/gun_11_ocean_beast.png', rarity: 'Legendary', color: '#0ea5e9', glowColor: 'rgba(14,165,233,0.6)', dmg: 90, energy: 200, durability: 180, cooldownSec: 1.5 },
+  { id: 'skin-shadow-cannon', name: 'Shadow Cannon', image: '/guns/gun_12_shadow_cannon.png', rarity: 'Legendary', color: '#7c3aed', glowColor: 'rgba(124,58,237,0.6)', dmg: 160, energy: 130, durability: 100, cooldownSec: 2.8 },
+  { id: 'skin-neon-blaster', name: 'Neon Blaster', image: '/guns/gun_13_neon_blaster.png', rarity: 'Legendary', color: '#e879f9', glowColor: 'rgba(232,121,249,0.6)', dmg: 85, energy: 180, durability: 150, cooldownSec: 0.7 },
+];
+
+// ==========================================
+// Marketplace System
+// ==========================================
+
+export type MarketCategory = 'guns' | 'cards' | 'ammo' | 'special';
+
+export interface MarketplaceItem {
+  id: string;
+  name: string;
+  description: string;
+  image: string;
+  icon: string;
+  category: MarketCategory;
+  rarity: RewardRarity;
+  priceCoins: number;
+  priceGems: number; // 0 = coins only
+  stock: number; // -1 = unlimited
+  isFeatured?: boolean;
+  discount?: number; // percent off (e.g., 20 = 20% off)
+}
+
+export const MARKETPLACE_ITEMS: MarketplaceItem[] = [
+  // --- GUNS ---
+  { id: 'market-vine-cannon', name: 'Vine Cannon', description: 'Nature-powered cannon with balanced stats', image: '/guns/gun_01_vine_cannon.png', icon: '🌿', category: 'guns', rarity: 'Common', priceCoins: 500, priceGems: 0, stock: -1 },
+  { id: 'market-kawaii-tank', name: 'Kawaii Tank', description: 'Cute but deadly! Fast reload speed', image: '/guns/gun_02_kawaii_tank.png', icon: '🎀', category: 'guns', rarity: 'Common', priceCoins: 450, priceGems: 0, stock: -1 },
+  { id: 'market-candy-tank', name: 'Candy Tank', description: 'Sweet destruction with balanced power', image: '/guns/gun_03_candy_tank.png', icon: '🍬', category: 'guns', rarity: 'Common', priceCoins: 480, priceGems: 0, stock: -1 },
+  { id: 'market-dragon-cannon', name: 'Dragon Cannon', description: 'Breathes fire! High damage dealer', image: '/guns/gun_04_dragon_cannon.png', icon: '🐲', category: 'guns', rarity: 'Rare', priceCoins: 2500, priceGems: 25, stock: 10 },
+  { id: 'market-crystal-fortress', name: 'Crystal Fortress', description: 'Ultimate durability tank build', image: '/guns/gun_05_crystal_fortress.png', icon: '💎', category: 'guns', rarity: 'Rare', priceCoins: 2800, priceGems: 30, stock: 8 },
+  { id: 'market-golden-knight', name: 'Golden Knight', description: 'Royal power with high energy reserves', image: '/guns/gun_06_golden_knight.png', icon: '👑', category: 'guns', rarity: 'Rare', priceCoins: 3200, priceGems: 35, stock: 5 },
+  { id: 'market-mecha-turret', name: 'Mecha Turret', description: 'Fastest reload in the game!', image: '/guns/gun_07_mecha_turret.png', icon: '🤖', category: 'guns', rarity: 'Rare', priceCoins: 2600, priceGems: 28, stock: 7, discount: 10 },
+  { id: 'market-ice-golem', name: 'Ice Golem', description: 'Frozen fortress with massive durability', image: '/guns/gun_08_ice_golem.png', icon: '🧊', category: 'guns', rarity: 'Rare', priceCoins: 2700, priceGems: 30, stock: 6 },
+  { id: 'market-steampunk', name: 'Steampunk', description: 'Victorian-era power with fast cooldown', image: '/guns/gun_09_steampunk.png', icon: '⚙️', category: 'guns', rarity: 'Rare', priceCoins: 3000, priceGems: 32, stock: 5 },
+  { id: 'market-fire-demon', name: 'Fire Demon', description: 'Demonic power unleashed! Top DMG', image: '/guns/gun_10_fire_demon.png', icon: '👹', category: 'guns', rarity: 'Legendary', priceCoins: 8000, priceGems: 80, stock: 3, isFeatured: true },
+  { id: 'market-ocean-beast', name: 'Ocean Beast', description: 'Sea monster with massive energy pool', image: '/guns/gun_11_ocean_beast.png', icon: '🐙', category: 'guns', rarity: 'Legendary', priceCoins: 7500, priceGems: 75, stock: 3 },
+  { id: 'market-shadow-cannon', name: 'Shadow Cannon', description: 'Highest DMG weapon in existence!', image: '/guns/gun_12_shadow_cannon.png', icon: '🌑', category: 'guns', rarity: 'Legendary', priceCoins: 9500, priceGems: 95, stock: 2, isFeatured: true },
+  { id: 'market-neon-blaster', name: 'Neon Blaster', description: 'Blazing fast 0.7s reload!', image: '/guns/gun_13_neon_blaster.png', icon: '💜', category: 'guns', rarity: 'Legendary', priceCoins: 8500, priceGems: 85, stock: 2, discount: 15 },
+  // --- CARDS ---
+  { id: 'market-free-blast', name: 'Free Blast Ticket', description: 'Get 1 free shot! No energy cost', image: '/cards/card_01_free_blast_ticket.png', icon: '🎟️', category: 'cards', rarity: 'Common', priceCoins: 200, priceGems: 0, stock: -1 },
+  { id: 'market-discount-coupon', name: 'Discount Coupon', description: '50% off next marketplace purchase', image: '/cards/card_02_discount_coupon.png', icon: '🏷️', category: 'cards', rarity: 'Rare', priceCoins: 1500, priceGems: 15, stock: 10, discount: 20 },
+  { id: 'market-free-blast-epic', name: 'Free Blast ×10', description: '10 free shots! Best value pack', image: '/cards/card_03_free_blast_ticket_epic.png', icon: '🎫', category: 'cards', rarity: 'Legendary', priceCoins: 5000, priceGems: 50, stock: 5, isFeatured: true },
+  { id: 'market-item-box', name: 'Free Item Box', description: 'Open for random rare items', image: '/cards/card_04_free_item_box.png', icon: '📦', category: 'cards', rarity: 'Rare', priceCoins: 1800, priceGems: 18, stock: 15 },
+  // --- AMMO ---
+  { id: 'market-ammo-basic-50', name: 'Basic Ammo ×50', description: 'Standard ammo bulk pack', image: '', icon: '🔵', category: 'ammo', rarity: 'Common', priceCoins: 100, priceGems: 0, stock: -1 },
+  { id: 'market-ammo-heavy-25', name: 'Heavy Ammo ×25', description: 'Powerful shots for tough targets', image: '', icon: '🔴', category: 'ammo', rarity: 'Rare', priceCoins: 500, priceGems: 5, stock: -1 },
+  { id: 'market-ammo-mega-10', name: 'Mega Ammo ×10', description: 'Devastating blasts for bosses', image: '', icon: '⚡', category: 'ammo', rarity: 'Legendary', priceCoins: 1200, priceGems: 12, stock: 20 },
+  // --- SPECIAL ---
+  { id: 'market-energy-refill', name: 'Energy Refill', description: 'Instantly restore full energy', image: '', icon: '⚡', category: 'special', rarity: 'Common', priceCoins: 300, priceGems: 0, stock: -1 },
+  { id: 'market-repair-kit', name: 'Repair Kit', description: 'Restore gun durability to max', image: '', icon: '🔧', category: 'special', rarity: 'Common', priceCoins: 250, priceGems: 0, stock: -1 },
+  { id: 'market-xp-boost', name: 'XP Boost ×2', description: 'Double XP for next 10 pops', image: '', icon: '✨', category: 'special', rarity: 'Rare', priceCoins: 800, priceGems: 8, stock: 10 },
+  { id: 'market-lucky-charm', name: 'Lucky Charm', description: 'Increase legendary drop rate 2×', image: '', icon: '🍀', category: 'special', rarity: 'Rare', priceCoins: 1500, priceGems: 15, stock: 5 },
+  { id: 'market-coin-magnet', name: 'Coin Magnet', description: 'Auto-collect double coins for 5 rounds', image: '', icon: '🧲', category: 'special', rarity: 'Rare', priceCoins: 1000, priceGems: 10, stock: 8, discount: 25 },
+  { id: 'market-gem-pack', name: 'Gem Pack ×100', description: 'Premium gem bundle', image: '', icon: '💎', category: 'special', rarity: 'Legendary', priceCoins: 5000, priceGems: 0, stock: 3, isFeatured: true },
+  { id: 'market-mystery-box', name: 'Mystery Box', description: 'Contains a random legendary item!', image: '', icon: '🎁', category: 'special', rarity: 'Legendary', priceCoins: 6000, priceGems: 60, stock: 2, isFeatured: true },
 ];

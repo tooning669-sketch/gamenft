@@ -134,6 +134,12 @@ export default function GunSkinPicker({
           <div>
             <div className="text-xs text-slate-500 uppercase tracking-wider font-semibold">Equipped</div>
             <div className="text-sm font-bold text-white">{selectedSkin.name}</div>
+            <div className="flex gap-2 mt-1">
+              <span className="text-[9px] text-rose-400 font-bold">⚔️{selectedSkin.dmg}</span>
+              <span className="text-[9px] text-amber-400 font-bold">⚡{selectedSkin.energy}</span>
+              <span className="text-[9px] text-cyan-400 font-bold">🔧{selectedSkin.durability}</span>
+              <span className="text-[9px] text-green-400 font-bold">⏱️{selectedSkin.cooldownSec}s</span>
+            </div>
           </div>
           <span
             className="ml-auto text-[10px] px-2 py-0.5 rounded-full font-bold uppercase"
@@ -231,6 +237,14 @@ export default function GunSkinPicker({
                       >
                         {skin.name}
                       </span>
+
+                      {/* Stats mini */}
+                      <div className="flex flex-wrap justify-center gap-x-1.5 gap-y-0.5">
+                        <span className="text-[8px] text-rose-400 font-semibold">⚔️{skin.dmg}</span>
+                        <span className="text-[8px] text-amber-400 font-semibold">⚡{skin.energy}</span>
+                        <span className="text-[8px] text-cyan-400 font-semibold">🔧{skin.durability}</span>
+                        <span className="text-[8px] text-green-400 font-semibold">⏱️{skin.cooldownSec}s</span>
+                      </div>
 
                       {/* Hover glow effect */}
                       <div

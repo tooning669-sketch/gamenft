@@ -1,0 +1,88 @@
+รายชื่อและค่าสเตตัสปืน (Gun Stats Design)
+
+--- ⚪ COMMON (ระดับทั่วไป) ---
+เน้นสเตตัสพื้นฐาน เหมาะสำหรับช่วงต้นเกม
+
+1. Vine Cannon (ปืนใหญ่เถาวัลย์)
+   - DMG: 30
+   - Energy: 100/100
+   - Durability: 120/120
+   - Ready!: 1.8 วินาที
+
+2. Kawaii Tank (รถถังคาวาอี้)
+   - DMG: 20
+   - Energy: 120/120
+   - Durability: 80/80
+   - Ready!: 1.2 วินาที
+
+3. Candy Tank (รถถังแคนดี้)
+   - DMG: 25
+   - Energy: 100/100
+   - Durability: 100/100
+   - Ready!: 1.5 วินาที
+
+--- 🔵 RARE (ระดับหายาก) ---
+มีจุดเด่นเฉพาะตัวที่ชัดเจนขึ้น
+
+1. Dragon Cannon (ปืนใหญ่มังกร)
+   - DMG: 75
+   - Energy: 120/120
+   - Durability: 100/100
+   - Ready!: 2.2 วินาที
+
+2. Crystal Fortress (ป้อมปราการคริสตัล)
+   - DMG: 45
+   - Energy: 100/100
+   - Durability: 180/180
+   - Ready!: 2.5 วินาที
+
+3. Golden Knight (อัศวินทองคำ)
+   - DMG: 60
+   - Energy: 140/140
+   - Durability: 130/130
+   - Ready!: 1.6 วินาที
+
+4. Mecha Turret (ป้อมปืนกลเมคคา)
+   - DMG: 35
+   - Energy: 160/160
+   - Durability: 110/110
+   - Ready!: 0.9 วินาที
+
+5. Ice Golem (โกเลมน้ำแข็ง)
+   - DMG: 50
+   - Energy: 110/110
+   - Durability: 160/160
+   - Ready!: 1.8 วินาที
+
+6. Steampunk (สตีมพังค์)
+   - DMG: 65
+   - Energy: 150/150
+   - Durability: 120/120
+   - Ready!: 1.4 วินาที
+
+--- 🟡 LEGENDARY (ระดับตำนาน) ---
+สเตตัสสูงลิ่ว มีเอกลักษณ์เฉพาะตัว
+
+1. Fire Demon (ปีศาจแห่งไฟ)
+   - DMG: 140
+   - Energy: 150/150
+   - Durability: 140/140
+   - Ready!: 2.0 วินาที
+
+2. Ocean Beast (อสูรกายมหาสมุทร)
+   - DMG: 90
+   - Energy: 200/200
+   - Durability: 180/180
+   - Ready!: 1.5 วินาที
+
+3. Shadow Cannon (ปืนใหญ่เงา)
+   - DMG: 160
+   - Energy: 130/130
+   - Durability: 100/100
+   - Ready!: 2.8 วินาที
+
+4. Neon Blaster (ปืนบลาสเตอร์นีออน)
+   - DMG: 85
+   - Energy: 180/180
+   - Durability: 150/150
+   - Ready!: 0.7 วินาที

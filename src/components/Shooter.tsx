@@ -117,9 +117,8 @@ export default function Shooter({
           >
             {equippedCard ? (
               <>
-                <span className="text-2xl">{equippedCard.icon}</span>
-                <span className="text-[8px] font-bold text-white/80 truncate max-w-[50px]">{equippedCard.name}</span>
-                <span className="text-[8px] font-bold text-green-400">+{equippedCard.bonusDamage}</span>
+                <img src={equippedCard.image} alt={equippedCard.name} className="w-10 h-12 object-contain rounded" />
+                <span className="text-[7px] font-bold text-white/80 truncate max-w-[50px]">{equippedCard.name}</span>
               </>
             ) : (
               <>
@@ -177,7 +176,7 @@ export default function Shooter({
                         border: `1px solid ${rarityColor}30`,
                       }}
                     >
-                      <span className="text-xl">{card.icon}</span>
+                      <img src={card.image} alt={card.name} className="w-10 h-12 rounded object-contain flex-shrink-0" />
                       <div className="flex-1 text-left">
                         <div className="text-[11px] font-bold text-white">{card.name}</div>
                         <div className="text-[9px]" style={{ color: rarityColor }}>{card.rarity} • {card.description}</div>

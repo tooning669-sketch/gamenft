@@ -9,6 +9,7 @@ import {
   BoostCard,
   GunLevel,
   GunSkin,
+  MarketplaceItem,
   AMMO_TYPES,
   GUN_LEVELS,
   GUN_SKINS,
@@ -23,6 +24,7 @@ import RewardDrop from './RewardDrop';
 import RewardPanel from './RewardPanel';
 import PlayerPanel from './PlayerPanel';
 import GunSkinPicker from './GunSkinPicker';
+import Marketplace from './Marketplace';
 import SoundToggle, { playShootSound, playPopSound, playRewardSound, playClickSound } from './SoundManager';
 
 const INITIAL_PLAYER: PlayerState = {
@@ -35,8 +37,6 @@ const INITIAL_PLAYER: PlayerState = {
   maxXp: 100,
 };
 
-const MAX_DURABILITY = 100;
-const COOLDOWN_MS = 800; // 0.8 second cooldown between shots
 const RANDOMIZE_COST = 500;
 
 export default function GameBoard() {
@@ -49,7 +49,7 @@ export default function GameBoard() {
   const [damageNumbers, setDamageNumbers] = useState<{ id: string; x: number; y: number; damage: number; color: string }[]>([]);
 
   // Gun status states
-  const [durability, setDurability] = useState(MAX_DURABILITY);
+  const [durability, setDurability] = useState(GUN_SKINS[0].durability);
   const [cooldown, setCooldown] = useState(0);
   const cooldownRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
@@ -61,6 +61,13 @@ export default function GameBoard() {
   const [gunSkin, setGunSkin] = useState<GunSkin>(GUN_SKINS[0]);
   const [showSkinPicker, setShowSkinPicker] = useState(false);
 
+  // Active tab (game vs marketplace)
+  const [activeTab, setActiveTab] = useState<'game' | 'marketplace'>('game');
+
+  // Derived stats from gun skin
+  const maxDurability = gunSkin.durability;
+  const cooldownMs = Math.round(gunSkin.cooldownSec * 1000);
+
   // Aim angle for cannon rotation
   const [aimAngle, setAimAngle] = useState(0);
   const shooterRef = useRef<HTMLDivElement>(null);
@@ -68,10 +75,22 @@ export default function GameBoard() {
   const totalBalls = GRID_ROWS * GRID_COLS;
   const ballsRemaining = balls.filter((b) => !b.isPopping && b.hp > 0).length;
 
-  // Calculate actual damage
+  // Calculate actual damage (uses gun skin base DMG)
   const calcDamage = useCallback(() => {
-    return Math.floor(selectedAmmo.damage * gunLevel.damageMultiplier) + (equippedCard?.bonusDamage || 0);
-  }, [selectedAmmo, gunLevel, equippedCard]);
+    return Math.floor(gunSkin.dmg * gunLevel.damageMultiplier) + (equippedCard?.bonusDamage || 0);
+  }, [gunSkin, gunLevel, equippedCard]);
+
+  // When gun skin changes, update energy & durability
+  const handleGunSkinChange = useCallback((skin: GunSkin) => {
+    setGunSkin(skin);
+    setPlayer((prev) => ({
+      ...prev,
+      energy: skin.energy,
+      maxEnergy: skin.energy,
+    }));
+    setDurability(skin.durability);
+    setCooldown(0);
+  }, []);
 
   // Energy regeneration
   useEffect(() => {
@@ -196,8 +215,8 @@ export default function GameBoard() {
       const duraCost = selectedAmmo.id === 'basic' ? 1 : selectedAmmo.id === 'heavy' ? 3 : 5;
       setDurability((prev) => Math.max(0, prev - duraCost));
 
-      // Start cooldown
-      setCooldown(COOLDOWN_MS);
+      // Start cooldown (from gun skin stats)
+      setCooldown(cooldownMs);
 
       // Fire animation
       setIsFiring(true);
@@ -288,7 +307,7 @@ export default function GameBoard() {
     }));
     setBalls(generateGrid());
     setRewards([]);
-    setDurability(MAX_DURABILITY);
+    setDurability(maxDurability);
     setCooldown(0);
     setActiveReward(null);
     setAimAngle(0);
@@ -296,6 +315,18 @@ export default function GameBoard() {
 
   const handleRewardComplete = useCallback(() => {
     setActiveReward(null);
+  }, []);
+
+  // Handle marketplace purchase
+  const handleMarketPurchase = useCallback((item: MarketplaceItem, currency: 'coins' | 'gems') => {
+    setPlayer((prev) => {
+      const price = item.discount ? Math.floor(item.priceCoins * (1 - item.discount / 100)) : item.priceCoins;
+      if (currency === 'coins') {
+        return { ...prev, coins: prev.coins - price };
+      } else {
+        return { ...prev, gems: prev.gems - item.priceGems };
+      }
+    });
   }, []);
 
   return (
@@ -318,16 +349,27 @@ export default function GameBoard() {
         </div>
 
         <nav className="hidden md:flex items-center gap-4 text-xs font-semibold text-slate-400">
-          {['HOME', 'GAME', 'NFT', 'MARKETPLACE', 'TOP EARNING'].map((item, i) => (
+          {[
+            { label: 'HOME', tab: 'game' as const },
+            { label: 'GAME', tab: 'game' as const },
+            { label: 'NFT', tab: 'game' as const },
+            { label: 'MARKETPLACE', tab: 'marketplace' as const },
+            { label: 'TOP EARNING', tab: 'game' as const },
+          ].map((item, i) => (
             <button
-              key={item}
+              key={item.label}
+              onClick={() => {
+                playClickSound();
+                setActiveTab(item.tab);
+              }}
               className={`px-3 py-1.5 rounded-lg transition-all cursor-pointer ${
-                i === 1
+                (item.label === 'MARKETPLACE' && activeTab === 'marketplace') ||
+                (item.label === 'GAME' && activeTab === 'game')
                   ? 'bg-indigo-500/20 text-indigo-300 border border-indigo-500/30'
                   : 'hover:text-white hover:bg-slate-800/50'
               }`}
             >
-              {item}
+              {item.label}
             </button>
           ))}
         </nav>
@@ -342,95 +384,101 @@ export default function GameBoard() {
       </header>
 
       {/* Main Content */}
-      <main className="flex-1 p-2 sm:p-4 lg:p-6 overflow-hidden">
-        <div className="h-full max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-[220px_1fr_260px] gap-3 sm:gap-4 lg:gap-6">
-          {/* Left Panel - Player Info */}
-          <aside className="hidden lg:block">
-            <PlayerPanel
-              player={player}
-              ballsRemaining={ballsRemaining}
-              totalBalls={totalBalls}
-            />
-          </aside>
-
-          {/* Center - Game Board */}
-          <div className="flex flex-col gap-3 sm:gap-4 min-h-0">
-            {/* Title */}
-            <div className="text-center">
-              <h2
-                className="text-base sm:text-xl font-black text-transparent bg-clip-text bg-gradient-to-r from-amber-400 via-yellow-300 to-amber-400"
-                style={{
-                  textShadow: '0 0 20px rgba(251, 191, 36, 0.3)',
-                }}
-              >
-                ⭐ BUBBLE SHOOTER ⭐
-              </h2>
-            </div>
-
-            {/* Mobile player info bar */}
-            <div className="lg:hidden flex items-center justify-between gap-2 rounded-xl p-2 bg-slate-900/80 border border-slate-700/50">
-              <div className="flex items-center gap-3">
-                <span className="text-xs">🪙 <span className="text-yellow-400 font-bold">{player.coins.toLocaleString()}</span></span>
-                <span className="text-xs">💎 <span className="text-cyan-400 font-bold">{player.gems.toLocaleString()}</span></span>
-              </div>
-              <div className="flex items-center gap-2">
-                <span className="text-[10px] text-amber-400">⚡{player.energy}/{player.maxEnergy}</span>
-                <span className="text-[10px] text-cyan-400">🔧{durability}/{MAX_DURABILITY}</span>
-              </div>
-            </div>
-
-            {/* Ammo Selector */}
-            <div className="max-w-md mx-auto w-full">
-              <AmmoSelector
-                selectedAmmo={selectedAmmo}
-                onSelectAmmo={setSelectedAmmo}
-                currentEnergy={player.energy}
+      <main className="flex-1 p-2 sm:p-4 lg:p-6 overflow-auto">
+        {activeTab === 'game' ? (
+          <div className="h-full max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-[220px_1fr_260px] gap-3 sm:gap-4 lg:gap-6">
+            {/* Left Panel - Player Info */}
+            <aside className="hidden lg:block">
+              <PlayerPanel
+                player={player}
+                ballsRemaining={ballsRemaining}
+                totalBalls={totalBalls}
               />
-            </div>
+            </aside>
 
-            {/* Target Grid */}
-            <div className="flex-1 min-h-0">
-              <div className="max-w-lg mx-auto">
-                <TargetGrid
-                  balls={balls.map((b) => b)}
-                  onBallClick={handleBallClick}
+            {/* Center - Game Board */}
+            <div className="flex flex-col gap-3 sm:gap-4 min-h-0">
+              {/* Title */}
+              <div className="text-center">
+                <h2
+                  className="text-base sm:text-xl font-black text-transparent bg-clip-text bg-gradient-to-r from-amber-400 via-yellow-300 to-amber-400"
+                  style={{ textShadow: '0 0 20px rgba(251, 191, 36, 0.3)' }}
+                >
+                  ⭐ BUBBLE SHOOTER ⭐
+                </h2>
+              </div>
+
+              {/* Mobile player info bar */}
+              <div className="lg:hidden flex items-center justify-between gap-2 rounded-xl p-2 bg-slate-900/80 border border-slate-700/50">
+                <div className="flex items-center gap-3">
+                  <span className="text-xs">🪙 <span className="text-yellow-400 font-bold">{player.coins.toLocaleString()}</span></span>
+                  <span className="text-xs">💎 <span className="text-cyan-400 font-bold">{player.gems.toLocaleString()}</span></span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <span className="text-[10px] text-amber-400">⚡{player.energy}/{player.maxEnergy}</span>
+                  <span className="text-[10px] text-cyan-400">🔧{durability}/{maxDurability}</span>
+                </div>
+              </div>
+
+              {/* Ammo Selector */}
+              <div className="max-w-md mx-auto w-full">
+                <AmmoSelector
+                  selectedAmmo={selectedAmmo}
+                  onSelectAmmo={setSelectedAmmo}
+                  currentEnergy={player.energy}
+                />
+              </div>
+
+              {/* Target Grid */}
+              <div className="flex-1 min-h-0">
+                <div className="max-w-lg mx-auto">
+                  <TargetGrid
+                    balls={balls.map((b) => b)}
+                    onBallClick={handleBallClick}
+                  />
+                </div>
+              </div>
+
+              {/* Shooter - Centered */}
+              <div className="flex justify-center" ref={shooterRef}>
+                <Shooter
+                  selectedAmmo={selectedAmmo}
+                  isFiring={isFiring}
+                  aimAngle={aimAngle}
+                  energy={player.energy}
+                  maxEnergy={player.maxEnergy}
+                  durability={durability}
+                  maxDurability={maxDurability}
+                  cooldown={cooldown}
+                  maxCooldown={cooldownMs}
+                  gunLevel={gunLevel}
+                  onGunLevelChange={setGunLevel}
+                  equippedCard={equippedCard}
+                  onEquipCard={setEquippedCard}
+                  gunSkin={gunSkin}
+                  onGunSkinClick={() => setShowSkinPicker(true)}
                 />
               </div>
             </div>
 
-            {/* Shooter - Centered */}
-            <div className="flex justify-center" ref={shooterRef}>
-              <Shooter
-                selectedAmmo={selectedAmmo}
-                isFiring={isFiring}
-                aimAngle={aimAngle}
-                energy={player.energy}
-                maxEnergy={player.maxEnergy}
-                durability={durability}
-                maxDurability={MAX_DURABILITY}
-                cooldown={cooldown}
-                maxCooldown={COOLDOWN_MS}
-                gunLevel={gunLevel}
-                onGunLevelChange={setGunLevel}
-                equippedCard={equippedCard}
-                onEquipCard={setEquippedCard}
-                gunSkin={gunSkin}
-                onGunSkinClick={() => setShowSkinPicker(true)}
+            {/* Right Panel - Rewards */}
+            <aside className="lg:block">
+              <RewardPanel
+                rewards={rewards}
+                stats={rewardStats}
+                player={player}
+                onRandomize={handleReset}
+                randomizeCost={RANDOMIZE_COST}
               />
-            </div>
+            </aside>
           </div>
-
-          {/* Right Panel - Rewards */}
-          <aside className="lg:block">
-            <RewardPanel
-              rewards={rewards}
-              stats={rewardStats}
-              player={player}
-              onRandomize={handleReset}
-              randomizeCost={RANDOMIZE_COST}
-            />
-          </aside>
-        </div>
+        ) : (
+          /* Marketplace Tab */
+          <Marketplace
+            player={player}
+            onPurchase={handleMarketPurchase}
+          />
+        )}
       </main>
 
       {/* Floating damage numbers */}
@@ -458,7 +506,7 @@ export default function GameBoard() {
       <GunSkinPicker
         isOpen={showSkinPicker}
         selectedSkin={gunSkin}
-        onSelectSkin={setGunSkin}
+        onSelectSkin={handleGunSkinChange}
         onClose={() => setShowSkinPicker(false)}
       />
     </div>
