@@ -10,6 +10,8 @@ import {
   GunLevel,
   GunSkin,
   MarketplaceItem,
+  MarketListing,
+  InventoryItem,
   AMMO_TYPES,
   GUN_LEVELS,
   GUN_SKINS,
@@ -24,7 +26,9 @@ import RewardDrop from './RewardDrop';
 import RewardPanel from './RewardPanel';
 import PlayerPanel from './PlayerPanel';
 import GunSkinPicker from './GunSkinPicker';
+import CardPicker from './CardPicker';
 import Marketplace from './Marketplace';
+import Inventory from './Inventory';
 import SoundToggle, { playShootSound, playPopSound, playRewardSound, playClickSound } from './SoundManager';
 
 const INITIAL_PLAYER: PlayerState = {
@@ -61,8 +65,14 @@ export default function GameBoard() {
   const [gunSkin, setGunSkin] = useState<GunSkin>(GUN_SKINS[0]);
   const [showSkinPicker, setShowSkinPicker] = useState(false);
 
-  // Active tab (game vs marketplace)
-  const [activeTab, setActiveTab] = useState<'game' | 'marketplace'>('game');
+  // Active tab (game vs marketplace vs inventory)
+  const [activeTab, setActiveTab] = useState<'game' | 'marketplace' | 'inventory'>('game');
+
+  // Card picker modal
+  const [showCardPicker, setShowCardPicker] = useState(false);
+
+  // Inventory
+  const [inventory, setInventory] = useState<InventoryItem[]>([]);
 
   // Derived stats from gun skin
   const maxDurability = gunSkin.durability;
@@ -317,7 +327,7 @@ export default function GameBoard() {
     setActiveReward(null);
   }, []);
 
-  // Handle marketplace purchase
+  // Handle marketplace purchase (from shop)
   const handleMarketPurchase = useCallback((item: MarketplaceItem, currency: 'coins' | 'gems') => {
     setPlayer((prev) => {
       const price = item.discount ? Math.floor(item.priceCoins * (1 - item.discount / 100)) : item.priceCoins;
@@ -326,6 +336,65 @@ export default function GameBoard() {
       } else {
         return { ...prev, gems: prev.gems - item.priceGems };
       }
+    });
+    // Add to inventory
+    setInventory((prev) => {
+      const existing = prev.find((i) => i.itemId === item.id);
+      if (existing) {
+        return prev.map((i) => i.itemId === item.id ? { ...i, quantity: i.quantity + 1 } : i);
+      }
+      return [...prev, {
+        id: `inv-${Date.now()}-${Math.random().toString(36).slice(2)}`,
+        itemId: item.id,
+        name: item.name,
+        image: item.image,
+        icon: item.icon,
+        category: item.category,
+        rarity: item.rarity,
+        quantity: 1,
+        acquiredAt: Date.now(),
+      }];
+    });
+  }, []);
+
+  // Handle buy from P2P player listing
+  const handleBuyFromPlayer = useCallback((listing: MarketListing) => {
+    setPlayer((prev) => ({ ...prev, coins: prev.coins - listing.priceCoins }));
+    setInventory((prev) => {
+      const existing = prev.find((i) => i.itemId === listing.item.id);
+      if (existing) {
+        return prev.map((i) => i.itemId === listing.item.id ? { ...i, quantity: i.quantity + 1 } : i);
+      }
+      return [...prev, {
+        id: `inv-${Date.now()}-${Math.random().toString(36).slice(2)}`,
+        itemId: listing.item.id,
+        name: listing.item.name,
+        image: listing.item.image,
+        icon: listing.item.icon,
+        category: listing.item.category,
+        rarity: listing.item.rarity,
+        quantity: 1,
+        acquiredAt: Date.now(),
+      }];
+    });
+  }, []);
+
+  // Handle listing item for sale
+  const handleListForSale = useCallback((item: InventoryItem, _price: number) => {
+    setInventory((prev) => {
+      if (item.quantity <= 1) return prev.filter((i) => i.id !== item.id);
+      return prev.map((i) => i.id === item.id ? { ...i, quantity: i.quantity - 1 } : i);
+    });
+  }, []);
+
+  // Handle sell from inventory
+  const handleSellFromInventory = useCallback((item: InventoryItem) => {
+    // Quick sell for 50% of lowest market price
+    const sellValue = Math.floor(200 * (item.rarity === 'Legendary' ? 5 : item.rarity === 'Rare' ? 2 : 1));
+    setPlayer((prev) => ({ ...prev, coins: prev.coins + sellValue }));
+    setInventory((prev) => {
+      if (item.quantity <= 1) return prev.filter((i) => i.id !== item.id);
+      return prev.map((i) => i.id === item.id ? { ...i, quantity: i.quantity - 1 } : i);
     });
   }, []);
 
@@ -352,10 +421,10 @@ export default function GameBoard() {
           {[
             { label: 'HOME', tab: 'game' as const },
             { label: 'GAME', tab: 'game' as const },
-            { label: 'NFT', tab: 'game' as const },
             { label: 'MARKETPLACE', tab: 'marketplace' as const },
+            { label: '🎒 BAG', tab: 'inventory' as const },
             { label: 'TOP EARNING', tab: 'game' as const },
-          ].map((item, i) => (
+          ].map((item) => (
             <button
               key={item.label}
               onClick={() => {
@@ -363,8 +432,7 @@ export default function GameBoard() {
                 setActiveTab(item.tab);
               }}
               className={`px-3 py-1.5 rounded-lg transition-all cursor-pointer ${
-                (item.label === 'MARKETPLACE' && activeTab === 'marketplace') ||
-                (item.label === 'GAME' && activeTab === 'game')
+                (item.tab === activeTab && (item.label === 'GAME' || item.label === 'MARKETPLACE' || item.label === '🎒 BAG'))
                   ? 'bg-indigo-500/20 text-indigo-300 border border-indigo-500/30'
                   : 'hover:text-white hover:bg-slate-800/50'
               }`}
@@ -457,6 +525,7 @@ export default function GameBoard() {
                   onEquipCard={setEquippedCard}
                   gunSkin={gunSkin}
                   onGunSkinClick={() => setShowSkinPicker(true)}
+                  onCardSlotClick={() => setShowCardPicker(true)}
                 />
               </div>
             </div>
@@ -472,11 +541,20 @@ export default function GameBoard() {
               />
             </aside>
           </div>
-        ) : (
+        ) : activeTab === 'marketplace' ? (
           /* Marketplace Tab */
           <Marketplace
             player={player}
-            onPurchase={handleMarketPurchase}
+            inventory={inventory}
+            onBuyFromShop={handleMarketPurchase}
+            onBuyFromPlayer={handleBuyFromPlayer}
+            onListForSale={handleListForSale}
+          />
+        ) : (
+          /* Inventory Tab */
+          <Inventory
+            items={inventory}
+            onSellItem={handleSellFromInventory}
           />
         )}
       </main>
@@ -508,6 +586,14 @@ export default function GameBoard() {
         selectedSkin={gunSkin}
         onSelectSkin={handleGunSkinChange}
         onClose={() => setShowSkinPicker(false)}
+      />
+
+      {/* Card Picker Modal */}
+      <CardPicker
+        isOpen={showCardPicker}
+        equippedCard={equippedCard}
+        onSelectCard={setEquippedCard}
+        onClose={() => setShowCardPicker(false)}
       />
     </div>
   );

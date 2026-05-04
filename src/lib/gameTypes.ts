@@ -289,3 +289,45 @@ export const MARKETPLACE_ITEMS: MarketplaceItem[] = [
   { id: 'market-gem-pack', name: 'Gem Pack ×100', description: 'Premium gem bundle', image: '', icon: '💎', category: 'special', rarity: 'Legendary', priceCoins: 5000, priceGems: 0, stock: 3, isFeatured: true },
   { id: 'market-mystery-box', name: 'Mystery Box', description: 'Contains a random legendary item!', image: '', icon: '🎁', category: 'special', rarity: 'Legendary', priceCoins: 6000, priceGems: 60, stock: 2, isFeatured: true },
 ];
+
+// ==========================================
+// Inventory System
+// ==========================================
+
+export interface InventoryItem {
+  id: string;
+  itemId: string; // reference to MarketplaceItem or card/gun id
+  name: string;
+  image: string;
+  icon: string;
+  category: MarketCategory;
+  rarity: RewardRarity;
+  quantity: number;
+  acquiredAt: number; // timestamp
+}
+
+// ==========================================
+// P2P Market Listing System
+// ==========================================
+
+export interface MarketListing {
+  id: string;
+  seller: string; // wallet address or username
+  sellerAvatar: string;
+  item: MarketplaceItem;
+  priceCoins: number;
+  listedAt: number;
+  isOwnListing?: boolean;
+}
+
+// Sample P2P listings from other "players"
+export const SAMPLE_LISTINGS: MarketListing[] = [
+  { id: 'listing-1', seller: '0xAb3...f21', sellerAvatar: '🦊', item: MARKETPLACE_ITEMS[9], priceCoins: 7200, listedAt: Date.now() - 3600000 },
+  { id: 'listing-2', seller: '0x7Fc...d82', sellerAvatar: '🐺', item: MARKETPLACE_ITEMS[12], priceCoins: 7800, listedAt: Date.now() - 7200000 },
+  { id: 'listing-3', seller: '0xE14...a09', sellerAvatar: '🦁', item: MARKETPLACE_ITEMS[13], priceCoins: 150, listedAt: Date.now() - 1800000 },
+  { id: 'listing-4', seller: '0x9B2...c44', sellerAvatar: '🐉', item: MARKETPLACE_ITEMS[3], priceCoins: 2200, listedAt: Date.now() - 5400000 },
+  { id: 'listing-5', seller: '0xD87...e15', sellerAvatar: '🦅', item: MARKETPLACE_ITEMS[16], priceCoins: 4200, listedAt: Date.now() - 900000 },
+  { id: 'listing-6', seller: '0x3A1...b77', sellerAvatar: '🐸', item: MARKETPLACE_ITEMS[17], priceCoins: 1600, listedAt: Date.now() - 10800000 },
+  { id: 'listing-7', seller: '0xF56...d33', sellerAvatar: '🦇', item: MARKETPLACE_ITEMS[10], priceCoins: 6800, listedAt: Date.now() - 2700000 },
+  { id: 'listing-8', seller: '0x2C9...a61', sellerAvatar: '🐙', item: MARKETPLACE_ITEMS[15], priceCoins: 1300, listedAt: Date.now() - 14400000 },
+];

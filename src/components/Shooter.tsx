@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
-import { AmmoType, GunLevel, GunSkin, BoostCard, GUN_LEVELS, AVAILABLE_CARDS } from '@/lib/gameTypes';
+import { AmmoType, GunLevel, GunSkin, BoostCard, GUN_LEVELS } from '@/lib/gameTypes';
 import { getRarityColor } from '@/lib/gameUtils';
 import { playClickSound } from './SoundManager';
 import GunStatusBar from './GunStatusBar';
@@ -22,6 +22,7 @@ interface ShooterProps {
   onEquipCard: (card: BoostCard | null) => void;
   gunSkin: GunSkin;
   onGunSkinClick: () => void;
+  onCardSlotClick: () => void;
 }
 
 export default function Shooter({
@@ -40,8 +41,8 @@ export default function Shooter({
   onEquipCard,
   gunSkin,
   onGunSkinClick,
+  onCardSlotClick,
 }: ShooterProps) {
-  const [showCardPicker, setShowCardPicker] = useState(false);
 
   // Cycle gun level on click
   const handleGunLevelClick = () => {
@@ -59,19 +60,7 @@ export default function Shooter({
 
   const handleCardSlotClick = () => {
     playClickSound();
-    setShowCardPicker((prev) => !prev);
-  };
-
-  const handleSelectCard = (card: BoostCard) => {
-    playClickSound();
-    onEquipCard(card);
-    setShowCardPicker(false);
-  };
-
-  const handleRemoveCard = () => {
-    playClickSound();
-    onEquipCard(null);
-    setShowCardPicker(false);
+    onCardSlotClick();
   };
 
   return (
@@ -127,67 +116,6 @@ export default function Shooter({
               </>
             )}
           </button>
-
-          {/* Card Picker Popup */}
-          {showCardPicker && (
-            <div
-              className="absolute bottom-full mb-2 left-0 z-50 rounded-xl p-3 min-w-[220px] max-h-[280px] overflow-y-auto custom-scrollbar"
-              style={{
-                background: 'linear-gradient(135deg, rgba(15,23,42,0.98), rgba(30,41,59,0.95))',
-                border: '1px solid rgba(99, 102, 241, 0.3)',
-                boxShadow: '0 8px 32px rgba(0,0,0,0.5)',
-                backdropFilter: 'blur(20px)',
-              }}
-            >
-              <div className="flex items-center justify-between mb-2">
-                <h4 className="text-xs font-bold text-indigo-300 uppercase tracking-wider">⚔️ Boost Cards</h4>
-                <button
-                  onClick={() => setShowCardPicker(false)}
-                  className="text-slate-500 hover:text-white text-sm cursor-pointer"
-                >
-                  ✕
-                </button>
-              </div>
-
-              {equippedCard && (
-                <button
-                  onClick={handleRemoveCard}
-                  className="w-full mb-2 py-1.5 rounded-lg text-[10px] font-bold text-rose-400 bg-rose-500/10 border border-rose-500/20 hover:bg-rose-500/20 transition-all cursor-pointer"
-                >
-                  🗑️ Remove Card
-                </button>
-              )}
-
-              <div className="space-y-1.5">
-                {AVAILABLE_CARDS.map((card) => {
-                  const isEquipped = equippedCard?.id === card.id;
-                  const rarityColor = getRarityColor(card.rarity);
-                  return (
-                    <button
-                      key={card.id}
-                      onClick={() => handleSelectCard(card)}
-                      className={`
-                        w-full flex items-center gap-2 rounded-lg p-2 transition-all cursor-pointer
-                        hover:scale-[1.02] active:scale-95
-                        ${isEquipped ? 'ring-1 ring-green-400' : ''}
-                      `}
-                      style={{
-                        background: isEquipped ? `${rarityColor}15` : 'rgba(15,23,42,0.6)',
-                        border: `1px solid ${rarityColor}30`,
-                      }}
-                    >
-                      <img src={card.image} alt={card.name} className="w-10 h-12 rounded object-contain flex-shrink-0" />
-                      <div className="flex-1 text-left">
-                        <div className="text-[11px] font-bold text-white">{card.name}</div>
-                        <div className="text-[9px]" style={{ color: rarityColor }}>{card.rarity} • {card.description}</div>
-                      </div>
-                      {isEquipped && <span className="text-green-400 text-xs">✓</span>}
-                    </button>
-                  );
-                })}
-              </div>
-            </div>
-          )}
         </div>
 
         {/* Center: Cannon with Gun Skin Image */}
