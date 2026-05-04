@@ -198,3 +198,32 @@ export const AVAILABLE_CARDS: BoostCard[] = [
   { id: 'card-angel-knight', name: 'Angel Knight', icon: '⚔️', bonusDamage: 30, rarity: 'Legendary', description: '+30 DMG per shot' },
   { id: 'card-cosmic-cat', name: 'Cosmic Cat', icon: '🐱', bonusDamage: 50, rarity: 'Legendary', description: '+50 DMG per shot' },
 ];
+
+// ==========================================
+// Gun Skin System
+// ==========================================
+
+export interface GunSkin {
+  id: string;
+  name: string;
+  image: string; // path in public/guns/
+  rarity: RewardRarity;
+  color: string;      // theme color for UI accents
+  glowColor: string;
+}
+
+export const GUN_SKINS: GunSkin[] = [
+  { id: 'skin-vine-cannon', name: 'Vine Cannon', image: '/guns/gun_01_vine_cannon.png', rarity: 'Common', color: '#22c55e', glowColor: 'rgba(34,197,94,0.5)' },
+  { id: 'skin-kawaii-tank', name: 'Kawaii Tank', image: '/guns/gun_02_kawaii_tank.png', rarity: 'Common', color: '#f472b6', glowColor: 'rgba(244,114,182,0.5)' },
+  { id: 'skin-candy-tank', name: 'Candy Tank', image: '/guns/gun_03_candy_tank.png', rarity: 'Common', color: '#fb923c', glowColor: 'rgba(251,146,60,0.5)' },
+  { id: 'skin-dragon-cannon', name: 'Dragon Cannon', image: '/guns/gun_04_dragon_cannon.png', rarity: 'Rare', color: '#ef4444', glowColor: 'rgba(239,68,68,0.5)' },
+  { id: 'skin-crystal-fortress', name: 'Crystal Fortress', image: '/guns/gun_05_crystal_fortress.png', rarity: 'Rare', color: '#a78bfa', glowColor: 'rgba(167,139,250,0.5)' },
+  { id: 'skin-golden-knight', name: 'Golden Knight', image: '/guns/gun_06_golden_knight.png', rarity: 'Rare', color: '#fbbf24', glowColor: 'rgba(251,191,36,0.5)' },
+  { id: 'skin-mecha-turret', name: 'Mecha Turret', image: '/guns/gun_07_mecha_turret.png', rarity: 'Rare', color: '#38bdf8', glowColor: 'rgba(56,189,248,0.5)' },
+  { id: 'skin-ice-golem', name: 'Ice Golem', image: '/guns/gun_08_ice_golem.png', rarity: 'Rare', color: '#22d3ee', glowColor: 'rgba(34,211,238,0.5)' },
+  { id: 'skin-steampunk', name: 'Steampunk', image: '/guns/gun_09_steampunk.png', rarity: 'Rare', color: '#a16207', glowColor: 'rgba(161,98,7,0.5)' },
+  { id: 'skin-fire-demon', name: 'Fire Demon', image: '/guns/gun_10_fire_demon.png', rarity: 'Legendary', color: '#dc2626', glowColor: 'rgba(220,38,38,0.6)' },
+  { id: 'skin-ocean-beast', name: 'Ocean Beast', image: '/guns/gun_11_ocean_beast.png', rarity: 'Legendary', color: '#0ea5e9', glowColor: 'rgba(14,165,233,0.6)' },
+  { id: 'skin-shadow-cannon', name: 'Shadow Cannon', image: '/guns/gun_12_shadow_cannon.png', rarity: 'Legendary', color: '#7c3aed', glowColor: 'rgba(124,58,237,0.6)' },
+  { id: 'skin-neon-blaster', name: 'Neon Blaster', image: '/guns/gun_13_neon_blaster.png', rarity: 'Legendary', color: '#e879f9', glowColor: 'rgba(232,121,249,0.6)' },
+];

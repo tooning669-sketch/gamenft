@@ -8,8 +8,10 @@ import {
   PlayerState,
   BoostCard,
   GunLevel,
+  GunSkin,
   AMMO_TYPES,
   GUN_LEVELS,
+  GUN_SKINS,
   GRID_ROWS,
   GRID_COLS,
 } from '@/lib/gameTypes';
@@ -20,6 +22,7 @@ import AmmoSelector from './AmmoSelector';
 import RewardDrop from './RewardDrop';
 import RewardPanel from './RewardPanel';
 import PlayerPanel from './PlayerPanel';
+import GunSkinPicker from './GunSkinPicker';
 import SoundToggle, { playShootSound, playPopSound, playRewardSound, playClickSound } from './SoundManager';
 
 const INITIAL_PLAYER: PlayerState = {
@@ -53,6 +56,10 @@ export default function GameBoard() {
   // Gun level & card boost
   const [gunLevel, setGunLevel] = useState<GunLevel>(GUN_LEVELS[0]);
   const [equippedCard, setEquippedCard] = useState<BoostCard | null>(null);
+
+  // Gun skin state
+  const [gunSkin, setGunSkin] = useState<GunSkin>(GUN_SKINS[0]);
+  const [showSkinPicker, setShowSkinPicker] = useState(false);
 
   // Aim angle for cannon rotation
   const [aimAngle, setAimAngle] = useState(0);
@@ -407,6 +414,8 @@ export default function GameBoard() {
                 onGunLevelChange={setGunLevel}
                 equippedCard={equippedCard}
                 onEquipCard={setEquippedCard}
+                gunSkin={gunSkin}
+                onGunSkinClick={() => setShowSkinPicker(true)}
               />
             </div>
           </div>
@@ -444,6 +453,14 @@ export default function GameBoard() {
       {activeReward && (
         <RewardDrop reward={activeReward} onComplete={handleRewardComplete} />
       )}
+
+      {/* Gun Skin Picker Modal */}
+      <GunSkinPicker
+        isOpen={showSkinPicker}
+        selectedSkin={gunSkin}
+        onSelectSkin={setGunSkin}
+        onClose={() => setShowSkinPicker(false)}
+      />
     </div>
   );
 }

@@ -1,7 +1,8 @@
 'use client';
 
 import React, { useState } from 'react';
-import { AmmoType, GunLevel, BoostCard, GUN_LEVELS, AVAILABLE_CARDS } from '@/lib/gameTypes';
+import Image from 'next/image';
+import { AmmoType, GunLevel, GunSkin, BoostCard, GUN_LEVELS, AVAILABLE_CARDS } from '@/lib/gameTypes';
 import { getRarityColor } from '@/lib/gameUtils';
 import { playClickSound } from './SoundManager';
 import GunStatusBar from './GunStatusBar';
@@ -20,6 +21,8 @@ interface ShooterProps {
   onGunLevelChange: (level: GunLevel) => void;
   equippedCard: BoostCard | null;
   onEquipCard: (card: BoostCard | null) => void;
+  gunSkin: GunSkin;
+  onGunSkinClick: () => void;
 }
 
 export default function Shooter({
@@ -36,15 +39,23 @@ export default function Shooter({
   onGunLevelChange,
   equippedCard,
   onEquipCard,
+  gunSkin,
+  onGunSkinClick,
 }: ShooterProps) {
   const [showCardPicker, setShowCardPicker] = useState(false);
 
   // Cycle gun level on click
-  const handleGunClick = () => {
+  const handleGunLevelClick = () => {
     playClickSound();
     const currentIdx = GUN_LEVELS.findIndex((g) => g.level === gunLevel.level);
     const nextIdx = (currentIdx + 1) % GUN_LEVELS.length;
     onGunLevelChange(GUN_LEVELS[nextIdx]);
+  };
+
+  // Open skin picker on gun image click
+  const handleGunClick = () => {
+    playClickSound();
+    onGunSkinClick();
   };
 
   const handleCardSlotClick = () => {
@@ -69,7 +80,7 @@ export default function Shooter({
       {/* Gun Level Badge */}
       <div
         className="flex items-center gap-1.5 px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider cursor-pointer hover:scale-105 transition-all"
-        onClick={handleGunClick}
+        onClick={handleGunLevelClick}
         title="Click to change gun level"
         style={{
           background: `linear-gradient(135deg, ${gunLevel.color}30, ${gunLevel.color}10)`,
@@ -181,7 +192,7 @@ export default function Shooter({
           )}
         </div>
 
-        {/* Center: Cannon */}
+        {/* Center: Cannon with Gun Skin Image */}
         <div className="flex flex-col items-center" id="shooter-cannon">
           {/* Cooldown overlay */}
           {cooldown > 0 && (
@@ -190,94 +201,109 @@ export default function Shooter({
             </div>
           )}
 
-          {/* Cannon body with rotation */}
+          {/* Skin name badge */}
           <div
-            className={`
-              relative w-16 h-20 sm:w-20 sm:h-24
-              transition-all duration-200
-              ${isFiring ? 'animate-cannon-fire' : ''}
-              ${cooldown > 0 ? 'opacity-60' : ''}
-              cursor-pointer
-            `}
-            onClick={handleGunClick}
-            title={`${gunLevel.name} (Click to upgrade)`}
+            className="text-[9px] font-bold uppercase tracking-wider mb-1 px-2 py-0.5 rounded-full"
             style={{
-              transformOrigin: 'bottom center',
+              color: gunSkin.color,
+              background: `${gunSkin.color}15`,
+              border: `1px solid ${gunSkin.color}30`,
             }}
           >
-            {/* Cannon barrel - rotates toward target */}
+            {gunSkin.name}
+          </div>
+
+          {/* Gun Image - clickable to open skin picker */}
+          <div
+            className={`
+              relative group cursor-pointer transition-all duration-200
+              ${isFiring ? 'animate-cannon-fire' : ''}
+              ${cooldown > 0 ? 'opacity-60' : ''}
+            `}
+            onClick={handleGunClick}
+            title="Click to change weapon skin"
+            style={{ transformOrigin: 'bottom center' }}
+          >
+            {/* Glow ring behind the gun */}
             <div
-              className="absolute top-0 left-1/2 w-6 h-10 sm:w-8 sm:h-12 rounded-t-lg transition-transform duration-200"
+              className="absolute inset-0 rounded-2xl opacity-50 group-hover:opacity-100 transition-opacity duration-300"
               style={{
-                transform: `translateX(-50%) rotate(${aimAngle}deg)`,
-                transformOrigin: 'bottom center',
-                background: `linear-gradient(180deg, ${gunLevel.color}, ${selectedAmmo.color}, #1e293b)`,
-                boxShadow: `0 -4px 15px ${gunLevel.glowColor}, inset 0 0 10px rgba(0,0,0,0.5)`,
+                background: `radial-gradient(circle, ${gunSkin.glowColor}, transparent 70%)`,
+                filter: 'blur(8px)',
+                transform: 'scale(1.2)',
               }}
+            />
+
+            {/* Gun image */}
+            <div
+              className="relative w-20 h-20 sm:w-28 sm:h-28 flex items-center justify-center rounded-xl overflow-visible transition-transform duration-200 group-hover:scale-110"
             >
-              {/* Barrel highlight */}
-              <div className="absolute top-1 left-1 w-1.5 h-6 bg-white/20 rounded-full" />
+              <Image
+                src={gunSkin.image}
+                alt={gunSkin.name}
+                width={112}
+                height={112}
+                className="object-contain drop-shadow-xl pointer-events-none"
+                style={{
+                  filter: isFiring
+                    ? `drop-shadow(0 0 12px ${selectedAmmo.color}) brightness(1.3)`
+                    : `drop-shadow(0 0 6px ${gunSkin.glowColor})`,
+                  transition: 'filter 0.2s',
+                }}
+              />
 
               {/* Muzzle flash on fire */}
               {isFiring && (
                 <div
-                  className="absolute -top-3 left-1/2 -translate-x-1/2 w-6 h-6 rounded-full"
+                  className="absolute -top-4 left-1/2 -translate-x-1/2 w-10 h-10 rounded-full"
                   style={{
                     background: `radial-gradient(circle, ${selectedAmmo.color}, transparent)`,
                     animation: 'pulse-glow 0.2s ease-out',
                   }}
                 />
               )}
-            </div>
 
-            {/* Cannon base */}
-            <div
-              className="absolute bottom-0 left-1/2 -translate-x-1/2 w-16 h-12 sm:w-20 sm:h-14 rounded-xl"
-              style={{
-                background: `linear-gradient(180deg, ${gunLevel.color}40, #1e293b, #0f172a)`,
-                boxShadow: `0 4px 20px rgba(0,0,0,0.5), inset 0 2px 4px rgba(255,255,255,0.1), 0 0 15px ${gunLevel.glowColor}`,
-                border: `1px solid ${gunLevel.color}50`,
-              }}
-            >
-              {/* Ammo indicator orb */}
+              {/* "Click to change" hint */}
               <div
-                className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-8 h-8 sm:w-10 sm:h-10 rounded-full flex items-center justify-center text-xl sm:text-2xl animate-pulse-glow"
+                className="absolute -bottom-1 left-1/2 -translate-x-1/2 opacity-0 group-hover:opacity-100 transition-all duration-300 whitespace-nowrap pointer-events-none"
                 style={{
-                  background: `radial-gradient(circle, ${selectedAmmo.color}40, transparent)`,
-                  boxShadow: `0 0 15px ${selectedAmmo.glowColor}`,
+                  background: 'rgba(15,23,42,0.9)',
+                  border: `1px solid ${gunSkin.color}40`,
+                  borderRadius: '6px',
+                  padding: '2px 8px',
+                  fontSize: '9px',
+                  fontWeight: 700,
+                  color: gunSkin.color,
+                  boxShadow: `0 4px 12px rgba(0,0,0,0.5)`,
                 }}
               >
-                {selectedAmmo.icon}
+                🎨 เปลี่ยนปืน
               </div>
-
-              {/* Level indicator dots */}
-              <div className="absolute -bottom-0.5 left-1/2 -translate-x-1/2 flex gap-1">
-                {GUN_LEVELS.map((gl) => (
-                  <div
-                    key={gl.level}
-                    className="w-1.5 h-1.5 rounded-full transition-all"
-                    style={{
-                      background: gl.level <= gunLevel.level ? gunLevel.color : 'rgba(100,116,139,0.3)',
-                      boxShadow: gl.level <= gunLevel.level ? `0 0 4px ${gunLevel.glowColor}` : 'none',
-                    }}
-                  />
-                ))}
-              </div>
-
-              {/* Base rivets */}
-              <div className="absolute top-1 left-2 w-1.5 h-1.5 rounded-full bg-slate-500/50" />
-              <div className="absolute top-1 right-2 w-1.5 h-1.5 rounded-full bg-slate-500/50" />
             </div>
           </div>
 
           {/* Platform */}
           <div
-            className="w-28 h-3 sm:w-36 sm:h-4 rounded-b-lg mt-0"
+            className="w-28 h-3 sm:w-36 sm:h-4 rounded-b-lg mt-1"
             style={{
-              background: `linear-gradient(180deg, ${gunLevel.color}30, #334155)`,
-              boxShadow: '0 4px 10px rgba(0,0,0,0.3)',
+              background: `linear-gradient(180deg, ${gunSkin.color}30, #334155)`,
+              boxShadow: `0 4px 10px rgba(0,0,0,0.3), 0 0 10px ${gunSkin.glowColor}`,
             }}
           />
+
+          {/* Level indicator dots */}
+          <div className="flex gap-1 mt-1">
+            {GUN_LEVELS.map((gl) => (
+              <div
+                key={gl.level}
+                className="w-1.5 h-1.5 rounded-full transition-all"
+                style={{
+                  background: gl.level <= gunLevel.level ? gunLevel.color : 'rgba(100,116,139,0.3)',
+                  boxShadow: gl.level <= gunLevel.level ? `0 0 4px ${gunLevel.glowColor}` : 'none',
+                }}
+              />
+            ))}
+          </div>
         </div>
 
         {/* Right: Gun Status Bars */}

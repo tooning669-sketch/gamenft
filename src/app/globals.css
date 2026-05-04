@@ -273,3 +273,31 @@ body::before {
 .hover\:scale-102:hover {
   transform: scale(1.02);
 }
+
+/* ==========================================
+   Gun Skin Picker Animations
+   ========================================== */
+
+@keyframes skin-picker-enter {
+  0% {
+    transform: translateY(30px) scale(0.95);
+    opacity: 0;
+  }
+  100% {
+    transform: translateY(0) scale(1);
+    opacity: 1;
+  }
+}
+
+.animate-skin-picker-enter {
+  animation: skin-picker-enter 0.35s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+@keyframes skin-picker-backdrop {
+  0% { opacity: 0; }
+  100% { opacity: 1; }
+}
+
+.animate-skin-picker-backdrop {
+  animation: skin-picker-backdrop 0.25s ease-out forwards;
+}
