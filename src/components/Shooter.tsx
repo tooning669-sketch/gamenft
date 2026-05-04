@@ -1,7 +1,6 @@
 'use client';
 
 import React, { useState } from 'react';
-import Image from 'next/image';
 import { AmmoType, GunLevel, GunSkin, BoostCard, GUN_LEVELS, AVAILABLE_CARDS } from '@/lib/gameTypes';
 import { getRarityColor } from '@/lib/gameUtils';
 import { playClickSound } from './SoundManager';
@@ -238,12 +237,10 @@ export default function Shooter({
             <div
               className="relative w-20 h-20 sm:w-28 sm:h-28 flex items-center justify-center rounded-xl overflow-visible transition-transform duration-200 group-hover:scale-110"
             >
-              <Image
+              <img
                 src={gunSkin.image}
                 alt={gunSkin.name}
-                width={112}
-                height={112}
-                className="object-contain drop-shadow-xl pointer-events-none"
+                className="w-full h-full object-contain drop-shadow-xl pointer-events-none"
                 style={{
                   filter: isFiring
                     ? `drop-shadow(0 0 12px ${selectedAmmo.color}) brightness(1.3)`

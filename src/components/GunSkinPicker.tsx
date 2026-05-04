@@ -1,7 +1,6 @@
 'use client';
 
 import React, { useEffect, useRef } from 'react';
-import Image from 'next/image';
 import { GunSkin, GUN_SKINS, RewardRarity } from '@/lib/gameTypes';
 import { getRarityColor } from '@/lib/gameUtils';
 import { playClickSound } from './SoundManager';
@@ -126,12 +125,10 @@ export default function GunSkinPicker({
               boxShadow: `0 0 12px ${selectedSkin.glowColor}`,
             }}
           >
-            <Image
+            <img
               src={selectedSkin.image}
               alt={selectedSkin.name}
-              width={40}
-              height={40}
-              className="object-contain"
+              className="w-10 h-10 object-contain"
             />
           </div>
           <div>
@@ -217,12 +214,10 @@ export default function GunSkinPicker({
                           background: `radial-gradient(circle, ${rarityColor}10, transparent)`,
                         }}
                       >
-                        <Image
+                        <img
                           src={skin.image}
                           alt={skin.name}
-                          width={56}
-                          height={56}
-                          className="object-contain drop-shadow-lg"
+                          className="w-14 h-14 object-contain drop-shadow-lg"
                           style={{
                             filter: isSelected ? `drop-shadow(0 0 6px ${skin.glowColor})` : 'none',
                           }}
