@@ -72,6 +72,9 @@ export default function GameBoard() {
   // Card picker modal
   const [showCardPicker, setShowCardPicker] = useState(false);
 
+  // Helper: generate NFT-style token ID
+  const genTokenId = () => `0x${Math.random().toString(16).slice(2, 10).toUpperCase()}`;
+
   // Inventory — start with default gun + first card owned
   const [inventory, setInventory] = useState<InventoryItem[]>(() => {
     const defaultGun = GUN_SKINS[0];
@@ -90,6 +93,7 @@ export default function GameBoard() {
         durability: defaultGun.durability,
         maxDurability: defaultGun.durability,
         description: `DMG ${defaultGun.dmg} • Energy ${defaultGun.energy} • Cooldown ${defaultGun.cooldownSec}s`,
+        tokenId: `0x${Math.random().toString(16).slice(2, 10).toUpperCase()}`,
       },
       {
         id: `inv-init-card`,
@@ -102,6 +106,7 @@ export default function GameBoard() {
         quantity: 1,
         acquiredAt: Date.now(),
         description: defaultCard.description,
+        tokenId: `0x${Math.random().toString(16).slice(2, 10).toUpperCase()}`,
       },
     ];
   });
@@ -352,6 +357,7 @@ export default function GameBoard() {
           quantity: 1,
           acquiredAt: Date.now(),
           description: reward.description,
+          tokenId: genTokenId(),
           ...(matchedGun ? { durability: matchedGun.durability, maxDurability: matchedGun.durability } : {}),
         };
 
@@ -421,6 +427,7 @@ export default function GameBoard() {
           durability: matchedGun.durability,
           maxDurability: matchedGun.durability,
           description: `DMG ${matchedGun.dmg} • Energy ${matchedGun.energy} • Cooldown ${matchedGun.cooldownSec}s`,
+          tokenId: genTokenId(),
         }];
       }
       const existing = prev.find((i) => i.itemId === item.id);
@@ -438,6 +445,7 @@ export default function GameBoard() {
         quantity: 1,
         acquiredAt: Date.now(),
         description: item.description,
+        tokenId: genTokenId(),
       }];
     });
   }, []);
@@ -461,6 +469,7 @@ export default function GameBoard() {
           durability: matchedGun.durability,
           maxDurability: matchedGun.durability,
           description: `DMG ${matchedGun.dmg} • Energy ${matchedGun.energy} • Cooldown ${matchedGun.cooldownSec}s`,
+          tokenId: genTokenId(),
         }];
       }
       const existing = prev.find((i) => i.itemId === listing.item.id);
@@ -478,16 +487,19 @@ export default function GameBoard() {
         quantity: 1,
         acquiredAt: Date.now(),
         description: listing.item.description,
+        tokenId: genTokenId(),
       }];
     });
   }, []);
 
-  // Handle listing item for sale
-  const handleListForSale = useCallback((item: InventoryItem, _price: number) => {
-    setInventory((prev) => {
-      if (item.quantity <= 1) return prev.filter((i) => i.id !== item.id);
-      return prev.map((i) => i.id === item.id ? { ...i, quantity: i.quantity - 1 } : i);
-    });
+  // Handle listing item for sale — keep item in inventory, just mark with listedPrice
+  const handleListForSale = useCallback((item: InventoryItem, price: number) => {
+    setInventory((prev) =>
+      prev.map((i) => i.id === item.id
+        ? { ...i, listedPrice: price > 0 ? price : undefined }
+        : i
+      )
+    );
   }, []);
 
   // Handle sell from inventory

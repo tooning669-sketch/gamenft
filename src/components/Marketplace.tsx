@@ -93,34 +93,46 @@ export default function Marketplace({ player, inventory, onBuyFromShop, onBuyFro
   }, [canAfford, onBuyFromPlayer]);
 
   const handleListForSale = useCallback((item: InventoryItem) => {
-    const price = sellPrice[item.id] || 0;
+    const price = sellPrice[item.id] || item.listedPrice || 0;
     if (price <= 0) return;
     playClickSound();
     onListForSale(item, price);
-    // Add to listings
-    const newListing: MarketListing = {
-      id: `own-${Date.now()}`,
-      seller: '0x8F...7a3B',
-      sellerAvatar: '👤',
-      item: {
-        id: item.itemId,
-        name: item.name,
-        description: '',
-        image: item.image,
-        icon: item.icon,
-        category: item.category,
-        rarity: item.rarity,
+
+    // Check if we already have a listing for this item
+    const existingListing = listings.find((l) => l.isOwnListing && l.item.id === item.itemId);
+    if (existingListing) {
+      // Update existing listing price
+      setListings((prev) => prev.map((l) =>
+        l.id === existingListing.id
+          ? { ...l, priceCoins: price, item: { ...l.item, priceCoins: price } }
+          : l
+      ));
+    } else {
+      // Create new listing
+      const newListing: MarketListing = {
+        id: `own-${Date.now()}`,
+        seller: '0x8F...7a3B',
+        sellerAvatar: '👤',
+        item: {
+          id: item.itemId,
+          name: item.name,
+          description: item.description || '',
+          image: item.image,
+          icon: item.icon,
+          category: item.category,
+          rarity: item.rarity,
+          priceCoins: price,
+          priceGems: 0,
+          stock: 1,
+        },
         priceCoins: price,
-        priceGems: 0,
-        stock: 1,
-      },
-      priceCoins: price,
-      listedAt: Date.now(),
-      isOwnListing: true,
-    };
-    setListings((prev) => [newListing, ...prev]);
+        listedAt: Date.now(),
+        isOwnListing: true,
+      };
+      setListings((prev) => [newListing, ...prev]);
+    }
     setSellPrice((prev) => ({ ...prev, [item.id]: 0 }));
-  }, [sellPrice, onListForSale]);
+  }, [sellPrice, onListForSale, listings]);
 
   return (
     <div className="flex flex-col gap-4 sm:gap-6 max-w-5xl mx-auto">
@@ -387,10 +399,16 @@ export default function Marketplace({ player, inventory, onBuyFromShop, onBuyFro
           ) : (
             inventory.map((item) => {
               const rarityColor = getRarityColor(item.rarity);
-              const price = sellPrice[item.id] || 0;
+              const price = sellPrice[item.id] ?? (item.listedPrice || 0);
+              const isListed = !!item.listedPrice;
               return (
                 <div key={item.id} className="rounded-xl overflow-hidden"
-                  style={{ background: 'linear-gradient(135deg, rgba(15,23,42,0.95), rgba(30,41,59,0.8))', border: `1px solid ${rarityColor}20` }}>
+                  style={{
+                    background: isListed
+                      ? 'linear-gradient(135deg, rgba(15,23,42,0.95), rgba(34,197,94,0.06))'
+                      : 'linear-gradient(135deg, rgba(15,23,42,0.95), rgba(30,41,59,0.8))',
+                    border: isListed ? '1px solid rgba(34,197,94,0.3)' : `1px solid ${rarityColor}20`,
+                  }}>
                   <div className="flex items-center gap-3 p-3">
                     <div className="flex-shrink-0 w-14 h-14 flex items-center justify-center rounded-lg"
                       style={{ background: `radial-gradient(circle, ${rarityColor}10, transparent)` }}>
@@ -404,27 +422,73 @@ export default function Marketplace({ player, inventory, onBuyFromShop, onBuyFro
                         <span className="text-[8px] px-1.5 py-0.5 rounded-full font-bold uppercase"
                           style={{ color: rarityColor, background: `${rarityColor}15`, border: `1px solid ${rarityColor}25` }}>{item.rarity}</span>
                         {item.quantity > 1 && <span className="text-[9px] text-indigo-400 font-bold">×{item.quantity}</span>}
+                        {isListed && (
+                          <span className="text-[8px] px-1.5 py-0.5 rounded-full font-bold bg-green-500/20 text-green-400 border border-green-500/30 animate-pulse">
+                            📢 LISTED
+                          </span>
+                        )}
                       </div>
-                      <span className="text-[10px] text-slate-400">{item.category}</span>
+                      <div className="flex items-center gap-2 mt-0.5">
+                        <span className="text-[10px] text-slate-400">{item.category}</span>
+                        {item.tokenId && (
+                          <span className="text-[9px] text-slate-600 font-mono">NFT: {item.tokenId}</span>
+                        )}
+                      </div>
                     </div>
 
-                    {/* Price input + sell button */}
+                    {/* Price input + sell/edit button */}
                     <div className="flex items-center gap-2 flex-shrink-0">
                       <div className="flex items-center gap-1 px-2 py-1.5 rounded-lg bg-slate-800/80 border border-slate-700/50">
                         <span className="text-xs">🪙</span>
                         <input
                           type="number"
                           min={1}
-                          placeholder="Price"
+                          placeholder={isListed ? String(item.listedPrice) : 'Price'}
                           value={price || ''}
                           onChange={(e) => setSellPrice((prev) => ({ ...prev, [item.id]: parseInt(e.target.value) || 0 }))}
                           className="w-20 bg-transparent text-sm font-bold text-yellow-400 outline-none [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
                         />
                       </div>
-                      <button onClick={() => handleListForSale(item)} disabled={price <= 0}
-                        className={`px-4 py-2 rounded-xl text-xs font-bold uppercase transition-all cursor-pointer ${price > 0 ? 'bg-gradient-to-r from-green-500/20 to-emerald-500/20 text-green-400 border border-green-500/30 hover:scale-105 active:scale-95' : 'bg-slate-800/50 text-slate-600 border border-slate-700/30 cursor-not-allowed'}`}>
-                        List
-                      </button>
+                      {isListed ? (
+                        <div className="flex items-center gap-1.5">
+                          {/* Update price button */}
+                          <button onClick={() => {
+                            const newPrice = sellPrice[item.id];
+                            if (newPrice && newPrice > 0 && newPrice !== item.listedPrice) {
+                              playClickSound();
+                              handleListForSale(item);
+                              // Update listing in p2p as well
+                              setListings((prev) => prev.map((l) =>
+                                l.isOwnListing && l.item.id === item.itemId
+                                  ? { ...l, priceCoins: newPrice, item: { ...l.item, priceCoins: newPrice } }
+                                  : l
+                              ));
+                            }
+                          }}
+                            disabled={!sellPrice[item.id] || sellPrice[item.id] <= 0 || sellPrice[item.id] === item.listedPrice}
+                            className="px-3 py-2 rounded-xl text-[10px] font-bold uppercase transition-all cursor-pointer bg-gradient-to-r from-amber-500/20 to-yellow-500/20 text-amber-400 border border-amber-500/30 hover:scale-105 active:scale-95 disabled:opacity-40 disabled:cursor-not-allowed"
+                          >
+                            ✏️ Edit
+                          </button>
+                          {/* Unlist button */}
+                          <button onClick={() => {
+                            playClickSound();
+                            onListForSale({ ...item, listedPrice: undefined } as InventoryItem, 0);
+                            // Remove own listing from p2p
+                            setListings((prev) => prev.filter((l) => !(l.isOwnListing && l.item.id === item.itemId)));
+                            setSellPrice((prev) => ({ ...prev, [item.id]: 0 }));
+                          }}
+                            className="px-3 py-2 rounded-xl text-[10px] font-bold uppercase text-rose-400 bg-rose-500/10 border border-rose-500/30 hover:bg-rose-500/20 transition-all cursor-pointer hover:scale-105 active:scale-95"
+                          >
+                            ✖ Unlist
+                          </button>
+                        </div>
+                      ) : (
+                        <button onClick={() => handleListForSale(item)} disabled={price <= 0}
+                          className={`px-4 py-2 rounded-xl text-xs font-bold uppercase transition-all cursor-pointer ${price > 0 ? 'bg-gradient-to-r from-green-500/20 to-emerald-500/20 text-green-400 border border-green-500/30 hover:scale-105 active:scale-95' : 'bg-slate-800/50 text-slate-600 border border-slate-700/30 cursor-not-allowed'}`}>
+                          List
+                        </button>
+                      )}
                     </div>
                   </div>
                 </div>

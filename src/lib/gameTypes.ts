@@ -309,6 +309,10 @@ export interface InventoryItem {
   maxDurability?: number;
   // Description for tooltip / detail
   description?: string;
+  // NFT Token ID (auto-generated)
+  tokenId?: string;
+  // Current listing price on marketplace (undefined = not listed)
+  listedPrice?: number;
 }
 
 // ==========================================
