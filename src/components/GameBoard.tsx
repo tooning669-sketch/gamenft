@@ -15,13 +15,14 @@ import {
   AMMO_TYPES,
   GUN_LEVELS,
   GUN_SKINS,
+  AVAILABLE_CARDS,
+  REWARD_ITEMS,
   GRID_ROWS,
   GRID_COLS,
 } from '@/lib/gameTypes';
 import { generateGrid, applyDamage, rollReward } from '@/lib/gameUtils';
 import TargetGrid from './TargetGrid';
 import Shooter from './Shooter';
-import AmmoSelector from './AmmoSelector';
 import RewardDrop from './RewardDrop';
 import RewardPanel from './RewardPanel';
 import PlayerPanel from './PlayerPanel';
@@ -71,8 +72,39 @@ export default function GameBoard() {
   // Card picker modal
   const [showCardPicker, setShowCardPicker] = useState(false);
 
-  // Inventory
-  const [inventory, setInventory] = useState<InventoryItem[]>([]);
+  // Inventory — start with default gun + first card owned
+  const [inventory, setInventory] = useState<InventoryItem[]>(() => {
+    const defaultGun = GUN_SKINS[0];
+    const defaultCard = AVAILABLE_CARDS[0];
+    return [
+      {
+        id: `inv-init-gun`,
+        itemId: defaultGun.id,
+        name: defaultGun.name,
+        image: defaultGun.image,
+        icon: '🔫',
+        category: 'guns' as const,
+        rarity: defaultGun.rarity,
+        quantity: 1,
+        acquiredAt: Date.now(),
+        durability: defaultGun.durability,
+        maxDurability: defaultGun.durability,
+        description: `DMG ${defaultGun.dmg} • Energy ${defaultGun.energy} • Cooldown ${defaultGun.cooldownSec}s`,
+      },
+      {
+        id: `inv-init-card`,
+        itemId: defaultCard.id,
+        name: defaultCard.name,
+        image: defaultCard.image,
+        icon: defaultCard.icon,
+        category: 'cards' as const,
+        rarity: defaultCard.rarity,
+        quantity: 1,
+        acquiredAt: Date.now(),
+        description: defaultCard.description,
+      },
+    ];
+  });
 
   // Derived stats from gun skin
   const maxDurability = gunSkin.durability;
@@ -300,6 +332,39 @@ export default function GameBoard() {
             level: newXp > prev.maxXp ? prev.level + 1 : prev.level,
           };
         });
+
+        // Auto-add reward item to inventory
+        const isGunReward = reward.name.toLowerCase().includes('cannon') || reward.name.toLowerCase().includes('blaster') || reward.name.toLowerCase().includes('turret');
+        const isCardReward = reward.name.toLowerCase().includes('ticket') || reward.name.toLowerCase().includes('coupon') || reward.name.toLowerCase().includes('box');
+        const rewardCategory = isGunReward ? 'guns' : isCardReward ? 'cards' : 'special';
+
+        // Find matching gun skin for gun-type rewards
+        const matchedGun = GUN_SKINS.find(g => g.name === reward.name);
+
+        const invItem: InventoryItem = {
+          id: `inv-reward-${Date.now()}-${Math.random().toString(36).slice(2)}`,
+          itemId: reward.id,
+          name: reward.name,
+          image: matchedGun?.image || '',
+          icon: reward.icon,
+          category: rewardCategory as 'guns' | 'cards' | 'special',
+          rarity: reward.rarity,
+          quantity: 1,
+          acquiredAt: Date.now(),
+          description: reward.description,
+          ...(matchedGun ? { durability: matchedGun.durability, maxDurability: matchedGun.durability } : {}),
+        };
+
+        setInventory((prev) => {
+          // Stack same-name non-gun items
+          if (!matchedGun) {
+            const existing = prev.find((i) => i.name === reward.name);
+            if (existing) {
+              return prev.map((i) => i.name === reward.name ? { ...i, quantity: i.quantity + 1 } : i);
+            }
+          }
+          return [...prev, invItem];
+        });
       }
     },
     [selectedAmmo, player.energy, cooldown, durability, calcDamage, updateAimAngle]
@@ -337,8 +402,27 @@ export default function GameBoard() {
         return { ...prev, gems: prev.gems - item.priceGems };
       }
     });
+    // Look up gun skin data for durability
+    const matchedGun = item.category === 'guns' ? GUN_SKINS.find(g => g.name === item.name) : null;
     // Add to inventory
     setInventory((prev) => {
+      // Don't stack guns (each has unique durability)
+      if (matchedGun) {
+        return [...prev, {
+          id: `inv-${Date.now()}-${Math.random().toString(36).slice(2)}`,
+          itemId: item.id,
+          name: item.name,
+          image: item.image,
+          icon: item.icon,
+          category: item.category,
+          rarity: item.rarity,
+          quantity: 1,
+          acquiredAt: Date.now(),
+          durability: matchedGun.durability,
+          maxDurability: matchedGun.durability,
+          description: `DMG ${matchedGun.dmg} • Energy ${matchedGun.energy} • Cooldown ${matchedGun.cooldownSec}s`,
+        }];
+      }
       const existing = prev.find((i) => i.itemId === item.id);
       if (existing) {
         return prev.map((i) => i.itemId === item.id ? { ...i, quantity: i.quantity + 1 } : i);
@@ -353,6 +437,7 @@ export default function GameBoard() {
         rarity: item.rarity,
         quantity: 1,
         acquiredAt: Date.now(),
+        description: item.description,
       }];
     });
   }, []);
@@ -360,7 +445,24 @@ export default function GameBoard() {
   // Handle buy from P2P player listing
   const handleBuyFromPlayer = useCallback((listing: MarketListing) => {
     setPlayer((prev) => ({ ...prev, coins: prev.coins - listing.priceCoins }));
+    const matchedGun = listing.item.category === 'guns' ? GUN_SKINS.find(g => g.name === listing.item.name) : null;
     setInventory((prev) => {
+      if (matchedGun) {
+        return [...prev, {
+          id: `inv-${Date.now()}-${Math.random().toString(36).slice(2)}`,
+          itemId: listing.item.id,
+          name: listing.item.name,
+          image: listing.item.image,
+          icon: listing.item.icon,
+          category: listing.item.category,
+          rarity: listing.item.rarity,
+          quantity: 1,
+          acquiredAt: Date.now(),
+          durability: matchedGun.durability,
+          maxDurability: matchedGun.durability,
+          description: `DMG ${matchedGun.dmg} • Energy ${matchedGun.energy} • Cooldown ${matchedGun.cooldownSec}s`,
+        }];
+      }
       const existing = prev.find((i) => i.itemId === listing.item.id);
       if (existing) {
         return prev.map((i) => i.itemId === listing.item.id ? { ...i, quantity: i.quantity + 1 } : i);
@@ -375,6 +477,7 @@ export default function GameBoard() {
         rarity: listing.item.rarity,
         quantity: 1,
         acquiredAt: Date.now(),
+        description: listing.item.description,
       }];
     });
   }, []);
@@ -488,15 +591,6 @@ export default function GameBoard() {
                 </div>
               </div>
 
-              {/* Ammo Selector */}
-              <div className="max-w-md mx-auto w-full">
-                <AmmoSelector
-                  selectedAmmo={selectedAmmo}
-                  onSelectAmmo={setSelectedAmmo}
-                  currentEnergy={player.energy}
-                />
-              </div>
-
               {/* Target Grid */}
               <div className="flex-1 min-h-0">
                 <div className="max-w-lg mx-auto">
@@ -555,6 +649,14 @@ export default function GameBoard() {
           <Inventory
             items={inventory}
             onSellItem={handleSellFromInventory}
+            onRepairItem={(item) => {
+              const repairCost = Math.floor((item.rarity === 'Legendary' ? 500 : item.rarity === 'Rare' ? 250 : 100));
+              if (player.coins < repairCost) return;
+              playClickSound();
+              setPlayer((prev) => ({ ...prev, coins: prev.coins - repairCost }));
+              setInventory((prev) => prev.map((i) => i.id === item.id ? { ...i, durability: i.maxDurability } : i));
+            }}
+            playerCoins={player.coins}
           />
         )}
       </main>

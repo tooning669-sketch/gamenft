@@ -304,6 +304,11 @@ export interface InventoryItem {
   rarity: RewardRarity;
   quantity: number;
   acquiredAt: number; // timestamp
+  // Durability tracking (for guns)
+  durability?: number;
+  maxDurability?: number;
+  // Description for tooltip / detail
+  description?: string;
 }
 
 // ==========================================
