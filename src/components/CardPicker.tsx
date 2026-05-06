@@ -1,18 +1,19 @@
 'use client';
 
 import React, { useEffect, useRef } from 'react';
-import { BoostCard, AVAILABLE_CARDS } from '@/lib/gameTypes';
+import { BoostCard, InventoryItem } from '@/lib/gameTypes';
 import { getRarityColor } from '@/lib/gameUtils';
 import { playClickSound } from './SoundManager';
 
 interface CardPickerProps {
   isOpen: boolean;
   equippedCard: BoostCard | null;
+  ownedCards: { card: BoostCard; invItem: InventoryItem }[];
   onSelectCard: (card: BoostCard | null) => void;
   onClose: () => void;
 }
 
-export default function CardPicker({ isOpen, equippedCard, onSelectCard, onClose }: CardPickerProps) {
+export default function CardPicker({ isOpen, equippedCard, ownedCards, onSelectCard, onClose }: CardPickerProps) {
   const panelRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -69,6 +70,7 @@ export default function CardPicker({ isOpen, equippedCard, onSelectCard, onClose
             <h3 className="text-base sm:text-lg font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-purple-400 via-pink-400 to-amber-400">
               SELECT BOOST CARD
             </h3>
+            <span className="text-[10px] text-slate-500 font-semibold">({ownedCards.length} owned)</span>
           </div>
           <button onClick={onClose} className="w-8 h-8 rounded-lg flex items-center justify-center text-slate-400 hover:text-white hover:bg-slate-700/50 transition-all cursor-pointer">✕</button>
         </div>
@@ -105,53 +107,69 @@ export default function CardPicker({ isOpen, equippedCard, onSelectCard, onClose
           )}
         </div>
 
-        {/* Card Grid */}
+        {/* Card Grid — only owned cards */}
         <div className="overflow-y-auto max-h-[55vh] custom-scrollbar p-4">
-          <div className="grid grid-cols-2 sm:grid-cols-2 gap-3">
-            {AVAILABLE_CARDS.map((card) => {
-              const isEquipped = equippedCard?.id === card.id;
-              const rarityColor = getRarityColor(card.rarity);
-              return (
-                <button
-                  key={card.id}
-                  onClick={() => handleSelect(card)}
-                  className={`group relative flex flex-col items-center gap-2 p-3 rounded-xl transition-all duration-200 cursor-pointer hover:scale-105 active:scale-95 ${isEquipped ? 'ring-2 ring-green-400' : ''}`}
-                  style={{
-                    background: isEquipped ? `linear-gradient(135deg, ${rarityColor}20, ${rarityColor}08)` : 'rgba(15,23,42,0.6)',
-                    border: isEquipped ? `2px solid ${rarityColor}80` : '1px solid rgba(100,116,139,0.2)',
-                    boxShadow: isEquipped ? `0 0 20px ${rarityColor}30` : 'none',
-                  }}
-                >
-                  {isEquipped && (
-                    <div className="absolute -top-1.5 -right-1.5 w-5 h-5 rounded-full flex items-center justify-center text-[10px] font-bold z-10"
-                      style={{ background: '#22c55e', color: '#0f172a', boxShadow: '0 0 8px rgba(34,197,94,0.6)' }}>✓</div>
-                  )}
+          {ownedCards.length === 0 ? (
+            <div className="flex flex-col items-center justify-center py-12 gap-3">
+              <span className="text-4xl">🃏</span>
+              <span className="text-sm text-slate-500 font-semibold">No cards owned</span>
+              <span className="text-[11px] text-slate-600">Buy cards from the Marketplace!</span>
+            </div>
+          ) : (
+            <div className="grid grid-cols-2 sm:grid-cols-2 gap-3">
+              {ownedCards.map(({ card, invItem }) => {
+                const isEquipped = equippedCard?.id === card.id;
+                const rarityColor = getRarityColor(card.rarity);
+                return (
+                  <button
+                    key={invItem.id}
+                    onClick={() => handleSelect(card)}
+                    className={`group relative flex flex-col items-center gap-2 p-3 rounded-xl transition-all duration-200 cursor-pointer hover:scale-105 active:scale-95 ${isEquipped ? 'ring-2 ring-green-400' : ''}`}
+                    style={{
+                      background: isEquipped ? `linear-gradient(135deg, ${rarityColor}20, ${rarityColor}08)` : 'rgba(15,23,42,0.6)',
+                      border: isEquipped ? `2px solid ${rarityColor}80` : '1px solid rgba(100,116,139,0.2)',
+                      boxShadow: isEquipped ? `0 0 20px ${rarityColor}30` : 'none',
+                    }}
+                  >
+                    {isEquipped && (
+                      <div className="absolute -top-1.5 -right-1.5 w-5 h-5 rounded-full flex items-center justify-center text-[10px] font-bold z-10"
+                        style={{ background: '#22c55e', color: '#0f172a', boxShadow: '0 0 8px rgba(34,197,94,0.6)' }}>✓</div>
+                    )}
 
-                  {/* Card Image */}
-                  <div className="w-full aspect-[3/4] max-h-[160px] relative flex items-center justify-center rounded-lg overflow-hidden transition-all duration-300 group-hover:scale-105"
-                    style={{ background: `radial-gradient(circle, ${rarityColor}12, transparent)` }}>
-                    <img src={card.image} alt={card.name} className="w-full h-full object-contain drop-shadow-lg"
-                      style={{ filter: isEquipped ? `drop-shadow(0 0 8px ${rarityColor})` : 'none' }} />
-                  </div>
+                    {/* Quantity badge */}
+                    {invItem.quantity > 1 && (
+                      <div className="absolute top-1 right-1 z-10 px-1.5 py-0.5 rounded-full text-[9px] font-black text-white"
+                        style={{ background: 'rgba(99,102,241,0.8)' }}>
+                        ×{invItem.quantity}
+                      </div>
+                    )}
 
-                  {/* Info */}
-                  <div className="w-full text-center">
-                    <div className="text-[11px] font-bold text-white truncate">{card.name}</div>
-                    <div className="flex items-center justify-center gap-2 mt-0.5">
-                      <span className="text-[9px] px-1.5 py-0.5 rounded-full font-bold uppercase" style={{
-                        color: rarityColor, background: `${rarityColor}15`, border: `1px solid ${rarityColor}25`
-                      }}>{card.rarity}</span>
-                      <span className="text-[10px] font-bold text-green-400">+{card.bonusDamage} DMG</span>
+                    {/* Card Image */}
+                    <div className="w-full aspect-[3/4] max-h-[160px] relative flex items-center justify-center rounded-lg overflow-hidden transition-all duration-300 group-hover:scale-105"
+                      style={{ background: `radial-gradient(circle, ${rarityColor}12, transparent)` }}>
+                      <img src={card.image} alt={card.name} className="w-full h-full object-contain drop-shadow-lg"
+                        style={{ filter: isEquipped ? `drop-shadow(0 0 8px ${rarityColor})` : 'none' }} />
                     </div>
-                    <div className="text-[9px] text-slate-400 mt-0.5">{card.description}</div>
-                  </div>
 
-                  <div className="absolute inset-0 rounded-xl opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none"
-                    style={{ background: `radial-gradient(circle at center, ${rarityColor}08, transparent 70%)` }} />
-                </button>
-              );
-            })}
-          </div>
+                    {/* Info */}
+                    <div className="w-full text-center">
+                      <div className="text-[11px] font-bold text-white truncate">{card.name}</div>
+                      <div className="flex items-center justify-center gap-2 mt-0.5">
+                        <span className="text-[9px] px-1.5 py-0.5 rounded-full font-bold uppercase" style={{
+                          color: rarityColor, background: `${rarityColor}15`, border: `1px solid ${rarityColor}25`
+                        }}>{card.rarity}</span>
+                        <span className="text-[10px] font-bold text-green-400">+{card.bonusDamage} DMG</span>
+                      </div>
+                      <div className="text-[9px] text-slate-400 mt-0.5">{card.description}</div>
+                    </div>
+
+                    <div className="absolute inset-0 rounded-xl opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none"
+                      style={{ background: `radial-gradient(circle at center, ${rarityColor}08, transparent 70%)` }} />
+                  </button>
+                );
+              })}
+            </div>
+          )}
         </div>
       </div>
     </div>

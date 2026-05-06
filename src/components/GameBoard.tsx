@@ -111,6 +111,9 @@ export default function GameBoard() {
     ];
   });
 
+  // Track which inventory item is the equipped gun
+  const [equippedGunInvId, setEquippedGunInvId] = useState<string>('inv-init-gun');
+
   // Derived stats from gun skin
   const maxDurability = gunSkin.durability;
   const cooldownMs = Math.round(gunSkin.cooldownSec * 1000);
@@ -122,22 +125,57 @@ export default function GameBoard() {
   const totalBalls = GRID_ROWS * GRID_COLS;
   const ballsRemaining = balls.filter((b) => !b.isPopping && b.hp > 0).length;
 
+  // Compute owned guns & cards from inventory for pickers
+  const ownedGuns = inventory
+    .filter((i) => i.category === 'guns')
+    .map((invItem) => {
+      const skin = GUN_SKINS.find((g) => g.name === invItem.name);
+      return skin ? { skin, invItem } : null;
+    })
+    .filter(Boolean) as { skin: GunSkin; invItem: InventoryItem }[];
+
+  const ownedCards = inventory
+    .filter((i) => i.category === 'cards')
+    .map((invItem) => {
+      const card = AVAILABLE_CARDS.find((c) => c.name === invItem.name);
+      return card ? { card, invItem } : null;
+    })
+    .filter(Boolean) as { card: BoostCard; invItem: InventoryItem }[];
+
   // Calculate actual damage (uses gun skin base DMG)
   const calcDamage = useCallback(() => {
     return Math.floor(gunSkin.dmg * gunLevel.damageMultiplier) + (equippedCard?.bonusDamage || 0);
   }, [gunSkin, gunLevel, equippedCard]);
 
-  // When gun skin changes, update energy & durability
+  // Sync gameplay durability to inventory whenever it changes
+  useEffect(() => {
+    if (!equippedGunInvId) return;
+    setInventory((prev) =>
+      prev.map((i) => i.id === equippedGunInvId ? { ...i, durability: durability } : i)
+    );
+  }, [durability, equippedGunInvId]);
+
+  // When gun skin changes, save old durability then load from new gun's inventory
   const handleGunSkinChange = useCallback((skin: GunSkin) => {
+    // Save current gun durability to inventory
+    if (equippedGunInvId) {
+      setInventory((prev) =>
+        prev.map((i) => i.id === equippedGunInvId ? { ...i, durability } : i)
+      );
+    }
+    // Find the inventory item for the new gun
+    const newGunInv = inventory.find((i) => i.category === 'guns' && i.name === skin.name);
     setGunSkin(skin);
     setPlayer((prev) => ({
       ...prev,
       energy: skin.energy,
       maxEnergy: skin.energy,
     }));
-    setDurability(skin.durability);
+    // Load durability from inventory or use max
+    setDurability(newGunInv?.durability ?? skin.durability);
+    setEquippedGunInvId(newGunInv?.id || '');
     setCooldown(0);
-  }, []);
+  }, [equippedGunInvId, durability, inventory]);
 
   // Energy regeneration
   useEffect(() => {
@@ -660,13 +698,16 @@ export default function GameBoard() {
           /* Inventory Tab */
           <Inventory
             items={inventory}
-            onSellItem={handleSellFromInventory}
             onRepairItem={(item) => {
               const repairCost = Math.floor((item.rarity === 'Legendary' ? 500 : item.rarity === 'Rare' ? 250 : 100));
               if (player.coins < repairCost) return;
               playClickSound();
               setPlayer((prev) => ({ ...prev, coins: prev.coins - repairCost }));
               setInventory((prev) => prev.map((i) => i.id === item.id ? { ...i, durability: i.maxDurability } : i));
+              // If repairing the currently equipped gun, also update gameplay durability
+              if (item.id === equippedGunInvId) {
+                setDurability(item.maxDurability ?? gunSkin.durability);
+              }
             }}
             playerCoins={player.coins}
           />
@@ -698,6 +739,7 @@ export default function GameBoard() {
       <GunSkinPicker
         isOpen={showSkinPicker}
         selectedSkin={gunSkin}
+        ownedGuns={ownedGuns}
         onSelectSkin={handleGunSkinChange}
         onClose={() => setShowSkinPicker(false)}
       />
@@ -706,6 +748,7 @@ export default function GameBoard() {
       <CardPicker
         isOpen={showCardPicker}
         equippedCard={equippedCard}
+        ownedCards={ownedCards}
         onSelectCard={setEquippedCard}
         onClose={() => setShowCardPicker(false)}
       />

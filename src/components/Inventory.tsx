@@ -7,7 +7,6 @@ import { playClickSound } from './SoundManager';
 
 interface InventoryProps {
   items: InventoryItem[];
-  onSellItem: (item: InventoryItem) => void;
   onRepairItem: (item: InventoryItem) => void;
   playerCoins: number;
 }
@@ -28,7 +27,7 @@ function formatDate(ts: number) {
   return new Date(ts).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric', hour: '2-digit', minute: '2-digit' });
 }
 
-export default function Inventory({ items, onSellItem, onRepairItem, playerCoins }: InventoryProps) {
+export default function Inventory({ items, onRepairItem, playerCoins }: InventoryProps) {
   const [selectedTab, setSelectedTab] = useState<MarketCategory | 'all'>('all');
   const [detailItem, setDetailItem] = useState<InventoryItem | null>(null);
 
@@ -186,11 +185,10 @@ export default function Inventory({ items, onSellItem, onRepairItem, playerCoins
       {/* ===== ITEM DETAIL MODAL ===== */}
       {detailItem && (
         <ItemDetailModal
-          item={detailItem}
+          item={items.find(i => i.id === detailItem.id) || detailItem}
           gunStats={getGunStats(detailItem)}
           playerCoins={playerCoins}
           onRepair={() => { onRepairItem(detailItem); setDetailItem(null); }}
-          onSell={() => { onSellItem(detailItem); setDetailItem(null); }}
           onClose={() => setDetailItem(null)}
         />
       )}
@@ -207,11 +205,10 @@ interface ItemDetailModalProps {
   gunStats: ReturnType<typeof GUN_SKINS.find>;
   playerCoins: number;
   onRepair: () => void;
-  onSell: () => void;
   onClose: () => void;
 }
 
-function ItemDetailModal({ item, gunStats, playerCoins, onRepair, onSell, onClose }: ItemDetailModalProps) {
+function ItemDetailModal({ item, gunStats, playerCoins, onRepair, onClose }: ItemDetailModalProps) {
   const rarityColor = getRarityColor(item.rarity);
   const rarityGlow = getRarityGlow(item.rarity);
   const hasDurability = item.durability !== undefined && item.maxDurability !== undefined;
@@ -426,34 +423,31 @@ function ItemDetailModal({ item, gunStats, playerCoins, onRepair, onSell, onClos
 
           {/* Action Buttons */}
           <div className="flex gap-2 pt-1">
-            {/* Repair button */}
-            {needsRepair && (
+            {/* Repair button — always visible for items with durability system */}
+            {hasDurability && (
               <button
                 onClick={(e) => {
                   e.stopPropagation();
-                  if (canAffordRepair) {
+                  if (canAffordRepair && needsRepair) {
                     playClickSound();
                     onRepair();
                   }
                 }}
-                disabled={!canAffordRepair}
+                disabled={!canAffordRepair || !needsRepair}
                 className={`flex-1 py-2.5 rounded-xl text-xs font-bold uppercase tracking-wider transition-all cursor-pointer flex items-center justify-center gap-1.5 ${
-                  canAffordRepair
+                  needsRepair && canAffordRepair
                     ? 'text-green-400 bg-gradient-to-r from-green-500/20 to-emerald-500/20 border border-green-500/40 hover:scale-[1.02] active:scale-95'
-                    : 'text-slate-500 bg-slate-700/30 border border-slate-600/30 cursor-not-allowed opacity-60'
+                    : needsRepair && !canAffordRepair
+                      ? 'text-slate-500 bg-slate-700/30 border border-slate-600/30 cursor-not-allowed opacity-60'
+                      : 'text-cyan-400/60 bg-cyan-500/5 border border-cyan-500/20 cursor-default'
                 }`}
               >
-                🔧 Repair {isBroken ? '(BROKEN)' : ''} <span className="text-yellow-400">🪙{repairCost}</span>
+                {needsRepair
+                  ? <>🔧 Repair {isBroken ? '(BROKEN)' : ''} <span className="text-yellow-400">🪙{repairCost}</span></>
+                  : '✅ Full Durability'
+                }
               </button>
             )}
-
-            {/* Sell button */}
-            <button
-              onClick={(e) => { e.stopPropagation(); playClickSound(); onSell(); }}
-              className="flex-1 py-2.5 rounded-xl text-xs font-bold uppercase tracking-wider text-amber-400 bg-gradient-to-r from-amber-500/20 to-yellow-500/20 border border-amber-500/40 hover:scale-[1.02] active:scale-95 transition-all cursor-pointer flex items-center justify-center gap-1.5"
-            >
-              🏪 Quick Sell
-            </button>
           </div>
         </div>
       </div>
