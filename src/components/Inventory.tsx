@@ -9,6 +9,7 @@ interface InventoryProps {
   items: InventoryItem[];
   onRepairItem: (item: InventoryItem) => void;
   playerCoins: number;
+  playerGems: number;
 }
 
 const TABS: { key: MarketCategory | 'all'; label: string; icon: string }[] = [
@@ -27,7 +28,7 @@ function formatDate(ts: number) {
   return new Date(ts).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric', hour: '2-digit', minute: '2-digit' });
 }
 
-export default function Inventory({ items, onRepairItem, playerCoins }: InventoryProps) {
+export default function Inventory({ items, onRepairItem, playerCoins, playerGems }: InventoryProps) {
   const [selectedTab, setSelectedTab] = useState<MarketCategory | 'all'>('all');
   const [detailItem, setDetailItem] = useState<InventoryItem | null>(null);
 
@@ -44,13 +45,40 @@ export default function Inventory({ items, onRepairItem, playerCoins }: Inventor
       <div className="flex flex-col gap-4 sm:gap-6 max-w-5xl mx-auto">
         {/* Header */}
         <div className="text-center">
-          <h2 className="text-xl sm:text-2xl font-black text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 via-blue-400 to-indigo-400">
-            🎒 INVENTORY
+          <h2 className="text-xl sm:text-2xl font-black text-transparent bg-clip-text bg-gradient-to-r from-pink-400 via-fuchsia-400 to-purple-400">
+            👛 WALLET
           </h2>
           <p className="text-[11px] text-slate-500 mt-1">
-            {totalItems} items in your bag • Tap an item for details
+            {totalItems} items • Manage your assets & exchange
           </p>
         </div>
+
+        {/* Currency Cards */}
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+          <div className="rounded-xl p-3 text-center" style={{ background: 'linear-gradient(135deg, rgba(234,179,8,0.1), rgba(245,158,11,0.05))', border: '1px solid rgba(234,179,8,0.25)' }}>
+            <span className="text-2xl">🪙</span>
+            <div className="text-lg font-black text-yellow-400 mt-1">{playerCoins.toLocaleString()}</div>
+            <div className="text-[9px] text-yellow-400/60 font-semibold uppercase">Coins</div>
+          </div>
+          <div className="rounded-xl p-3 text-center" style={{ background: 'linear-gradient(135deg, rgba(6,182,212,0.1), rgba(14,165,233,0.05))', border: '1px solid rgba(6,182,212,0.25)' }}>
+            <span className="text-2xl">💎</span>
+            <div className="text-lg font-black text-cyan-400 mt-1">{playerGems.toLocaleString()}</div>
+            <div className="text-[9px] text-cyan-400/60 font-semibold uppercase">Gems</div>
+          </div>
+          <div className="rounded-xl p-3 text-center" style={{ background: 'linear-gradient(135deg, rgba(34,197,94,0.1), rgba(16,185,129,0.05))', border: '1px solid rgba(34,197,94,0.25)' }}>
+            <span className="text-2xl">💵</span>
+            <div className="text-lg font-black text-green-400 mt-1">0.00</div>
+            <div className="text-[9px] text-green-400/60 font-semibold uppercase">USDT</div>
+          </div>
+          <div className="rounded-xl p-3 text-center cursor-pointer hover:scale-105 transition-all" style={{ background: 'linear-gradient(135deg, rgba(168,85,247,0.1), rgba(139,92,246,0.05))', border: '1px solid rgba(168,85,247,0.25)' }}>
+            <span className="text-2xl">🔄</span>
+            <div className="text-sm font-black text-purple-400 mt-1">Exchange</div>
+            <div className="text-[9px] text-purple-400/60 font-semibold uppercase">Coming Soon</div>
+          </div>
+        </div>
+
+        {/* Divider */}
+        <div className="h-px bg-gradient-to-r from-transparent via-pink-500/30 to-transparent" />
 
         {/* Category Tabs */}
         <div className="flex gap-2 justify-center flex-wrap">

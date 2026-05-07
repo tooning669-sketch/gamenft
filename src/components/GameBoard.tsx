@@ -653,15 +653,15 @@ export default function GameBoard() {
       <header
         className="py-2 sm:py-3 px-4 sm:px-6 flex items-center justify-between border-b"
         style={{
-          background: 'linear-gradient(90deg, rgba(15,23,42,0.95), rgba(30,41,59,0.9), rgba(15,23,42,0.95))',
-          borderColor: 'rgba(99, 102, 241, 0.2)',
+          background: 'linear-gradient(90deg, rgba(15,10,40,0.97), rgba(30,15,60,0.95), rgba(15,10,40,0.97))',
+          borderColor: 'rgba(236, 72, 153, 0.3)',
         }}
       >
         <div className="flex items-center gap-3">
           <h1 className="text-lg sm:text-2xl font-black text-transparent bg-clip-text bg-gradient-to-r from-indigo-400 via-purple-400 to-pink-400">
-            💥 BUBBLE BLAST
+            🎮 BUBBLE BLAST
           </h1>
-          <span className="hidden sm:inline text-[10px] px-2 py-0.5 rounded-full bg-indigo-500/20 text-indigo-300 border border-indigo-500/30 font-semibold">
+          <span className="hidden sm:inline text-[10px] px-2 py-0.5 rounded-full bg-pink-500/20 text-pink-300 border border-pink-500/30 font-semibold">
             NFT
           </span>
         </div>
@@ -671,7 +671,7 @@ export default function GameBoard() {
             { label: 'HOME', tab: 'game' as const },
             { label: 'GAME', tab: 'game' as const },
             { label: 'MARKETPLACE', tab: 'marketplace' as const },
-            { label: '🎒 BAG', tab: 'inventory' as const },
+            { label: '👛 WALLET', tab: 'inventory' as const },
             { label: 'TOP EARNING', tab: 'game' as const },
           ].map((item) => (
             <button
@@ -681,8 +681,8 @@ export default function GameBoard() {
                 setActiveTab(item.tab);
               }}
               className={`px-3 py-1.5 rounded-lg transition-all cursor-pointer ${
-                (item.tab === activeTab && (item.label === 'GAME' || item.label === 'MARKETPLACE' || item.label === '🎒 BAG'))
-                  ? 'bg-indigo-500/20 text-indigo-300 border border-indigo-500/30'
+                (item.tab === activeTab && (item.label === 'GAME' || item.label === 'MARKETPLACE' || item.label === '👛 WALLET'))
+                  ? 'bg-pink-500/20 text-pink-300 border border-pink-500/30'
                   : 'hover:text-white hover:bg-slate-800/50'
               }`}
             >
@@ -710,6 +710,7 @@ export default function GameBoard() {
                 player={player}
                 ballsRemaining={ballsRemaining}
                 totalBalls={totalBalls}
+                onOpenWallet={() => { playClickSound(); setActiveTab('inventory'); }}
               />
             </aside>
 
@@ -808,8 +809,6 @@ export default function GameBoard() {
                   selectedAmmo={selectedAmmo}
                   isFiring={isFiring}
                   aimAngle={aimAngle}
-                  energy={player.energy}
-                  maxEnergy={player.maxEnergy}
                   durability={durability}
                   maxDurability={maxDurability}
                   cooldown={cooldown}
@@ -861,6 +860,7 @@ export default function GameBoard() {
               }
             }}
             playerCoins={player.coins}
+            playerGems={player.gems}
           />
         )}
       </main>

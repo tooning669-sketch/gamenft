@@ -45,6 +45,9 @@ export default function Marketplace({ player, inventory, onBuyFromShop, onBuyFro
   const [listings, setListings] = useState<MarketListing[]>(SAMPLE_LISTINGS);
   const [showPurchaseAnim, setShowPurchaseAnim] = useState<string | null>(null);
   const [sellPrice, setSellPrice] = useState<Record<string, number>>({});
+  const [shopPage, setShopPage] = useState(0);
+  const [detailItem, setDetailItem] = useState<MarketplaceItem | null>(null);
+  const ITEMS_PER_PAGE = 12;
   const [stockMap, setStockMap] = useState<Record<string, number>>(() => {
     const map: Record<string, number> = {};
     MARKETPLACE_ITEMS.forEach((item) => { map[item.id] = item.stock; });
@@ -59,9 +62,11 @@ export default function Marketplace({ player, inventory, onBuyFromShop, onBuyFro
   const canAfford = useCallback((priceCoins: number) => player.coins >= priceCoins, [player.coins]);
 
   // Shop items
-  const filteredShop = selectedCategory === 'all'
+  const allFilteredShop = selectedCategory === 'all'
     ? MARKETPLACE_ITEMS
     : MARKETPLACE_ITEMS.filter((i) => i.category === selectedCategory);
+  const totalPages = Math.ceil(allFilteredShop.length / ITEMS_PER_PAGE);
+  const filteredShop = allFilteredShop.slice(shopPage * ITEMS_PER_PAGE, (shopPage + 1) * ITEMS_PER_PAGE);
 
   // P2P listings
   const filteredListings = selectedCategory === 'all'
@@ -209,7 +214,8 @@ export default function Marketplace({ player, inventory, onBuyFromShop, onBuyFro
 
       {/* ===== SHOP VIEW ===== */}
       {view === 'shop' && (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+        <>
+        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
           {filteredShop.map((item) => {
             const rarityColor = getRarityColor(item.rarity);
             const stock = stockMap[item.id];
@@ -236,20 +242,16 @@ export default function Marketplace({ player, inventory, onBuyFromShop, onBuyFro
                   </div>
                 )}
 
-                <div className="flex gap-3 p-3">
-                  <div className="flex-shrink-0 w-16 h-16 sm:w-20 sm:h-20 flex items-center justify-center rounded-xl"
+                <div className="p-2 cursor-pointer" onClick={() => setDetailItem(item)}>
+                  <div className="w-full aspect-square flex items-center justify-center rounded-xl mb-2"
                     style={{ background: `radial-gradient(circle, ${rarityColor}12, transparent)`, border: `1px solid ${rarityColor}20` }}>
-                    {item.image ? <img src={item.image} alt={item.name} className="w-14 h-14 sm:w-16 sm:h-16 object-contain" />
+                    {item.image ? <img src={item.image} alt={item.name} className="w-full h-full object-contain p-2" />
                       : <span className="text-3xl sm:text-4xl">{item.icon}</span>}
                   </div>
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-2">
-                      <h3 className="text-sm font-bold text-white truncate">{item.name}</h3>
-                      <span className="flex-shrink-0 text-[8px] px-1.5 py-0.5 rounded-full font-bold uppercase"
-                        style={{ color: rarityColor, background: `${rarityColor}15`, border: `1px solid ${rarityColor}25` }}>{item.rarity}</span>
-                    </div>
-                    <p className="text-[10px] text-slate-400 mt-0.5 line-clamp-2">{item.description}</p>
-                    {stock !== -1 && <span className="text-[9px] text-slate-500">Stock: <span className={stock <= 3 ? 'text-rose-400 font-bold' : 'text-slate-400'}>{stock}</span></span>}
+                  <div>
+                    <h3 className="text-xs font-bold text-white truncate">{item.name}</h3>
+                    <span className="text-[8px] px-1.5 py-0.5 rounded-full font-bold uppercase"
+                      style={{ color: rarityColor, background: `${rarityColor}15`, border: `1px solid ${rarityColor}25` }}>{item.rarity}</span>
                   </div>
                 </div>
 
@@ -294,6 +296,17 @@ export default function Marketplace({ player, inventory, onBuyFromShop, onBuyFro
             );
           })}
         </div>
+        {/* Pagination */}
+        {totalPages > 1 && (
+          <div className="flex items-center justify-center gap-3 mt-4">
+            <button onClick={() => { playClickSound(); setShopPage(p => Math.max(0, p-1)); }} disabled={shopPage === 0}
+              className="px-4 py-2 rounded-lg text-xs font-bold text-pink-300 bg-pink-500/10 border border-pink-500/30 hover:bg-pink-500/20 transition-all cursor-pointer disabled:opacity-30 disabled:cursor-not-allowed">← Prev</button>
+            <span className="text-xs text-slate-400 font-mono">{shopPage + 1} / {totalPages}</span>
+            <button onClick={() => { playClickSound(); setShopPage(p => Math.min(totalPages-1, p+1)); }} disabled={shopPage >= totalPages-1}
+              className="px-4 py-2 rounded-lg text-xs font-bold text-pink-300 bg-pink-500/10 border border-pink-500/30 hover:bg-pink-500/20 transition-all cursor-pointer disabled:opacity-30 disabled:cursor-not-allowed">Next →</button>
+          </div>
+        )}
+        </>
       )}
 
       {/* ===== P2P PLAYER MARKET VIEW ===== */}
@@ -495,6 +508,30 @@ export default function Marketplace({ player, inventory, onBuyFromShop, onBuyFro
               );
             })
           )}
+        </div>
+      )}
+
+      {/* Item Detail Popup */}
+      {detailItem && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 animate-skin-picker-backdrop" style={{ background: 'rgba(0,0,0,0.7)' }} onClick={() => setDetailItem(null)}>
+          <div className="relative w-full max-w-sm rounded-2xl overflow-hidden animate-skin-picker-enter" style={{ background: 'linear-gradient(180deg, rgba(15,10,40,0.98), rgba(30,15,60,0.95))', border: `1px solid ${getRarityColor(detailItem.rarity)}40`, boxShadow: `0 0 40px ${getRarityColor(detailItem.rarity)}20` }} onClick={e => e.stopPropagation()}>
+            <button onClick={() => setDetailItem(null)} className="absolute top-3 right-3 z-10 w-8 h-8 rounded-full flex items-center justify-center text-slate-400 hover:text-white hover:bg-slate-700/50 transition-all cursor-pointer">✕</button>
+            <div className="flex items-center justify-center py-8" style={{ background: `radial-gradient(circle, ${getRarityColor(detailItem.rarity)}15, transparent 70%)` }}>
+              {detailItem.image ? <img src={detailItem.image} alt={detailItem.name} className="w-28 h-28 object-contain" /> : <span className="text-6xl">{detailItem.icon}</span>}
+            </div>
+            <div className="px-5 pb-5 space-y-3">
+              <div><h3 className="text-lg font-black text-white">{detailItem.name}</h3>
+                <span className="text-[10px] px-2 py-0.5 rounded-full font-bold uppercase" style={{ color: getRarityColor(detailItem.rarity), background: `${getRarityColor(detailItem.rarity)}15`, border: `1px solid ${getRarityColor(detailItem.rarity)}30` }}>{detailItem.rarity}</span>
+              </div>
+              <p className="text-xs text-slate-400 leading-relaxed">{detailItem.description}</p>
+              <div className="flex items-center gap-3 pt-2">
+                <div className="flex items-center gap-1"><span>🪙</span><span className="text-sm font-bold text-yellow-400">{detailItem.discount ? getDiscountedPrice(detailItem.priceCoins, detailItem.discount) : detailItem.priceCoins}</span></div>
+                {detailItem.priceGems > 0 && <div className="flex items-center gap-1"><span>💎</span><span className="text-sm font-bold text-cyan-400">{detailItem.priceGems}</span></div>}
+              </div>
+              <button onClick={() => { handleShopBuy(detailItem, 'coins'); setDetailItem(null); }} disabled={player.coins < getDiscountedPrice(detailItem.priceCoins, detailItem.discount)}
+                className="w-full py-2.5 rounded-xl text-xs font-bold uppercase cursor-pointer hover:scale-105 active:scale-95 transition-all disabled:opacity-40 disabled:cursor-not-allowed" style={{ background: 'linear-gradient(135deg, #ec4899, #8b5cf6)', border: '1px solid rgba(236,72,153,0.3)' }}>🪙 Buy Now</button>
+            </div>
+          </div>
         </div>
       )}
     </div>

@@ -7,17 +7,18 @@ interface PlayerPanelProps {
   player: PlayerState;
   ballsRemaining: number;
   totalBalls: number;
+  onOpenWallet?: () => void;
 }
 
-export default function PlayerPanel({ player, ballsRemaining, totalBalls }: PlayerPanelProps) {
+export default function PlayerPanel({ player, ballsRemaining, totalBalls, onOpenWallet }: PlayerPanelProps) {
   const xpPercent = (player.xp / player.maxXp) * 100;
 
   return (
     <div
       className="h-full rounded-2xl p-3 sm:p-4 flex flex-col gap-3 sm:gap-4"
       style={{
-        background: 'linear-gradient(180deg, rgba(15,23,42,0.95), rgba(30,41,59,0.9))',
-        border: '1px solid rgba(99, 102, 241, 0.2)',
+        background: 'linear-gradient(180deg, rgba(15,10,40,0.95), rgba(30,15,60,0.9))',
+        border: '1px solid rgba(236, 72, 153, 0.2)',
         backdropFilter: 'blur(10px)',
         boxShadow: '0 0 30px rgba(0,0,0,0.3)',
       }}
@@ -27,19 +28,19 @@ export default function PlayerPanel({ player, ballsRemaining, totalBalls }: Play
         <div
           className="w-14 h-14 sm:w-16 sm:h-16 mx-auto rounded-full flex items-center justify-center text-2xl sm:text-3xl mb-2"
           style={{
-            background: 'linear-gradient(135deg, #6366f1, #8b5cf6)',
-            boxShadow: '0 0 20px rgba(99, 102, 241, 0.4)',
-            border: '2px solid rgba(165, 180, 252, 0.5)',
+            background: 'linear-gradient(135deg, #ec4899, #8b5cf6)',
+            boxShadow: '0 0 20px rgba(236, 72, 153, 0.4)',
+            border: '2px solid rgba(244, 114, 182, 0.5)',
           }}
         >
           🎯
         </div>
         <h2 className="text-sm sm:text-base font-bold text-white">Player#4287</h2>
         <div className="flex items-center justify-center gap-1.5 mt-1">
-          <span className="text-[10px] sm:text-xs font-semibold text-indigo-400">LV. {player.level}</span>
+          <span className="text-[10px] sm:text-xs font-semibold text-pink-400">LV. {player.level}</span>
           <div className="w-16 sm:w-20 h-1.5 rounded-full bg-slate-800 overflow-hidden">
             <div
-              className="h-full rounded-full bg-gradient-to-r from-indigo-500 to-purple-500 transition-all duration-300"
+              className="h-full rounded-full bg-gradient-to-r from-pink-500 to-purple-500 transition-all duration-300"
               style={{ width: `${xpPercent}%` }}
             />
           </div>
@@ -48,32 +49,50 @@ export default function PlayerPanel({ player, ballsRemaining, totalBalls }: Play
       </div>
 
       {/* Divider */}
-      <div className="h-px bg-gradient-to-r from-transparent via-indigo-500/30 to-transparent" />
+      <div className="h-px bg-gradient-to-r from-transparent via-pink-500/30 to-transparent" />
 
-      {/* Currency */}
+      {/* Wallet Section */}
       <div className="space-y-2">
-        <div className="flex items-center justify-between rounded-lg px-3 py-2 bg-slate-800/50 border border-slate-700/50">
+        <h3 className="text-[10px] sm:text-xs font-bold text-pink-300 uppercase tracking-wider text-center">
+          👛 Wallet
+        </h3>
+        <div className="flex items-center justify-between rounded-lg px-3 py-2 bg-slate-800/50 border border-yellow-500/20">
           <div className="flex items-center gap-2">
             <span className="text-base sm:text-lg">🪙</span>
-            <span className="text-xs font-semibold text-yellow-400">{player.coins.toLocaleString()}</span>
+            <div>
+              <span className="text-xs font-bold text-yellow-400">{player.coins.toLocaleString()}</span>
+              <div className="text-[8px] text-slate-500">Coins</div>
+            </div>
           </div>
-          <button className="w-5 h-5 rounded-full bg-green-600/20 border border-green-500/40 text-green-400 text-xs flex items-center justify-center hover:bg-green-600/40 transition-colors">
+          <button className="w-5 h-5 rounded-full bg-green-600/20 border border-green-500/40 text-green-400 text-xs flex items-center justify-center hover:bg-green-600/40 transition-colors cursor-pointer">
             +
           </button>
         </div>
-        <div className="flex items-center justify-between rounded-lg px-3 py-2 bg-slate-800/50 border border-slate-700/50">
+        <div className="flex items-center justify-between rounded-lg px-3 py-2 bg-slate-800/50 border border-cyan-500/20">
           <div className="flex items-center gap-2">
             <span className="text-base sm:text-lg">💎</span>
-            <span className="text-xs font-semibold text-cyan-400">{player.gems.toLocaleString()}</span>
+            <div>
+              <span className="text-xs font-bold text-cyan-400">{player.gems.toLocaleString()}</span>
+              <div className="text-[8px] text-slate-500">Gems</div>
+            </div>
           </div>
-          <button className="w-5 h-5 rounded-full bg-green-600/20 border border-green-500/40 text-green-400 text-xs flex items-center justify-center hover:bg-green-600/40 transition-colors">
+          <button className="w-5 h-5 rounded-full bg-green-600/20 border border-green-500/40 text-green-400 text-xs flex items-center justify-center hover:bg-green-600/40 transition-colors cursor-pointer">
             +
           </button>
         </div>
+        {/* Open full wallet button */}
+        {onOpenWallet && (
+          <button
+            onClick={onOpenWallet}
+            className="w-full py-2 rounded-lg text-[10px] font-bold uppercase tracking-wider text-pink-300 bg-pink-500/10 border border-pink-500/20 hover:bg-pink-500/20 transition-all cursor-pointer hover:scale-105 active:scale-95 flex items-center justify-center gap-1.5"
+          >
+            👛 Open Full Wallet
+          </button>
+        )}
       </div>
 
       {/* Divider */}
-      <div className="h-px bg-gradient-to-r from-transparent via-indigo-500/30 to-transparent" />
+      <div className="h-px bg-gradient-to-r from-transparent via-pink-500/30 to-transparent" />
 
       {/* Game Stats */}
       <div className="space-y-2">
@@ -86,7 +105,7 @@ export default function PlayerPanel({ player, ballsRemaining, totalBalls }: Play
             className="h-full rounded-full transition-all duration-500"
             style={{
               width: `${(ballsRemaining / totalBalls) * 100}%`,
-              background: 'linear-gradient(90deg, #6366f1, #a855f7)',
+              background: 'linear-gradient(90deg, #ec4899, #a855f7)',
             }}
           />
         </div>

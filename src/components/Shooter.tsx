@@ -9,9 +9,7 @@ import GunStatusBar from './GunStatusBar';
 interface ShooterProps {
   selectedAmmo: AmmoType;
   isFiring: boolean;
-  aimAngle: number; // degrees, 0 = straight up
-  energy: number;
-  maxEnergy: number;
+  aimAngle: number;
   durability: number;
   maxDurability: number;
   cooldown: number;
@@ -21,16 +19,14 @@ interface ShooterProps {
   gunSkin: GunSkin;
   onGunSkinClick: () => void;
   onCardSlotClick: () => void;
-  energyCooldownRemain: number; // seconds remaining on 4h cooldown
-  energyCooldownActive: boolean; // whether cooldown is active
+  energyCooldownRemain: number;
+  energyCooldownActive: boolean;
 }
 
 export default function Shooter({
   selectedAmmo,
   isFiring,
   aimAngle,
-  energy,
-  maxEnergy,
   durability,
   maxDurability,
   cooldown,
@@ -202,8 +198,6 @@ export default function Shooter({
         {/* Right: Gun Status Bars */}
         <div className="flex-shrink-0 w-[140px] sm:w-[180px]">
           <GunStatusBar
-            energy={energy}
-            maxEnergy={maxEnergy}
             durability={durability}
             maxDurability={maxDurability}
             cooldown={cooldown}

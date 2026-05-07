@@ -22,14 +22,14 @@ export default function RewardPanel({ rewards, stats, player, onRandomize, rando
     <div
       className="h-full rounded-2xl p-3 sm:p-4 flex flex-col"
       style={{
-        background: 'linear-gradient(180deg, rgba(15,23,42,0.95), rgba(30,41,59,0.9))',
-        border: '1px solid rgba(99, 102, 241, 0.2)',
+        background: 'linear-gradient(180deg, rgba(15,10,40,0.95), rgba(30,15,60,0.9))',
+        border: '1px solid rgba(236, 72, 153, 0.2)',
         backdropFilter: 'blur(10px)',
         boxShadow: '0 0 30px rgba(0,0,0,0.3)',
       }}
     >
       {/* Header */}
-      <h2 className="text-sm sm:text-base font-bold text-transparent bg-clip-text bg-gradient-to-r from-indigo-400 to-purple-400 uppercase tracking-wider text-center mb-3">
+      <h2 className="text-sm sm:text-base font-bold text-transparent bg-clip-text bg-gradient-to-r from-pink-400 to-purple-400 uppercase tracking-wider text-center mb-3">
         🏆 Reward Rate
       </h2>
 
@@ -83,12 +83,12 @@ export default function RewardPanel({ rewards, stats, player, onRandomize, rando
         `}
         style={{
           background: canAffordRandomize
-            ? 'linear-gradient(135deg, #8b5cf6, #6366f1, #3b82f6)'
+            ? 'linear-gradient(135deg, #ec4899, #a855f7, #6366f1)'
             : 'linear-gradient(135deg, #475569, #334155)',
           boxShadow: canAffordRandomize
-            ? '0 4px 20px rgba(99, 102, 241, 0.4), inset 0 1px 0 rgba(255,255,255,0.1)'
+            ? '0 4px 20px rgba(236, 72, 153, 0.4), inset 0 1px 0 rgba(255,255,255,0.1)'
             : 'none',
-          border: '1px solid rgba(139, 92, 246, 0.3)',
+          border: '1px solid rgba(236, 72, 153, 0.3)',
         }}
       >
         <span className="text-lg">🎲</span>
@@ -97,10 +97,10 @@ export default function RewardPanel({ rewards, stats, player, onRandomize, rando
       </button>
 
       {/* Divider */}
-      <div className="h-px bg-gradient-to-r from-transparent via-indigo-500/30 to-transparent mb-3" />
+      <div className="h-px bg-gradient-to-r from-transparent via-pink-500/30 to-transparent mb-3" />
 
       {/* Rewards header — only 3 latest */}
-      <h3 className="text-xs sm:text-sm font-bold text-indigo-300 uppercase tracking-wider mb-2">
+      <h3 className="text-xs sm:text-sm font-bold text-pink-300 uppercase tracking-wider mb-2">
         🎁 Latest Rewards
       </h3>
 
