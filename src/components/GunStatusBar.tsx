@@ -9,6 +9,8 @@ interface GunStatusBarProps {
   maxDurability: number;
   cooldown: number;
   maxCooldown: number;
+  energyCooldownRemain: number;
+  energyCooldownActive: boolean;
 }
 
 export default function GunStatusBar({
@@ -18,11 +20,26 @@ export default function GunStatusBar({
   maxDurability,
   cooldown,
   maxCooldown,
+  energyCooldownRemain,
+  energyCooldownActive,
 }: GunStatusBarProps) {
   const energyPercent = (energy / maxEnergy) * 100;
   const durabilityPercent = (durability / maxDurability) * 100;
   const cooldownPercent = maxCooldown > 0 ? (cooldown / maxCooldown) * 100 : 0;
   const isCoolingDown = cooldown > 0;
+
+  // Energy cooldown progress (4h = 14400s)
+  const energyCdTotal = 14400;
+  const energyCdPercent = energyCooldownActive
+    ? ((energyCdTotal - energyCooldownRemain) / energyCdTotal) * 100
+    : 100;
+
+  const formatCooldown = (secs: number) => {
+    const h = Math.floor(secs / 3600);
+    const m = Math.floor((secs % 3600) / 60);
+    const s = Math.floor(secs % 60);
+    return `${h}h ${m.toString().padStart(2, '0')}m ${s.toString().padStart(2, '0')}s`;
+  };
 
   return (
     <div
@@ -38,7 +55,7 @@ export default function GunStatusBar({
         🔫 Gun Status
       </h3>
 
-      {/* Energy Bar */}
+      {/* Energy Bar with 4h Cooldown */}
       <div className="space-y-1">
         <div className="flex justify-between items-center">
           <span className="text-[10px] font-semibold text-amber-400 flex items-center gap-1">
@@ -66,6 +83,32 @@ export default function GunStatusBar({
             </div>
           </div>
         </div>
+        {/* 4h Recharge Timer */}
+        {energyCooldownActive && (
+          <div className="space-y-0.5">
+            <div className="flex justify-between items-center">
+              <span className="text-[9px] text-orange-400 flex items-center gap-1">
+                🔋 Recharging...
+              </span>
+              <span className="text-[9px] text-orange-300/70 font-mono">
+                {formatCooldown(energyCooldownRemain)}
+              </span>
+            </div>
+            <div className="h-1 rounded-full bg-slate-800/80 overflow-hidden border border-orange-900/30">
+              <div
+                className="h-full rounded-full transition-all duration-1000"
+                style={{
+                  width: `${energyCdPercent}%`,
+                  background: 'linear-gradient(90deg, #f97316, #fb923c)',
+                  boxShadow: '0 0 6px rgba(249,115,22,0.4)',
+                }}
+              />
+            </div>
+          </div>
+        )}
+        {!energyCooldownActive && energy >= maxEnergy && (
+          <div className="text-[9px] text-green-400 text-center">✅ Fully Charged</div>
+        )}
       </div>
 
       {/* Durability Bar */}

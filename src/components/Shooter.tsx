@@ -1,7 +1,7 @@
 'use client';
 
-import React, { useState } from 'react';
-import { AmmoType, GunLevel, GunSkin, BoostCard, GUN_LEVELS } from '@/lib/gameTypes';
+import React from 'react';
+import { AmmoType, GunSkin, BoostCard } from '@/lib/gameTypes';
 import { getRarityColor } from '@/lib/gameUtils';
 import { playClickSound } from './SoundManager';
 import GunStatusBar from './GunStatusBar';
@@ -16,13 +16,13 @@ interface ShooterProps {
   maxDurability: number;
   cooldown: number;
   maxCooldown: number;
-  gunLevel: GunLevel;
-  onGunLevelChange: (level: GunLevel) => void;
   equippedCard: BoostCard | null;
   onEquipCard: (card: BoostCard | null) => void;
   gunSkin: GunSkin;
   onGunSkinClick: () => void;
   onCardSlotClick: () => void;
+  energyCooldownRemain: number; // seconds remaining on 4h cooldown
+  energyCooldownActive: boolean; // whether cooldown is active
 }
 
 export default function Shooter({
@@ -35,22 +35,14 @@ export default function Shooter({
   maxDurability,
   cooldown,
   maxCooldown,
-  gunLevel,
-  onGunLevelChange,
   equippedCard,
   onEquipCard,
   gunSkin,
   onGunSkinClick,
   onCardSlotClick,
+  energyCooldownRemain,
+  energyCooldownActive,
 }: ShooterProps) {
-
-  // Cycle gun level on click
-  const handleGunLevelClick = () => {
-    playClickSound();
-    const currentIdx = GUN_LEVELS.findIndex((g) => g.level === gunLevel.level);
-    const nextIdx = (currentIdx + 1) % GUN_LEVELS.length;
-    onGunLevelChange(GUN_LEVELS[nextIdx]);
-  };
 
   // Open skin picker on gun image click
   const handleGunClick = () => {
@@ -63,25 +55,16 @@ export default function Shooter({
     onCardSlotClick();
   };
 
+  // Format seconds to HH:MM:SS
+  const formatCooldown = (secs: number) => {
+    const h = Math.floor(secs / 3600);
+    const m = Math.floor((secs % 3600) / 60);
+    const s = Math.floor(secs % 60);
+    return `${h.toString().padStart(2, '0')}:${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
+  };
+
   return (
     <div className="relative flex flex-col items-center gap-2">
-      {/* Gun Level Badge */}
-      <div
-        className="flex items-center gap-1.5 px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider cursor-pointer hover:scale-105 transition-all"
-        onClick={handleGunLevelClick}
-        title="Click to change gun level"
-        style={{
-          background: `linear-gradient(135deg, ${gunLevel.color}30, ${gunLevel.color}10)`,
-          border: `1px solid ${gunLevel.color}60`,
-          color: gunLevel.color,
-          boxShadow: `0 0 12px ${gunLevel.glowColor}`,
-        }}
-      >
-        <span>LV.{gunLevel.level}</span>
-        <span>{gunLevel.name}</span>
-        <span className="text-white/50">×{gunLevel.damageMultiplier}</span>
-      </div>
-
       {/* Main shooter area: Card Slot + Cannon + Status */}
       <div className="flex items-end gap-3 sm:gap-5">
         {/* Left: Card Boost Slot */}
@@ -214,20 +197,6 @@ export default function Shooter({
               boxShadow: `0 4px 10px rgba(0,0,0,0.3), 0 0 10px ${gunSkin.glowColor}`,
             }}
           />
-
-          {/* Level indicator dots */}
-          <div className="flex gap-1 mt-1">
-            {GUN_LEVELS.map((gl) => (
-              <div
-                key={gl.level}
-                className="w-1.5 h-1.5 rounded-full transition-all"
-                style={{
-                  background: gl.level <= gunLevel.level ? gunLevel.color : 'rgba(100,116,139,0.3)',
-                  boxShadow: gl.level <= gunLevel.level ? `0 0 4px ${gunLevel.glowColor}` : 'none',
-                }}
-              />
-            ))}
-          </div>
         </div>
 
         {/* Right: Gun Status Bars */}
@@ -239,15 +208,15 @@ export default function Shooter({
             maxDurability={maxDurability}
             cooldown={cooldown}
             maxCooldown={maxCooldown}
+            energyCooldownRemain={energyCooldownRemain}
+            energyCooldownActive={energyCooldownActive}
           />
         </div>
       </div>
 
       {/* Damage info line */}
       <div className="flex items-center gap-2 text-[10px] text-slate-500 mt-1">
-        <span>Base: {selectedAmmo.damage}</span>
-        <span>×</span>
-        <span style={{ color: gunLevel.color }}>{gunLevel.damageMultiplier}x</span>
+        <span>DMG: <span className="font-bold text-white">{gunSkin.dmg}</span></span>
         {equippedCard && (
           <>
             <span>+</span>
@@ -256,9 +225,18 @@ export default function Shooter({
         )}
         <span>=</span>
         <span className="font-bold text-white">
-          {Math.floor(selectedAmmo.damage * gunLevel.damageMultiplier) + (equippedCard?.bonusDamage || 0)} DMG
+          {gunSkin.dmg + (equippedCard?.bonusDamage || 0)} DMG
         </span>
       </div>
+
+      {/* Energy 4h cooldown indicator */}
+      {energyCooldownActive && (
+        <div className="flex items-center gap-2 mt-1 px-3 py-1 rounded-full bg-orange-500/10 border border-orange-500/30">
+          <span className="text-orange-400 text-xs animate-pulse">🔋</span>
+          <span className="text-[10px] font-mono text-orange-300">{formatCooldown(energyCooldownRemain)}</span>
+          <span className="text-[9px] text-orange-400/60">until recharge</span>
+        </div>
+      )}
     </div>
   );
 }

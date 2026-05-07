@@ -7,20 +7,17 @@ import {
   Reward,
   PlayerState,
   BoostCard,
-  GunLevel,
   GunSkin,
   MarketplaceItem,
   MarketListing,
   InventoryItem,
   AMMO_TYPES,
-  GUN_LEVELS,
   GUN_SKINS,
   AVAILABLE_CARDS,
-  REWARD_ITEMS,
   GRID_ROWS,
   GRID_COLS,
 } from '@/lib/gameTypes';
-import { generateGrid, applyDamage, rollReward } from '@/lib/gameUtils';
+import { generateGrid, applyDamage, rollReward, getRarityColor } from '@/lib/gameUtils';
 import TargetGrid from './TargetGrid';
 import Shooter from './Shooter';
 import RewardDrop from './RewardDrop';
@@ -30,7 +27,7 @@ import GunSkinPicker from './GunSkinPicker';
 import CardPicker from './CardPicker';
 import Marketplace from './Marketplace';
 import Inventory from './Inventory';
-import SoundToggle, { playShootSound, playPopSound, playRewardSound, playClickSound } from './SoundManager';
+import SoundToggle, { playShootSound, playPopSound, playRewardSound, playClickSound, playCountdownBeep, startTenseMusic, stopTenseMusic, playTimeUpSound } from './SoundManager';
 
 const INITIAL_PLAYER: PlayerState = {
   energy: 100,
@@ -58,9 +55,27 @@ export default function GameBoard() {
   const [cooldown, setCooldown] = useState(0);
   const cooldownRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
-  // Gun level & card boost
-  const [gunLevel, setGunLevel] = useState<GunLevel>(GUN_LEVELS[0]);
+  // Card boost (gun level removed)
   const [equippedCard, setEquippedCard] = useState<BoostCard | null>(null);
+
+  // Countdown state (3..2..1..GO!)
+  const [countdownValue, setCountdownValue] = useState<number | null>(null); // 3,2,1,0(GO)
+  const [isRoundActive, setIsRoundActive] = useState(false);
+
+  // Round timer (30 seconds)
+  const [roundTimeLeft, setRoundTimeLeft] = useState(30);
+  const roundTimerRef = useRef<ReturnType<typeof setInterval> | null>(null);
+
+  // Round summary
+  const [showRoundSummary, setShowRoundSummary] = useState(false);
+  const [roundRewards, setRoundRewards] = useState<Reward[]>([]);
+
+  // Aim line (hover)
+  const [hoveredBallId, setHoveredBallId] = useState<string | null>(null);
+  const gameBoardRef = useRef<HTMLDivElement>(null);
+
+  // Energy 4h cooldown per gun
+  const [energyCooldowns, setEnergyCooldowns] = useState<Record<string, number>>({}); // gunSkinId -> timestamp when cooldown started
 
   // Gun skin state
   const [gunSkin, setGunSkin] = useState<GunSkin>(GUN_SKINS[0]);
@@ -142,10 +157,55 @@ export default function GameBoard() {
     })
     .filter(Boolean) as { card: BoostCard; invItem: InventoryItem }[];
 
-  // Calculate actual damage (uses gun skin base DMG)
+  // Calculate actual damage (uses gun skin base DMG, no gun level)
   const calcDamage = useCallback(() => {
-    return Math.floor(gunSkin.dmg * gunLevel.damageMultiplier) + (equippedCard?.bonusDamage || 0);
-  }, [gunSkin, gunLevel, equippedCard]);
+    return gunSkin.dmg + (equippedCard?.bonusDamage || 0);
+  }, [gunSkin, equippedCard]);
+
+  // Energy 4h cooldown per gun
+  const ENERGY_COOLDOWN_SEC = 4 * 3600; // 4 hours
+  const currentCooldownStart = energyCooldowns[gunSkin.id];
+  const [energyCooldownRemain, setEnergyCooldownRemain] = useState(0);
+  const energyCooldownActive = currentCooldownStart != null && energyCooldownRemain > 0;
+
+  useEffect(() => {
+    if (!currentCooldownStart) { setEnergyCooldownRemain(0); return; }
+    const tick = () => {
+      const elapsed = (Date.now() - currentCooldownStart) / 1000;
+      const remain = Math.max(0, ENERGY_COOLDOWN_SEC - elapsed);
+      setEnergyCooldownRemain(remain);
+      if (remain <= 0) {
+        // Cooldown done - refill energy
+        setPlayer(prev => ({ ...prev, energy: prev.maxEnergy }));
+        setEnergyCooldowns(prev => { const n = { ...prev }; delete n[gunSkin.id]; return n; });
+      }
+    };
+    tick();
+    const iv = setInterval(tick, 1000);
+    return () => clearInterval(iv);
+  }, [currentCooldownStart, gunSkin.id]);
+
+  // Round timer effect
+  useEffect(() => {
+    if (isRoundActive && !showRoundSummary) {
+      roundTimerRef.current = setInterval(() => {
+        setRoundTimeLeft(prev => {
+          if (prev <= 1) {
+            // Time's up!
+            if (roundTimerRef.current) clearInterval(roundTimerRef.current);
+            setIsRoundActive(false);
+            setShowRoundSummary(true);
+            setRoundRewards([...rewards]);
+            stopTenseMusic();
+            playTimeUpSound();
+            return 0;
+          }
+          return prev - 1;
+        });
+      }, 1000);
+      return () => { if (roundTimerRef.current) clearInterval(roundTimerRef.current); };
+    }
+  }, [isRoundActive, showRoundSummary]);
 
   // Sync gameplay durability to inventory whenever it changes
   useEffect(() => {
@@ -177,16 +237,7 @@ export default function GameBoard() {
     setCooldown(0);
   }, [equippedGunInvId, durability, inventory]);
 
-  // Energy regeneration
-  useEffect(() => {
-    const interval = setInterval(() => {
-      setPlayer((prev) => ({
-        ...prev,
-        energy: Math.min(prev.maxEnergy, prev.energy + 1),
-      }));
-    }, 1000);
-    return () => clearInterval(interval);
-  }, []);
+  // Energy regeneration removed — replaced by 4h cooldown system above
 
   // Cooldown timer
   useEffect(() => {
@@ -270,6 +321,9 @@ export default function GameBoard() {
     (ball: BallType) => {
       if (ball.isPopping || ball.hp <= 0) return;
 
+      // Block during countdown or round summary or round not active
+      if (countdownValue !== null || showRoundSummary || !isRoundActive) return;
+
       // Check cooldown
       if (cooldown > 0) return;
 
@@ -307,7 +361,12 @@ export default function GameBoard() {
       setIsFiring(true);
       setTimeout(() => setIsFiring(false), 200);
 
-      // Apply damage with gun level multiplier + card bonus
+      // Start 4h energy cooldown on first shot with this gun
+      if (!energyCooldowns[gunSkin.id]) {
+        setEnergyCooldowns(prev => ({ ...prev, [gunSkin.id]: Date.now() }));
+      }
+
+      // Apply damage with card bonus (no gun level)
       const totalDamage = calcDamage();
       const updatedBall = applyDamage(ball, totalDamage);
 
@@ -411,29 +470,66 @@ export default function GameBoard() {
         });
       }
     },
-    [selectedAmmo, player.energy, cooldown, durability, calcDamage, updateAimAngle]
+    [selectedAmmo, player.energy, cooldown, durability, calcDamage, updateAimAngle, countdownValue, showRoundSummary, isRoundActive, energyCooldowns, gunSkin.id]
   );
 
+  // Start game: deduct coins → countdown 3..2..1 → GO → start 30s timer
   const handleReset = useCallback(() => {
-    // Check coin cost
     if (player.coins < RANDOMIZE_COST) return;
+    if (countdownValue !== null) return; // already counting down
 
     playClickSound();
 
+    // Deduct coins
     setPlayer((prev) => ({
       ...prev,
       coins: prev.coins - RANDOMIZE_COST,
     }));
+
+    // Reset game state
     setBalls(generateGrid());
     setRewards([]);
     setDurability(maxDurability);
     setCooldown(0);
     setActiveReward(null);
     setAimAngle(0);
-  }, [player.coins]);
+    setShowRoundSummary(false);
+    setRoundRewards([]);
+    setIsRoundActive(false);
+    setRoundTimeLeft(30);
+
+    // Start countdown 3..2..1..GO
+    setCountdownValue(3);
+    stopTenseMusic();
+    startTenseMusic();
+    playCountdownBeep(false);
+
+    // Countdown sequence
+    setTimeout(() => { setCountdownValue(2); playCountdownBeep(false); }, 1000);
+    setTimeout(() => { setCountdownValue(1); playCountdownBeep(false); }, 2000);
+    setTimeout(() => {
+      setCountdownValue(0); // GO!
+      playCountdownBeep(true);
+    }, 3000);
+    setTimeout(() => {
+      setCountdownValue(null);
+      setIsRoundActive(true);
+      setRoundTimeLeft(30);
+    }, 3800);
+  }, [player.coins, countdownValue]);
 
   const handleRewardComplete = useCallback(() => {
     setActiveReward(null);
+  }, []);
+
+  // Aim line hover handlers
+  const handleBallHover = useCallback((ball: BallType) => {
+    if (ball.isPopping || ball.hp <= 0) return;
+    setHoveredBallId(ball.id);
+  }, []);
+
+  const handleBallLeave = useCallback(() => {
+    setHoveredBallId(null);
   }, []);
 
   // Handle marketplace purchase (from shop)
@@ -618,8 +714,8 @@ export default function GameBoard() {
             </aside>
 
             {/* Center - Game Board */}
-            <div className="flex flex-col gap-3 sm:gap-4 min-h-0">
-              {/* Title */}
+            <div className="flex flex-col gap-3 sm:gap-4 min-h-0" ref={gameBoardRef}>
+              {/* Title + Round Timer */}
               <div className="text-center">
                 <h2
                   className="text-base sm:text-xl font-black text-transparent bg-clip-text bg-gradient-to-r from-amber-400 via-yellow-300 to-amber-400"
@@ -627,6 +723,30 @@ export default function GameBoard() {
                 >
                   ⭐ BUBBLE SHOOTER ⭐
                 </h2>
+                {/* 30s Timer Bar */}
+                {isRoundActive && (
+                  <div className="mt-2 max-w-lg mx-auto">
+                    <div className="flex items-center gap-2">
+                      <span className={`text-xs font-bold font-mono ${roundTimeLeft <= 10 ? 'text-red-400 animate-pulse' : 'text-amber-300'}`}>
+                        ⏱️ {roundTimeLeft}s
+                      </span>
+                      <div className="flex-1 h-2 rounded-full bg-slate-800/80 overflow-hidden border border-amber-900/30">
+                        <div
+                          className="h-full rounded-full transition-all duration-1000"
+                          style={{
+                            width: `${(roundTimeLeft / 30) * 100}%`,
+                            background: roundTimeLeft > 15
+                              ? 'linear-gradient(90deg, #22c55e, #4ade80)'
+                              : roundTimeLeft > 7
+                                ? 'linear-gradient(90deg, #f59e0b, #fbbf24)'
+                                : 'linear-gradient(90deg, #ef4444, #f87171)',
+                            boxShadow: roundTimeLeft <= 7 ? '0 0 12px rgba(239,68,68,0.6)' : '0 0 8px rgba(34,197,94,0.4)',
+                          }}
+                        />
+                      </div>
+                    </div>
+                  </div>
+                )}
               </div>
 
               {/* Mobile player info bar */}
@@ -641,14 +761,45 @@ export default function GameBoard() {
                 </div>
               </div>
 
-              {/* Target Grid */}
-              <div className="flex-1 min-h-0">
+              {/* Target Grid with Aim Line */}
+              <div className="flex-1 min-h-0 relative">
                 <div className="max-w-lg mx-auto">
                   <TargetGrid
                     balls={balls.map((b) => b)}
                     onBallClick={handleBallClick}
+                    onBallHover={handleBallHover}
+                    onBallLeave={handleBallLeave}
                   />
                 </div>
+                {/* Aim Line SVG */}
+                {hoveredBallId && isRoundActive && (() => {
+                  const ballEl = document.getElementById(`ball-wrapper-${hoveredBallId}`);
+                  const cannonEl = document.getElementById('shooter-cannon');
+                  const boardEl = gameBoardRef.current;
+                  if (!ballEl || !cannonEl || !boardEl) return null;
+                  const boardRect = boardEl.getBoundingClientRect();
+                  const ballRect = ballEl.getBoundingClientRect();
+                  const cannonRect = cannonEl.getBoundingClientRect();
+                  const x1 = cannonRect.left + cannonRect.width / 2 - boardRect.left;
+                  const y1 = cannonRect.top - boardRect.top;
+                  const x2 = ballRect.left + ballRect.width / 2 - boardRect.left;
+                  const y2 = ballRect.top + ballRect.height / 2 - boardRect.top;
+                  return (
+                    <svg className="absolute inset-0 w-full h-full pointer-events-none z-20" style={{ overflow: 'visible' }}>
+                      <line
+                        x1={x1} y1={y1} x2={x2} y2={y2}
+                        stroke={selectedAmmo.color}
+                        strokeWidth="2"
+                        strokeDasharray="8 6"
+                        strokeLinecap="round"
+                        opacity="0.6"
+                        className="animate-aim-dash"
+                      />
+                      <circle cx={x2} cy={y2} r="6" fill="none" stroke={selectedAmmo.color} strokeWidth="1.5" opacity="0.5" className="animate-aim-pulse" />
+                      <circle cx={x2} cy={y2} r="12" fill="none" stroke={selectedAmmo.color} strokeWidth="1" opacity="0.25" className="animate-aim-pulse" />
+                    </svg>
+                  );
+                })()}
               </div>
 
               {/* Shooter - Centered */}
@@ -663,13 +814,13 @@ export default function GameBoard() {
                   maxDurability={maxDurability}
                   cooldown={cooldown}
                   maxCooldown={cooldownMs}
-                  gunLevel={gunLevel}
-                  onGunLevelChange={setGunLevel}
                   equippedCard={equippedCard}
                   onEquipCard={setEquippedCard}
                   gunSkin={gunSkin}
                   onGunSkinClick={() => setShowSkinPicker(true)}
                   onCardSlotClick={() => setShowCardPicker(true)}
+                  energyCooldownRemain={energyCooldownRemain}
+                  energyCooldownActive={energyCooldownActive}
                 />
               </div>
             </div>
@@ -752,6 +903,99 @@ export default function GameBoard() {
         onSelectCard={setEquippedCard}
         onClose={() => setShowCardPicker(false)}
       />
+
+      {/* Countdown Overlay (3..2..1..GO!) */}
+      {countdownValue !== null && (
+        <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/70 animate-skin-picker-backdrop">
+          <div className="text-center">
+            <div
+              className="text-8xl sm:text-9xl font-black animate-countdown-pop"
+              key={countdownValue}
+              style={{
+                color: countdownValue === 0 ? '#22c55e' : '#fbbf24',
+                textShadow: countdownValue === 0
+                  ? '0 0 40px rgba(34,197,94,0.8), 0 0 80px rgba(34,197,94,0.4)'
+                  : '0 0 40px rgba(251,191,36,0.8), 0 0 80px rgba(251,191,36,0.4)',
+              }}
+            >
+              {countdownValue === 0 ? 'GO!' : countdownValue}
+            </div>
+            <div className="text-slate-400 text-sm mt-4 font-semibold tracking-wider uppercase">
+              {countdownValue === 0 ? '🔥 FIRE AT WILL!' : 'Get Ready...'}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Round Summary Modal */}
+      {showRoundSummary && (
+        <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/80 animate-skin-picker-backdrop">
+          <div
+            className="relative w-[90vw] max-w-md rounded-2xl p-6 animate-skin-picker-enter"
+            style={{
+              background: 'linear-gradient(135deg, rgba(15,23,42,0.98), rgba(30,41,59,0.98))',
+              border: '2px solid rgba(99, 102, 241, 0.4)',
+              boxShadow: '0 0 60px rgba(99,102,241,0.3)',
+            }}
+          >
+            <h2 className="text-xl font-black text-center text-transparent bg-clip-text bg-gradient-to-r from-amber-400 via-yellow-300 to-amber-400 mb-4">
+              ⏰ TIME&apos;S UP!
+            </h2>
+            <div className="text-center text-slate-400 text-xs mb-4">Round Complete</div>
+
+            {/* Stats */}
+            <div className="grid grid-cols-3 gap-3 mb-4">
+              <div className="text-center p-2 rounded-xl bg-slate-800/50 border border-slate-700/50">
+                <div className="text-lg font-bold text-white">{roundRewards.length}</div>
+                <div className="text-[10px] text-slate-400">Total</div>
+              </div>
+              <div className="text-center p-2 rounded-xl bg-slate-800/50 border border-indigo-500/30">
+                <div className="text-lg font-bold text-indigo-400">{roundRewards.filter(r => r.rarity === 'Rare').length}</div>
+                <div className="text-[10px] text-slate-400">Rare</div>
+              </div>
+              <div className="text-center p-2 rounded-xl bg-slate-800/50 border border-amber-500/30">
+                <div className="text-lg font-bold text-amber-400">{roundRewards.filter(r => r.rarity === 'Legendary').length}</div>
+                <div className="text-[10px] text-slate-400">Legend</div>
+              </div>
+            </div>
+
+            {/* Reward list */}
+            <div className="max-h-48 overflow-y-auto space-y-1.5 custom-scrollbar mb-4">
+              {roundRewards.length === 0 ? (
+                <div className="text-center text-slate-500 text-sm py-4">No rewards this round</div>
+              ) : (
+                roundRewards.map((r, i) => {
+                  const rc = getRarityColor(r.rarity);
+                  return (
+                    <div key={`${r.id}-${i}`} className="flex items-center gap-2 rounded-lg p-2" style={{ background: 'rgba(15,23,42,0.6)', border: `1px solid ${rc}30` }}>
+                      <span className="text-lg">{r.icon}</span>
+                      <span className="text-xs font-semibold text-white flex-1 truncate">{r.name}</span>
+                      <span className="text-[10px] font-bold uppercase" style={{ color: rc }}>{r.rarity}</span>
+                    </div>
+                  );
+                })
+              )}
+            </div>
+
+            <button
+              onClick={() => {
+                playClickSound();
+                setShowRoundSummary(false);
+                setIsRoundActive(false);
+                stopTenseMusic();
+              }}
+              className="w-full py-3 rounded-xl text-sm font-bold uppercase tracking-wider cursor-pointer hover:scale-105 active:scale-95 transition-all"
+              style={{
+                background: 'linear-gradient(135deg, #8b5cf6, #6366f1, #3b82f6)',
+                boxShadow: '0 4px 20px rgba(99, 102, 241, 0.4)',
+                border: '1px solid rgba(139, 92, 246, 0.3)',
+              }}
+            >
+              ✅ Continue
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

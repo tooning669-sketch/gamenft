@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useMemo } from 'react';
+import React from 'react';
 import { Reward, DROP_RATES, PlayerState } from '@/lib/gameTypes';
 import { getRarityColor } from '@/lib/gameUtils';
 
@@ -12,37 +12,11 @@ interface RewardPanelProps {
   randomizeCost: number;
 }
 
-interface AggregatedReward {
-  name: string;
-  icon: string;
-  rarity: Reward['rarity'];
-  count: number;
-  description: string;
-}
-
 export default function RewardPanel({ rewards, stats, player, onRandomize, randomizeCost }: RewardPanelProps) {
   const canAffordRandomize = player.coins >= randomizeCost;
 
-  // Aggregate same-type rewards
-  const aggregatedRewards = useMemo(() => {
-    const map = new Map<string, AggregatedReward>();
-    rewards.forEach((r) => {
-      const key = r.name;
-      const existing = map.get(key);
-      if (existing) {
-        existing.count += 1;
-      } else {
-        map.set(key, {
-          name: r.name,
-          icon: r.icon,
-          rarity: r.rarity,
-          count: 1,
-          description: r.description,
-        });
-      }
-    });
-    return Array.from(map.values());
-  }, [rewards]);
+  // Show only last 3 rewards (newest first)
+  const latestRewards = rewards.slice(-3).reverse();
 
   return (
     <div
@@ -118,30 +92,30 @@ export default function RewardPanel({ rewards, stats, player, onRandomize, rando
         }}
       >
         <span className="text-lg">🎲</span>
-        <span className="text-white">Randomize Map</span>
+        <span className="text-white">START GAME</span>
         <span className="text-yellow-300 text-[10px]">🪙{randomizeCost}</span>
       </button>
 
       {/* Divider */}
       <div className="h-px bg-gradient-to-r from-transparent via-indigo-500/30 to-transparent mb-3" />
 
-      {/* Rewards header */}
+      {/* Rewards header — only 3 latest */}
       <h3 className="text-xs sm:text-sm font-bold text-indigo-300 uppercase tracking-wider mb-2">
-        🎁 Rewards ({stats.total})
+        🎁 Latest Rewards
       </h3>
 
-      {/* Aggregated reward list */}
-      <div className="flex-1 overflow-y-auto space-y-1.5 pr-1 custom-scrollbar min-h-0">
-        {aggregatedRewards.length === 0 ? (
-          <div className="text-center text-slate-500 text-xs py-8">
+      {/* Latest 3 rewards list */}
+      <div className="space-y-1.5 pr-1">
+        {latestRewards.length === 0 ? (
+          <div className="text-center text-slate-500 text-xs py-4">
             Pop balloons to earn rewards!
           </div>
         ) : (
-          aggregatedRewards.map((reward, idx) => {
+          latestRewards.map((reward, idx) => {
             const rarityColor = getRarityColor(reward.rarity);
             return (
               <div
-                key={`${reward.name}-${idx}`}
+                key={`${reward.id}-${idx}`}
                 className="flex items-center gap-2 rounded-lg p-2 transition-all duration-200 hover:scale-[1.02] animate-slide-in"
                 style={{
                   background: 'rgba(15,23,42,0.6)',
@@ -160,23 +134,27 @@ export default function RewardPanel({ rewards, stats, player, onRandomize, rando
                     {reward.rarity}
                   </span>
                 </div>
-                {/* Count badge */}
-                <div
-                  className="flex-shrink-0 px-2 py-0.5 rounded-full text-[10px] sm:text-xs font-black"
-                  style={{
-                    background: `${rarityColor}20`,
-                    color: rarityColor,
-                    border: `1px solid ${rarityColor}40`,
-                    textShadow: `0 0 6px ${rarityColor}60`,
-                  }}
-                >
-                  ×{reward.count}
-                </div>
+                {/* NEW badge for most recent */}
+                {idx === 0 && (
+                  <div
+                    className="flex-shrink-0 px-2 py-0.5 rounded-full text-[9px] font-black animate-pulse"
+                    style={{
+                      background: `${rarityColor}20`,
+                      color: rarityColor,
+                      border: `1px solid ${rarityColor}40`,
+                    }}
+                  >
+                    NEW
+                  </div>
+                )}
               </div>
             );
           })
         )}
       </div>
+
+      {/* Spacer */}
+      <div className="flex-1" />
     </div>
   );
 }

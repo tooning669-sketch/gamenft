@@ -116,6 +116,163 @@ export function playClickSound() {
 }
 
 // ==========================================
+// Countdown Beep Sound (3..2..1..GO!)
+// ==========================================
+
+export function playCountdownBeep(isFinal: boolean = false) {
+  try {
+    const ctx = getAudioContext();
+    const osc = ctx.createOscillator();
+    const gain = ctx.createGain();
+    osc.connect(gain);
+    gain.connect(ctx.destination);
+
+    osc.type = 'sine';
+    if (isFinal) {
+      // GO! — higher, longer, triumphant
+      osc.frequency.setValueAtTime(880, ctx.currentTime);
+      osc.frequency.exponentialRampToValueAtTime(1760, ctx.currentTime + 0.15);
+      gain.gain.setValueAtTime(0.25, ctx.currentTime);
+      gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.4);
+      osc.start(ctx.currentTime);
+      osc.stop(ctx.currentTime + 0.4);
+
+      // Chord overlay
+      const osc2 = ctx.createOscillator();
+      const gain2 = ctx.createGain();
+      osc2.connect(gain2);
+      gain2.connect(ctx.destination);
+      osc2.type = 'triangle';
+      osc2.frequency.setValueAtTime(1320, ctx.currentTime);
+      gain2.gain.setValueAtTime(0.12, ctx.currentTime);
+      gain2.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.35);
+      osc2.start(ctx.currentTime);
+      osc2.stop(ctx.currentTime + 0.35);
+    } else {
+      // Tick — short beep
+      osc.frequency.setValueAtTime(660, ctx.currentTime);
+      gain.gain.setValueAtTime(0.2, ctx.currentTime);
+      gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.15);
+      osc.start(ctx.currentTime);
+      osc.stop(ctx.currentTime + 0.15);
+    }
+  } catch {}
+}
+
+// ==========================================
+// Tense / Thriller Background Music
+// ==========================================
+
+let tenseNodes: { osc: OscillatorNode; gain: GainNode }[] = [];
+let tensePlaying = false;
+
+export function startTenseMusic() {
+  if (tensePlaying) return;
+  try {
+    const ctx = getAudioContext();
+
+    // Low pulsing bass
+    const bassOsc = ctx.createOscillator();
+    const bassGain = ctx.createGain();
+    const bassLfo = ctx.createOscillator();
+    const bassLfoGain = ctx.createGain();
+
+    bassOsc.type = 'sawtooth';
+    bassOsc.frequency.setValueAtTime(55, ctx.currentTime);
+
+    bassLfo.type = 'sine';
+    bassLfo.frequency.setValueAtTime(4, ctx.currentTime); // 4Hz pulse
+    bassLfoGain.gain.setValueAtTime(0.04, ctx.currentTime);
+
+    bassLfo.connect(bassLfoGain);
+    bassLfoGain.connect(bassGain.gain);
+    bassOsc.connect(bassGain);
+    bassGain.connect(ctx.destination);
+    bassGain.gain.setValueAtTime(0.06, ctx.currentTime);
+
+    bassOsc.start(ctx.currentTime);
+    bassLfo.start(ctx.currentTime);
+
+    tenseNodes.push({ osc: bassOsc, gain: bassGain });
+    tenseNodes.push({ osc: bassLfo, gain: bassLfoGain });
+
+    // High tension drone
+    const droneOsc = ctx.createOscillator();
+    const droneGain = ctx.createGain();
+    droneOsc.type = 'sine';
+    droneOsc.frequency.setValueAtTime(220, ctx.currentTime);
+    droneOsc.frequency.linearRampToValueAtTime(280, ctx.currentTime + 30);
+    droneGain.gain.setValueAtTime(0.025, ctx.currentTime);
+    droneOsc.connect(droneGain);
+    droneGain.connect(ctx.destination);
+    droneOsc.start(ctx.currentTime);
+    tenseNodes.push({ osc: droneOsc, gain: droneGain });
+
+    // Ticking clock effect
+    const tickOsc = ctx.createOscillator();
+    const tickGain = ctx.createGain();
+    const tickLfo = ctx.createOscillator();
+    const tickLfoGain = ctx.createGain();
+
+    tickOsc.type = 'square';
+    tickOsc.frequency.setValueAtTime(1200, ctx.currentTime);
+    tickLfo.type = 'square';
+    tickLfo.frequency.setValueAtTime(2, ctx.currentTime); // 2Hz tick
+    tickLfoGain.gain.setValueAtTime(0.015, ctx.currentTime);
+
+    tickLfo.connect(tickLfoGain);
+    tickLfoGain.connect(tickGain.gain);
+    tickOsc.connect(tickGain);
+    tickGain.connect(ctx.destination);
+    tickGain.gain.setValueAtTime(0.015, ctx.currentTime);
+
+    tickOsc.start(ctx.currentTime);
+    tickLfo.start(ctx.currentTime);
+
+    tenseNodes.push({ osc: tickOsc, gain: tickGain });
+    tenseNodes.push({ osc: tickLfo, gain: tickLfoGain });
+
+    tensePlaying = true;
+  } catch {}
+}
+
+export function stopTenseMusic() {
+  try {
+    const ctx = getAudioContext();
+    tenseNodes.forEach(({ osc, gain }) => {
+      gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.3);
+      osc.stop(ctx.currentTime + 0.4);
+    });
+    tenseNodes = [];
+    tensePlaying = false;
+  } catch {}
+}
+
+// ==========================================
+// Time Up Sound
+// ==========================================
+
+export function playTimeUpSound() {
+  try {
+    const ctx = getAudioContext();
+    // Descending alarm
+    const notes = [880, 660, 440, 330];
+    notes.forEach((freq, i) => {
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+      osc.connect(gain);
+      gain.connect(ctx.destination);
+      osc.type = 'square';
+      osc.frequency.setValueAtTime(freq, ctx.currentTime + i * 0.15);
+      gain.gain.setValueAtTime(0.15, ctx.currentTime + i * 0.15);
+      gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + i * 0.15 + 0.12);
+      osc.start(ctx.currentTime + i * 0.15);
+      osc.stop(ctx.currentTime + i * 0.15 + 0.12);
+    });
+  } catch {}
+}
+
+// ==========================================
 // Ambient Background Sound
 // ==========================================
 

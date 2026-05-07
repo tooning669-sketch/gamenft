@@ -6,9 +6,11 @@ import { Ball as BallType } from '@/lib/gameTypes';
 interface BallProps {
   ball: BallType;
   onClick: (ball: BallType) => void;
+  onHover?: (ball: BallType) => void;
+  onLeave?: () => void;
 }
 
-export default function Ball({ ball, onClick }: BallProps) {
+export default function Ball({ ball, onClick, onHover, onLeave }: BallProps) {
   const hpPercent = (ball.hp / ball.maxHp) * 100;
 
   // Tier star indicator
@@ -30,6 +32,8 @@ export default function Ball({ ball, onClick }: BallProps) {
     <div className="relative" id={`ball-wrapper-${ball.id}`}>
       <button
         onClick={() => onClick(ball)}
+        onMouseEnter={() => onHover?.(ball)}
+        onMouseLeave={() => onLeave?.()}
         disabled={ball.isPopping}
         className={`
           relative w-full aspect-square rounded-full cursor-pointer

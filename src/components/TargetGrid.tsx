@@ -7,9 +7,11 @@ import Ball from './Ball';
 interface TargetGridProps {
   balls: BallType[];
   onBallClick: (ball: BallType) => void;
+  onBallHover?: (ball: BallType) => void;
+  onBallLeave?: () => void;
 }
 
-export default function TargetGrid({ balls, onBallClick }: TargetGridProps) {
+export default function TargetGrid({ balls, onBallClick, onBallHover, onBallLeave }: TargetGridProps) {
   return (
     <div className="relative w-full">
       {/* Grid background */}
@@ -39,7 +41,12 @@ export default function TargetGrid({ balls, onBallClick }: TargetGridProps) {
               key={ball.id}
               className={`transition-all duration-300 ${ball.isPopping ? 'scale-0 opacity-0' : ''}`}
             >
-              <Ball ball={ball} onClick={onBallClick} />
+              <Ball
+                ball={ball}
+                onClick={onBallClick}
+                onHover={onBallHover}
+                onLeave={onBallLeave}
+              />
             </div>
           ))}
         </div>
