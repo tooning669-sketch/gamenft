@@ -66,15 +66,15 @@ export default function Shooter({
   return (
     <div className="relative flex flex-col items-center gap-2">
       {/* Main shooter area: Card Slot + Cannon + Status */}
-      <div className="flex items-end gap-3 sm:gap-5">
+      <div className="flex items-end gap-4 sm:gap-6">
         {/* Left: Card Boost Slot */}
-        <div className="flex flex-col items-center gap-1.5">
-          <span className="text-[9px] text-slate-500 font-semibold uppercase tracking-wider">Boost</span>
+        <div className="flex flex-col items-center gap-2">
+          <span className="text-[10px] text-slate-400 font-semibold uppercase tracking-wider">Boost</span>
 
           {/* Card Slot */}
           <button
             onClick={handleCardSlotClick}
-            className="relative w-14 h-18 sm:w-16 sm:h-20 rounded-xl cursor-pointer transition-all duration-200 hover:scale-105 active:scale-95 flex flex-col items-center justify-center gap-1"
+            className="relative w-16 h-20 sm:w-20 sm:h-24 rounded-xl cursor-pointer transition-all duration-200 hover:scale-105 active:scale-95 flex flex-col items-center justify-center gap-1"
             style={{
               background: equippedCard
                 ? `linear-gradient(135deg, ${getRarityColor(equippedCard.rarity)}20, ${getRarityColor(equippedCard.rarity)}08)`
@@ -89,13 +89,13 @@ export default function Shooter({
           >
             {equippedCard ? (
               <>
-                <img src={equippedCard.image} alt={equippedCard.name} className="w-10 h-12 object-contain rounded" />
-                <span className="text-[7px] font-bold text-white/80 truncate max-w-[50px]">{equippedCard.name}</span>
+                <img src={equippedCard.image} alt={equippedCard.name} className="w-12 h-14 object-contain rounded" />
+                <span className="text-[8px] font-bold text-white/80 truncate max-w-[60px]">{equippedCard.name}</span>
               </>
             ) : (
               <>
-                <span className="text-2xl text-slate-500">＋</span>
-                <span className="text-[8px] text-slate-500 font-semibold">Add Card</span>
+                <span className="text-3xl text-slate-500">＋</span>
+                <span className="text-[9px] text-slate-400 font-semibold">Add Card</span>
               </>
             )}
           </button>
@@ -112,7 +112,7 @@ export default function Shooter({
 
           {/* Skin name badge */}
           <div
-            className="text-[9px] font-bold uppercase tracking-wider mb-1 px-2 py-0.5 rounded-full"
+            className="text-[10px] font-bold uppercase tracking-wider mb-1.5 px-3 py-1 rounded-full"
             style={{
               color: gunSkin.color,
               background: `${gunSkin.color}15`,
@@ -145,7 +145,7 @@ export default function Shooter({
 
             {/* Gun image */}
             <div
-              className="relative w-20 h-20 sm:w-28 sm:h-28 flex items-center justify-center rounded-xl overflow-visible transition-transform duration-200 group-hover:scale-110"
+              className="relative w-24 h-24 sm:w-32 sm:h-32 flex items-center justify-center rounded-xl overflow-visible transition-transform duration-200 group-hover:scale-110"
             >
               <img
                 src={gunSkin.image}
@@ -191,7 +191,7 @@ export default function Shooter({
 
           {/* Platform */}
           <div
-            className="w-28 h-3 sm:w-36 sm:h-4 rounded-b-lg mt-1"
+            className="w-32 h-3.5 sm:w-40 sm:h-4 rounded-b-lg mt-1"
             style={{
               background: `linear-gradient(180deg, ${gunSkin.color}30, #334155)`,
               boxShadow: `0 4px 10px rgba(0,0,0,0.3), 0 0 10px ${gunSkin.glowColor}`,
@@ -200,7 +200,7 @@ export default function Shooter({
         </div>
 
         {/* Right: Gun Status Bars */}
-        <div className="flex-shrink-0 w-[140px] sm:w-[180px]">
+        <div className="flex-shrink-0 w-[170px] sm:w-[210px]">
           <GunStatusBar
             durability={durability}
             maxDurability={maxDurability}
@@ -215,7 +215,7 @@ export default function Shooter({
       </div>
 
       {/* Damage info line */}
-      <div className="flex items-center gap-2 text-[10px] text-slate-500 mt-1">
+      <div className="flex items-center gap-2.5 text-xs text-slate-400 mt-2">
         <span>DMG: <span className="font-bold text-white">{gunSkin.dmg}</span></span>
         {equippedCard && (
           <>
@@ -231,10 +231,10 @@ export default function Shooter({
 
       {/* Energy 4h cooldown indicator */}
       {energyCooldownActive && (
-        <div className="flex items-center gap-2 mt-1 px-3 py-1 rounded-full bg-orange-500/10 border border-orange-500/30">
-          <span className="text-orange-400 text-xs animate-pulse">🔋</span>
-          <span className="text-[10px] font-mono text-orange-300">{formatCooldown(energyCooldownRemain)}</span>
-          <span className="text-[9px] text-orange-400/60">until recharge</span>
+        <div className="flex items-center gap-2.5 mt-2 px-4 py-1.5 rounded-full bg-orange-500/10 border border-orange-500/30">
+          <span className="text-orange-400 text-sm animate-pulse">🔋</span>
+          <span className="text-xs font-mono text-orange-300">{formatCooldown(energyCooldownRemain)}</span>
+          <span className="text-[10px] text-orange-400/60">until recharge</span>
         </div>
       )}
     </div>

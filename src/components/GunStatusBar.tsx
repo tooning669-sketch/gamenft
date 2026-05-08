@@ -45,7 +45,7 @@ export default function GunStatusBar({
 
   return (
     <div
-      className="rounded-xl p-3 space-y-2.5"
+      className="rounded-xl p-4 space-y-3.5"
       style={{
         background: 'linear-gradient(135deg, rgba(15,23,42,0.9), rgba(30,41,59,0.8))',
         border: '1px solid rgba(236,72,153,0.2)',
@@ -53,28 +53,28 @@ export default function GunStatusBar({
         boxShadow: '0 4px 20px rgba(0,0,0,0.3)',
       }}
     >
-      <h3 className="text-[10px] sm:text-xs font-semibold text-pink-300 uppercase tracking-wider text-center">
+      <h3 className="text-xs sm:text-sm font-semibold text-pink-300 uppercase tracking-wider text-center">
         🔫 Gun Status
       </h3>
 
       {/* Energy / Rounds Bar */}
-      <div className="space-y-1">
+      <div className="space-y-1.5">
         <div className="flex justify-between items-center">
-          <span className="text-[10px] font-semibold text-amber-400 flex items-center gap-1">
+          <span className="text-xs font-semibold text-amber-400 flex items-center gap-1">
             ⚡ Energy
           </span>
-          <span className="text-[10px] text-amber-300/80 font-mono">
+          <span className="text-xs text-amber-200/80 font-mono">
             {isExhausted ? '0' : roundsRemaining}/{maxRounds} rounds
           </span>
         </div>
         {/* Round segments */}
-        <div className="flex gap-1">
+        <div className="flex gap-1.5">
           {Array.from({ length: maxRounds }).map((_, i) => {
             const isFilled = i < roundsRemaining;
             return (
               <div
                 key={i}
-                className="flex-1 h-3 rounded-sm overflow-hidden border transition-all duration-300"
+                className="flex-1 h-4 rounded-sm overflow-hidden border transition-all duration-300"
                 style={{
                   borderColor: isFilled ? 'rgba(245,158,11,0.3)' : 'rgba(100,116,139,0.2)',
                   background: isFilled
@@ -96,17 +96,17 @@ export default function GunStatusBar({
 
       {/* 4h Recharge Timer */}
       {(energyCooldownActive || isExhausted) && (
-        <div className="space-y-1">
+        <div className="space-y-1.5">
           <div className="flex justify-between items-center">
-            <span className="text-[10px] font-semibold text-orange-400 flex items-center gap-1">
+            <span className="text-xs font-semibold text-orange-400 flex items-center gap-1">
               🔋 Recharging...
             </span>
-            <span className="text-[10px] text-orange-300/80 font-mono">
+            <span className="text-xs text-orange-200/80 font-mono">
               {energyCooldownActive ? formatCooldown(energyCooldownRemain) : 'Start next round'}
             </span>
           </div>
           {energyCooldownActive && (
-            <div className="h-2 rounded-full bg-slate-800/80 overflow-hidden border border-orange-900/30">
+            <div className="h-3 rounded-full bg-slate-800/80 overflow-hidden border border-orange-900/30">
               <div
                 className="h-full rounded-full transition-all duration-1000"
                 style={{
@@ -121,16 +121,16 @@ export default function GunStatusBar({
       )}
 
       {/* Durability Bar */}
-      <div className="space-y-1">
+      <div className="space-y-1.5">
         <div className="flex justify-between items-center">
-          <span className="text-[10px] font-semibold text-cyan-400 flex items-center gap-1">
+          <span className="text-xs font-semibold text-cyan-400 flex items-center gap-1">
             🔧 Durability
           </span>
-          <span className="text-[10px] text-cyan-300/80 font-mono">
+          <span className="text-xs text-cyan-200/80 font-mono">
             {durability}/{maxDurability}
           </span>
         </div>
-        <div className="h-2 rounded-full bg-slate-800/80 overflow-hidden border border-cyan-900/30">
+        <div className="h-3 rounded-full bg-slate-800/80 overflow-hidden border border-cyan-900/30">
           <div
             className="h-full rounded-full transition-all duration-500 relative"
             style={{
@@ -151,18 +151,18 @@ export default function GunStatusBar({
       </div>
 
       {/* Cooldown Timer */}
-      <div className="space-y-1">
+      <div className="space-y-1.5">
         <div className="flex justify-between items-center">
-          <span className={`text-[10px] font-semibold flex items-center gap-1 ${isCoolingDown ? 'text-rose-400' : 'text-green-400'}`}>
+          <span className={`text-xs font-semibold flex items-center gap-1 ${isCoolingDown ? 'text-rose-400' : 'text-green-400'}`}>
             ⏱️ {isCoolingDown ? 'Cooling...' : 'Ready!'}
           </span>
           {isCoolingDown && (
-            <span className="text-[10px] text-rose-300/80 font-mono animate-pulse">
+            <span className="text-xs text-rose-200/80 font-mono animate-pulse">
               {(cooldown / 1000).toFixed(1)}s
             </span>
           )}
         </div>
-        <div className="h-2 rounded-full bg-slate-800/80 overflow-hidden border border-rose-900/30">
+        <div className="h-3 rounded-full bg-slate-800/80 overflow-hidden border border-rose-900/30">
           <div
             className="h-full rounded-full transition-all duration-100"
             style={{

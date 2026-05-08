@@ -731,22 +731,22 @@ export default function GameBoard() {
     <div className="h-screen flex flex-col relative z-10 overflow-hidden">
       {/* Header */}
       <header
-        className="py-2 sm:py-3 px-4 sm:px-6 flex items-center justify-between border-b"
+        className="py-3 sm:py-4 px-5 sm:px-8 flex items-center justify-between border-b"
         style={{
           background: 'linear-gradient(90deg, rgba(15,10,40,0.97), rgba(30,15,60,0.95), rgba(15,10,40,0.97))',
           borderColor: 'rgba(236, 72, 153, 0.3)',
         }}
       >
         <div className="flex items-center gap-3">
-          <h1 className="text-lg sm:text-2xl font-black text-transparent bg-clip-text bg-gradient-to-r from-indigo-400 via-purple-400 to-pink-400">
+          <h1 className="text-2xl sm:text-3xl font-black text-transparent bg-clip-text bg-gradient-to-r from-indigo-400 via-purple-400 to-pink-400">
             🎮 BUBBLE BLAST
           </h1>
-          <span className="hidden sm:inline text-[10px] px-2 py-0.5 rounded-full bg-pink-500/20 text-pink-300 border border-pink-500/30 font-semibold">
+          <span className="hidden sm:inline text-xs px-3 py-1 rounded-full bg-pink-500/20 text-pink-300 border border-pink-500/30 font-semibold">
             NFT
           </span>
         </div>
 
-        <nav className="hidden md:flex items-center gap-4 text-xs font-semibold text-slate-400">
+        <nav className="hidden md:flex items-center gap-5 text-sm font-semibold text-slate-400">
           {[
             { label: 'HOME', tab: 'game' as const },
             { label: 'GAME', tab: 'game' as const },
@@ -760,7 +760,7 @@ export default function GameBoard() {
                 playClickSound();
                 setActiveTab(item.tab);
               }}
-              className={`px-3 py-1.5 rounded-lg transition-all cursor-pointer ${
+              className={`px-4 py-2 rounded-lg transition-all cursor-pointer ${
                 (item.tab === activeTab && (item.label === 'GAME' || item.label === 'MARKETPLACE' || item.label === '👛 WALLET'))
                   ? 'bg-pink-500/20 text-pink-300 border border-pink-500/30'
                   : 'hover:text-white hover:bg-slate-800/50'
@@ -771,19 +771,19 @@ export default function GameBoard() {
           ))}
         </nav>
 
-        <div className="flex items-center gap-2 sm:gap-3">
+        <div className="flex items-center gap-3 sm:gap-4">
           <SoundToggle />
-          <div className="hidden sm:flex items-center gap-2 px-3 py-1.5 rounded-lg bg-slate-800/50 border border-slate-700/50 text-xs">
+          <div className="hidden sm:flex items-center gap-2 px-4 py-2 rounded-lg bg-slate-800/50 border border-slate-700/50 text-sm">
             <span className="text-green-400">●</span>
-            <span className="text-slate-300 font-mono">0x8F...7a3B</span>
+            <span className="text-slate-200 font-mono">0x8F...7a3B</span>
           </div>
         </div>
       </header>
 
       {/* Main Content */}
-      <main className="flex-1 p-2 sm:p-3 lg:p-4 overflow-hidden">
+      <main className="flex-1 p-3 sm:p-4 lg:p-5 overflow-hidden">
         {activeTab === 'game' ? (
-          <div className="h-full mx-auto grid grid-cols-1 lg:grid-cols-[200px_1fr_240px] gap-2 sm:gap-3 lg:gap-4">
+          <div className="h-full mx-auto grid grid-cols-1 lg:grid-cols-[260px_1fr_300px] gap-3 sm:gap-4 lg:gap-5">
             {/* Left Panel - Player Info */}
             <aside className="hidden lg:block">
               <PlayerPanel
@@ -799,19 +799,19 @@ export default function GameBoard() {
               {/* Title + Round Timer */}
               <div className="text-center">
                 <h2
-                  className="text-base sm:text-xl font-black text-transparent bg-clip-text bg-gradient-to-r from-amber-400 via-yellow-300 to-amber-400"
-                  style={{ textShadow: '0 0 20px rgba(251, 191, 36, 0.3)' }}
+                  className="text-xl sm:text-3xl font-black text-transparent bg-clip-text bg-gradient-to-r from-amber-400 via-yellow-300 to-amber-400"
+                  style={{ textShadow: '0 0 30px rgba(251, 191, 36, 0.4)' }}
                 >
                   ⭐ BUBBLE SHOOTER ⭐
                 </h2>
                 {/* 30s Timer Bar */}
                 {isRoundActive && (
-                  <div className="mt-2 max-w-lg mx-auto">
-                    <div className="flex items-center gap-2">
-                      <span className={`text-xs font-bold font-mono ${roundTimeLeft <= 10 ? 'text-red-400 animate-pulse' : 'text-amber-300'}`}>
+                  <div className="mt-3 max-w-xl mx-auto">
+                    <div className="flex items-center gap-3">
+                      <span className={`text-sm font-bold font-mono ${roundTimeLeft <= 10 ? 'text-red-400 animate-pulse' : 'text-amber-300'}`}>
                         ⏱️ {roundTimeLeft}s
                       </span>
-                      <div className="flex-1 h-2 rounded-full bg-slate-800/80 overflow-hidden border border-amber-900/30">
+                      <div className="flex-1 h-3 rounded-full bg-slate-800/80 overflow-hidden border border-amber-900/30">
                         <div
                           className="h-full rounded-full transition-all duration-1000"
                           style={{
@@ -831,27 +831,59 @@ export default function GameBoard() {
               </div>
 
               {/* Mobile player info bar */}
-              <div className="lg:hidden flex items-center justify-between gap-2 rounded-xl p-2 bg-slate-900/80 border border-slate-700/50">
-                <div className="flex items-center gap-3">
-                  <span className="text-xs">🪙 <span className="text-yellow-400 font-bold">{player.coins.toLocaleString()}</span></span>
-                  <span className="text-xs">💎 <span className="text-cyan-400 font-bold">{player.gems.toLocaleString()}</span></span>
+              <div className="lg:hidden flex items-center justify-between gap-3 rounded-xl p-3 bg-slate-900/80 border border-slate-700/50">
+                <div className="flex items-center gap-4">
+                  <span className="text-sm">🪙 <span className="text-yellow-400 font-bold">{player.coins.toLocaleString()}</span></span>
+                  <span className="text-sm">💎 <span className="text-cyan-400 font-bold">{player.gems.toLocaleString()}</span></span>
                 </div>
-                <div className="flex items-center gap-2">
-                  <span className="text-[10px] text-amber-400">⚡{player.energy}/{player.maxEnergy}</span>
-                  <span className="text-[10px] text-cyan-400">🔧{durability}/{maxDurability}</span>
+                <div className="flex items-center gap-3">
+                  <span className="text-xs text-amber-400">⚡{player.energy}/{player.maxEnergy}</span>
+                  <span className="text-xs text-cyan-400">🔧{durability}/{maxDurability}</span>
                 </div>
               </div>
 
               {/* Target Grid with Aim Line */}
               <div className="flex-1 min-h-0 relative overflow-hidden">
                 <div className="w-full h-full flex items-center justify-center">
-                  <div className="w-full max-w-2xl">
+                  <div className="w-full max-w-3xl">
                     <TargetGrid
                       balls={balls.map((b) => b)}
                       onBallClick={handleBallClick}
                       onBallHover={handleBallHover}
                       onBallLeave={handleBallLeave}
                     />
+                    {/* Start Game button centered on board */}
+                    {!isRoundActive && countdownValue === null && !showRoundSummary && (
+                      <div className="absolute inset-0 flex items-center justify-center z-30 pointer-events-none">
+                        <button
+                          onClick={handleReset}
+                          disabled={player.coins < RANDOMIZE_COST}
+                          className={`
+                            pointer-events-auto px-10 py-5 rounded-2xl text-xl font-black uppercase tracking-wider
+                            transition-all duration-200 cursor-pointer
+                            flex items-center justify-center gap-3
+                            ${player.coins >= RANDOMIZE_COST
+                              ? 'hover:scale-110 active:scale-95'
+                              : 'opacity-40 cursor-not-allowed'
+                            }
+                          `}
+                          style={{
+                            background: player.coins >= RANDOMIZE_COST
+                              ? 'linear-gradient(135deg, #ec4899, #a855f7, #6366f1)'
+                              : 'linear-gradient(135deg, #475569, #334155)',
+                            boxShadow: player.coins >= RANDOMIZE_COST
+                              ? '0 6px 30px rgba(236, 72, 153, 0.5), 0 0 60px rgba(168,85,247,0.3), inset 0 1px 0 rgba(255,255,255,0.2)'
+                              : 'none',
+                            border: '2px solid rgba(236, 72, 153, 0.4)',
+                            textShadow: '0 2px 8px rgba(0,0,0,0.5)',
+                          }}
+                        >
+                          <span className="text-2xl">🎮</span>
+                          <span className="text-white">START GAME</span>
+                          <span className="text-yellow-300 text-sm">🪙{RANDOMIZE_COST}</span>
+                        </button>
+                      </div>
+                    )}
                   </div>
                 </div>
                 {/* Bullet Projectiles */}
@@ -972,12 +1004,12 @@ export default function GameBoard() {
       {damageNumbers.map((dn) => (
         <div
           key={dn.id}
-          className="fixed pointer-events-none animate-damage-float z-50 font-black text-lg sm:text-xl"
+          className="fixed pointer-events-none animate-damage-float z-50 font-black text-xl sm:text-2xl"
           style={{
             left: dn.x,
             top: dn.y,
             color: dn.color,
-            textShadow: `0 0 10px ${dn.color}, 0 2px 4px rgba(0,0,0,0.8)`,
+            textShadow: `0 0 12px ${dn.color}, 0 2px 6px rgba(0,0,0,0.8)`,
           }}
         >
           -{dn.damage}
@@ -1023,7 +1055,7 @@ export default function GameBoard() {
             >
               {countdownValue === 0 ? 'GO!' : countdownValue}
             </div>
-            <div className="text-slate-400 text-sm mt-4 font-semibold tracking-wider uppercase">
+            <div className="text-slate-300 text-base mt-5 font-semibold tracking-wider uppercase">
               {countdownValue === 0 ? '🔥 FIRE AT WILL!' : 'Get Ready...'}
             </div>
           </div>
@@ -1034,46 +1066,46 @@ export default function GameBoard() {
       {showRoundSummary && (
         <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/80 animate-skin-picker-backdrop">
           <div
-            className="relative w-[90vw] max-w-md rounded-2xl p-6 animate-skin-picker-enter"
+            className="relative w-[90vw] max-w-lg rounded-2xl p-8 animate-skin-picker-enter"
             style={{
               background: 'linear-gradient(135deg, rgba(15,23,42,0.98), rgba(30,41,59,0.98))',
               border: '2px solid rgba(99, 102, 241, 0.4)',
               boxShadow: '0 0 60px rgba(99,102,241,0.3)',
             }}
           >
-            <h2 className="text-xl font-black text-center text-transparent bg-clip-text bg-gradient-to-r from-amber-400 via-yellow-300 to-amber-400 mb-4">
+            <h2 className="text-2xl font-black text-center text-transparent bg-clip-text bg-gradient-to-r from-amber-400 via-yellow-300 to-amber-400 mb-2">
               ⏰ TIME&apos;S UP!
             </h2>
-            <div className="text-center text-slate-400 text-xs mb-4">Round Complete</div>
+            <div className="text-center text-slate-400 text-sm mb-5">Round Complete</div>
 
             {/* Stats */}
-            <div className="grid grid-cols-3 gap-3 mb-4">
-              <div className="text-center p-2 rounded-xl bg-slate-800/50 border border-slate-700/50">
-                <div className="text-lg font-bold text-white">{roundRewards.length}</div>
-                <div className="text-[10px] text-slate-400">Total</div>
+            <div className="grid grid-cols-3 gap-4 mb-5">
+              <div className="text-center p-3 rounded-xl bg-slate-800/50 border border-slate-700/50">
+                <div className="text-2xl font-bold text-white">{roundRewards.length}</div>
+                <div className="text-xs text-slate-400">Total</div>
               </div>
-              <div className="text-center p-2 rounded-xl bg-slate-800/50 border border-indigo-500/30">
-                <div className="text-lg font-bold text-indigo-400">{roundRewards.filter(r => r.rarity === 'Rare').length}</div>
-                <div className="text-[10px] text-slate-400">Rare</div>
+              <div className="text-center p-3 rounded-xl bg-slate-800/50 border border-indigo-500/30">
+                <div className="text-2xl font-bold text-indigo-400">{roundRewards.filter(r => r.rarity === 'Rare').length}</div>
+                <div className="text-xs text-slate-400">Rare</div>
               </div>
-              <div className="text-center p-2 rounded-xl bg-slate-800/50 border border-amber-500/30">
-                <div className="text-lg font-bold text-amber-400">{roundRewards.filter(r => r.rarity === 'Legendary').length}</div>
-                <div className="text-[10px] text-slate-400">Legend</div>
+              <div className="text-center p-3 rounded-xl bg-slate-800/50 border border-amber-500/30">
+                <div className="text-2xl font-bold text-amber-400">{roundRewards.filter(r => r.rarity === 'Legendary').length}</div>
+                <div className="text-xs text-slate-400">Legend</div>
               </div>
             </div>
 
             {/* Reward list */}
-            <div className="max-h-48 overflow-y-auto space-y-1.5 custom-scrollbar mb-4">
+            <div className="max-h-56 overflow-y-auto space-y-2 custom-scrollbar mb-5">
               {roundRewards.length === 0 ? (
-                <div className="text-center text-slate-500 text-sm py-4">No rewards this round</div>
+                <div className="text-center text-slate-400 text-base py-5">No rewards this round</div>
               ) : (
                 roundRewards.map((r, i) => {
                   const rc = getRarityColor(r.rarity);
                   return (
-                    <div key={`${r.id}-${i}`} className="flex items-center gap-2 rounded-lg p-2" style={{ background: 'rgba(15,23,42,0.6)', border: `1px solid ${rc}30` }}>
-                      <span className="text-lg">{r.icon}</span>
-                      <span className="text-xs font-semibold text-white flex-1 truncate">{r.name}</span>
-                      <span className="text-[10px] font-bold uppercase" style={{ color: rc }}>{r.rarity}</span>
+                    <div key={`${r.id}-${i}`} className="flex items-center gap-3 rounded-lg p-3" style={{ background: 'rgba(15,23,42,0.6)', border: `1px solid ${rc}30` }}>
+                      <span className="text-xl">{r.icon}</span>
+                      <span className="text-sm font-semibold text-white flex-1 truncate">{r.name}</span>
+                      <span className="text-xs font-bold uppercase" style={{ color: rc }}>{r.rarity}</span>
                     </div>
                   );
                 })
@@ -1087,7 +1119,7 @@ export default function GameBoard() {
                 setIsRoundActive(false);
                 stopTenseMusic();
               }}
-              className="w-full py-3 rounded-xl text-sm font-bold uppercase tracking-wider cursor-pointer hover:scale-105 active:scale-95 transition-all"
+              className="w-full py-4 rounded-xl text-base font-bold uppercase tracking-wider cursor-pointer hover:scale-105 active:scale-95 transition-all"
               style={{
                 background: 'linear-gradient(135deg, #8b5cf6, #6366f1, #3b82f6)',
                 boxShadow: '0 4px 20px rgba(99, 102, 241, 0.4)',

@@ -20,7 +20,7 @@ export default function RewardPanel({ rewards, stats, player, onRandomize, rando
 
   return (
     <div
-      className="h-full rounded-2xl p-3 sm:p-4 flex flex-col"
+      className="h-full rounded-2xl p-4 sm:p-5 flex flex-col"
       style={{
         background: 'linear-gradient(180deg, rgba(15,10,40,0.95), rgba(30,15,60,0.9))',
         border: '1px solid rgba(236, 72, 153, 0.2)',
@@ -29,31 +29,31 @@ export default function RewardPanel({ rewards, stats, player, onRandomize, rando
       }}
     >
       {/* Header */}
-      <h2 className="text-sm sm:text-base font-bold text-transparent bg-clip-text bg-gradient-to-r from-pink-400 to-purple-400 uppercase tracking-wider text-center mb-3">
+      <h2 className="text-base sm:text-lg font-bold text-transparent bg-clip-text bg-gradient-to-r from-pink-400 to-purple-400 uppercase tracking-wider text-center mb-4">
         🏆 Reward Rate
       </h2>
 
       {/* Drop rate bars */}
-      <div className="space-y-2 mb-3">
+      <div className="space-y-3 mb-4">
         {(['Common', 'Rare', 'Legendary'] as const).map((rarity) => {
           const color = getRarityColor(rarity);
           const avgRate = ((DROP_RATES[1][rarity] + DROP_RATES[2][rarity] + DROP_RATES[3][rarity]) / 3) * 100;
           const count = rarity === 'Common' ? stats.common : rarity === 'Rare' ? stats.rare : stats.legendary;
 
           return (
-            <div key={rarity} className="space-y-1">
+            <div key={rarity} className="space-y-1.5">
               <div className="flex justify-between items-center">
-                <span className="text-xs font-semibold" style={{ color }}>
+                <span className="text-sm font-semibold" style={{ color }}>
                   {rarity === 'Common' && '⭐'}
                   {rarity === 'Rare' && '⭐⭐'}
                   {rarity === 'Legendary' && '⭐⭐⭐'}
                   {' '}{rarity.toUpperCase()}
                 </span>
-                <span className="text-[10px] text-slate-400">
+                <span className="text-xs text-slate-300">
                   {count}x | ~{avgRate.toFixed(0)}%
                 </span>
               </div>
-              <div className="h-1.5 rounded-full bg-slate-800 overflow-hidden">
+              <div className="h-2.5 rounded-full bg-slate-800 overflow-hidden">
                 <div
                   className="h-full rounded-full transition-all duration-500"
                   style={{
@@ -68,13 +68,13 @@ export default function RewardPanel({ rewards, stats, player, onRandomize, rando
         })}
       </div>
 
-      {/* Randomize Map Button */}
+      {/* Randomize Map Button (was Start Game, now changed) */}
       <button
         onClick={onRandomize}
         disabled={!canAffordRandomize}
         className={`
-          w-full py-2.5 rounded-xl text-xs font-bold uppercase tracking-wider
-          transition-all duration-200 cursor-pointer mb-3
+          w-full py-3.5 rounded-xl text-sm font-bold uppercase tracking-wider
+          transition-all duration-200 cursor-pointer mb-4
           flex items-center justify-center gap-2
           ${canAffordRandomize
             ? 'hover:scale-105 active:scale-95'
@@ -83,31 +83,31 @@ export default function RewardPanel({ rewards, stats, player, onRandomize, rando
         `}
         style={{
           background: canAffordRandomize
-            ? 'linear-gradient(135deg, #ec4899, #a855f7, #6366f1)'
+            ? 'linear-gradient(135deg, #6366f1, #8b5cf6, #a855f7)'
             : 'linear-gradient(135deg, #475569, #334155)',
           boxShadow: canAffordRandomize
-            ? '0 4px 20px rgba(236, 72, 153, 0.4), inset 0 1px 0 rgba(255,255,255,0.1)'
+            ? '0 4px 20px rgba(99, 102, 241, 0.4), inset 0 1px 0 rgba(255,255,255,0.1)'
             : 'none',
-          border: '1px solid rgba(236, 72, 153, 0.3)',
+          border: '1px solid rgba(139, 92, 246, 0.3)',
         }}
       >
-        <span className="text-lg">🎲</span>
-        <span className="text-white">START GAME</span>
-        <span className="text-yellow-300 text-[10px]">🪙{randomizeCost}</span>
+        <span className="text-xl">🎲</span>
+        <span className="text-white">เปลี่ยนแมพใหม่</span>
+        <span className="text-yellow-300 text-xs">🪙{randomizeCost}</span>
       </button>
 
       {/* Divider */}
-      <div className="h-px bg-gradient-to-r from-transparent via-pink-500/30 to-transparent mb-3" />
+      <div className="h-px bg-gradient-to-r from-transparent via-pink-500/30 to-transparent mb-4" />
 
       {/* Rewards header — only 3 latest */}
-      <h3 className="text-xs sm:text-sm font-bold text-pink-300 uppercase tracking-wider mb-2">
+      <h3 className="text-sm sm:text-base font-bold text-pink-300 uppercase tracking-wider mb-3">
         🎁 Latest Rewards
       </h3>
 
       {/* Latest 3 rewards list */}
-      <div className="space-y-1.5 pr-1">
+      <div className="space-y-2 pr-1">
         {latestRewards.length === 0 ? (
-          <div className="text-center text-slate-500 text-xs py-4">
+          <div className="text-center text-slate-400 text-sm py-5">
             Pop balloons to earn rewards!
           </div>
         ) : (
@@ -116,19 +116,19 @@ export default function RewardPanel({ rewards, stats, player, onRandomize, rando
             return (
               <div
                 key={`${reward.id}-${idx}`}
-                className="flex items-center gap-2 rounded-lg p-2 transition-all duration-200 hover:scale-[1.02] animate-slide-in"
+                className="flex items-center gap-3 rounded-lg p-3 transition-all duration-200 hover:scale-[1.02] animate-slide-in"
                 style={{
                   background: 'rgba(15,23,42,0.6)',
                   border: `1px solid ${rarityColor}30`,
                 }}
               >
-                <div className="text-lg sm:text-xl flex-shrink-0">{reward.icon}</div>
+                <div className="text-xl sm:text-2xl flex-shrink-0">{reward.icon}</div>
                 <div className="flex-1 min-w-0">
-                  <div className="text-xs font-semibold text-white truncate">
+                  <div className="text-sm font-semibold text-white truncate">
                     {reward.name}
                   </div>
                   <span
-                    className="text-[9px] sm:text-[10px] font-bold uppercase"
+                    className="text-xs font-bold uppercase"
                     style={{ color: rarityColor }}
                   >
                     {reward.rarity}
@@ -137,7 +137,7 @@ export default function RewardPanel({ rewards, stats, player, onRandomize, rando
                 {/* NEW badge for most recent */}
                 {idx === 0 && (
                   <div
-                    className="flex-shrink-0 px-2 py-0.5 rounded-full text-[9px] font-black animate-pulse"
+                    className="flex-shrink-0 px-2.5 py-1 rounded-full text-[10px] font-black animate-pulse"
                     style={{
                       background: `${rarityColor}20`,
                       color: rarityColor,
