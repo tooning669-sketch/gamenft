@@ -9,6 +9,8 @@ interface GunStatusBarProps {
   maxCooldown: number;
   energyCooldownRemain: number;
   energyCooldownActive: boolean;
+  roundsPlayed: number;
+  maxRounds: number;
 }
 
 export default function GunStatusBar({
@@ -18,6 +20,8 @@ export default function GunStatusBar({
   maxCooldown,
   energyCooldownRemain,
   energyCooldownActive,
+  roundsPlayed,
+  maxRounds,
 }: GunStatusBarProps) {
   const durabilityPercent = (durability / maxDurability) * 100;
   const cooldownPercent = maxCooldown > 0 ? (cooldown / maxCooldown) * 100 : 0;
@@ -28,6 +32,9 @@ export default function GunStatusBar({
   const energyCdPercent = energyCooldownActive
     ? ((energyCdTotal - energyCooldownRemain) / energyCdTotal) * 100
     : 100;
+
+  const roundsRemaining = maxRounds - roundsPlayed;
+  const isExhausted = roundsRemaining <= 0;
 
   const formatCooldown = (secs: number) => {
     const h = Math.floor(secs / 3600);
@@ -50,27 +57,66 @@ export default function GunStatusBar({
         🔫 Gun Status
       </h3>
 
-      {/* 4h Recharge Timer (replaces energy bar) */}
-      {energyCooldownActive && (
+      {/* Energy / Rounds Bar */}
+      <div className="space-y-1">
+        <div className="flex justify-between items-center">
+          <span className="text-[10px] font-semibold text-amber-400 flex items-center gap-1">
+            ⚡ Energy
+          </span>
+          <span className="text-[10px] text-amber-300/80 font-mono">
+            {isExhausted ? '0' : roundsRemaining}/{maxRounds} rounds
+          </span>
+        </div>
+        {/* Round segments */}
+        <div className="flex gap-1">
+          {Array.from({ length: maxRounds }).map((_, i) => {
+            const isFilled = i < roundsRemaining;
+            return (
+              <div
+                key={i}
+                className="flex-1 h-3 rounded-sm overflow-hidden border transition-all duration-300"
+                style={{
+                  borderColor: isFilled ? 'rgba(245,158,11,0.3)' : 'rgba(100,116,139,0.2)',
+                  background: isFilled
+                    ? 'linear-gradient(180deg, #f59e0b, #d97706)'
+                    : 'rgba(15,23,42,0.6)',
+                  boxShadow: isFilled ? '0 0 6px rgba(245,158,11,0.3)' : 'none',
+                }}
+              >
+                {isFilled && (
+                  <div className="w-full h-full relative overflow-hidden">
+                    <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent animate-energy-shine" />
+                  </div>
+                )}
+              </div>
+            );
+          })}
+        </div>
+      </div>
+
+      {/* 4h Recharge Timer */}
+      {(energyCooldownActive || isExhausted) && (
         <div className="space-y-1">
           <div className="flex justify-between items-center">
             <span className="text-[10px] font-semibold text-orange-400 flex items-center gap-1">
               🔋 Recharging...
             </span>
             <span className="text-[10px] text-orange-300/80 font-mono">
-              {formatCooldown(energyCooldownRemain)}
+              {energyCooldownActive ? formatCooldown(energyCooldownRemain) : 'Start next round'}
             </span>
           </div>
-          <div className="h-2 rounded-full bg-slate-800/80 overflow-hidden border border-orange-900/30">
-            <div
-              className="h-full rounded-full transition-all duration-1000"
-              style={{
-                width: `${energyCdPercent}%`,
-                background: 'linear-gradient(90deg, #f97316, #fb923c)',
-                boxShadow: '0 0 6px rgba(249,115,22,0.4)',
-              }}
-            />
-          </div>
+          {energyCooldownActive && (
+            <div className="h-2 rounded-full bg-slate-800/80 overflow-hidden border border-orange-900/30">
+              <div
+                className="h-full rounded-full transition-all duration-1000"
+                style={{
+                  width: `${energyCdPercent}%`,
+                  background: 'linear-gradient(90deg, #f97316, #fb923c)',
+                  boxShadow: '0 0 6px rgba(249,115,22,0.4)',
+                }}
+              />
+            </div>
+          )}
         </div>
       )}
 

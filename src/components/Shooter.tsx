@@ -21,6 +21,8 @@ interface ShooterProps {
   onCardSlotClick: () => void;
   energyCooldownRemain: number;
   energyCooldownActive: boolean;
+  roundsPlayed: number;
+  maxRounds: number;
 }
 
 export default function Shooter({
@@ -38,6 +40,8 @@ export default function Shooter({
   onCardSlotClick,
   energyCooldownRemain,
   energyCooldownActive,
+  roundsPlayed,
+  maxRounds,
 }: ShooterProps) {
 
   // Open skin picker on gun image click
@@ -204,6 +208,8 @@ export default function Shooter({
             maxCooldown={maxCooldown}
             energyCooldownRemain={energyCooldownRemain}
             energyCooldownActive={energyCooldownActive}
+            roundsPlayed={roundsPlayed}
+            maxRounds={maxRounds}
           />
         </div>
       </div>

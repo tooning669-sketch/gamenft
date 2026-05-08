@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useCallback, useEffect, useRef } from 'react';
+import React, { useState, useCallback, useEffect, useRef, useMemo } from 'react';
 import {
   Ball as BallType,
   AmmoType,
@@ -40,6 +40,19 @@ const INITIAL_PLAYER: PlayerState = {
 };
 
 const RANDOMIZE_COST = 500;
+const MAX_ROUNDS_PER_GUN = 4;
+
+// Bullet projectile type
+interface BulletProjectile {
+  id: string;
+  startX: number;
+  startY: number;
+  endX: number;
+  endY: number;
+  color: string;
+  glowColor: string;
+  progress: number; // 0 to 1
+}
 
 export default function GameBoard() {
   const [balls, setBalls] = useState<BallType[]>(() => generateGrid());
@@ -70,9 +83,15 @@ export default function GameBoard() {
   const [showRoundSummary, setShowRoundSummary] = useState(false);
   const [roundRewards, setRoundRewards] = useState<Reward[]>([]);
 
-  // Aim line (hover)
+  // Aim line (hover) - now used for bullet projectile
   const [hoveredBallId, setHoveredBallId] = useState<string | null>(null);
   const gameBoardRef = useRef<HTMLDivElement>(null);
+
+  // Bullet projectile state
+  const [bullets, setBullets] = useState<BulletProjectile[]>([]);
+
+  // Round counter per gun (max 4 rounds before recharge)
+  const [roundsPlayed, setRoundsPlayed] = useState<Record<string, number>>({}); // gunSkinId -> rounds played
 
   // Energy 4h cooldown per gun
   const [energyCooldowns, setEnergyCooldowns] = useState<Record<string, number>>({}); // gunSkinId -> timestamp when cooldown started
@@ -168,6 +187,11 @@ export default function GameBoard() {
   const [energyCooldownRemain, setEnergyCooldownRemain] = useState(0);
   const energyCooldownActive = currentCooldownStart != null && energyCooldownRemain > 0;
 
+  // Current gun round count
+  const currentRoundsPlayed = roundsPlayed[gunSkin.id] || 0;
+  const roundsRemaining = MAX_ROUNDS_PER_GUN - currentRoundsPlayed;
+  const isGunExhausted = roundsRemaining <= 0 && !energyCooldownActive;
+
   useEffect(() => {
     if (!currentCooldownStart) { setEnergyCooldownRemain(0); return; }
     const tick = () => {
@@ -175,15 +199,23 @@ export default function GameBoard() {
       const remain = Math.max(0, ENERGY_COOLDOWN_SEC - elapsed);
       setEnergyCooldownRemain(remain);
       if (remain <= 0) {
-        // Cooldown done - refill energy
+        // Cooldown done - refill energy and reset rounds
         setPlayer(prev => ({ ...prev, energy: prev.maxEnergy }));
         setEnergyCooldowns(prev => { const n = { ...prev }; delete n[gunSkin.id]; return n; });
+        setRoundsPlayed(prev => { const n = { ...prev }; delete n[gunSkin.id]; return n; });
       }
     };
     tick();
     const iv = setInterval(tick, 1000);
     return () => clearInterval(iv);
   }, [currentCooldownStart, gunSkin.id]);
+
+  // Auto-trigger 4h cooldown when gun exhausts all rounds
+  useEffect(() => {
+    if (isGunExhausted && !energyCooldowns[gunSkin.id]) {
+      setEnergyCooldowns(prev => ({ ...prev, [gunSkin.id]: Date.now() }));
+    }
+  }, [isGunExhausted, gunSkin.id, energyCooldowns]);
 
   // Round timer effect
   useEffect(() => {
@@ -333,10 +365,45 @@ export default function GameBoard() {
       // Check energy
       if (player.energy < selectedAmmo.energyCost) return;
 
-      // Calculate aim angle
+      // Calculate aim angle and spawn bullet
       const ballElement = document.getElementById(`ball-wrapper-${ball.id}`);
       if (ballElement) {
         updateAimAngle(ballElement);
+        // Spawn bullet projectile
+        const cannonEl = document.getElementById('shooter-cannon');
+        const boardEl = gameBoardRef.current;
+        if (cannonEl && boardEl) {
+          const boardRect = boardEl.getBoundingClientRect();
+          const cannonRect = cannonEl.getBoundingClientRect();
+          const ballRect = ballElement.getBoundingClientRect();
+          const bulletId = `bullet-${Date.now()}-${Math.random()}`;
+          const newBullet: BulletProjectile = {
+            id: bulletId,
+            startX: cannonRect.left + cannonRect.width / 2 - boardRect.left,
+            startY: cannonRect.top - boardRect.top,
+            endX: ballRect.left + ballRect.width / 2 - boardRect.left,
+            endY: ballRect.top + ballRect.height / 2 - boardRect.top,
+            color: selectedAmmo.color,
+            glowColor: selectedAmmo.glowColor,
+            progress: 0,
+          };
+          setBullets(prev => [...prev, newBullet]);
+          // Animate bullet
+          const startTime = performance.now();
+          const duration = 200; // ms
+          const animateBullet = (now: number) => {
+            const elapsed = now - startTime;
+            const progress = Math.min(elapsed / duration, 1);
+            setBullets(prev => prev.map(b => b.id === bulletId ? { ...b, progress } : b));
+            if (progress < 1) {
+              requestAnimationFrame(animateBullet);
+            } else {
+              // Remove bullet after short delay
+              setTimeout(() => setBullets(prev => prev.filter(b => b.id !== bulletId)), 100);
+            }
+          };
+          requestAnimationFrame(animateBullet);
+        }
       }
 
       // Play shoot sound
@@ -361,10 +428,7 @@ export default function GameBoard() {
       setIsFiring(true);
       setTimeout(() => setIsFiring(false), 200);
 
-      // Start 4h energy cooldown on first shot with this gun
-      if (!energyCooldowns[gunSkin.id]) {
-        setEnergyCooldowns(prev => ({ ...prev, [gunSkin.id]: Date.now() }));
-      }
+      // Energy cooldown is now triggered when rounds reach max (in handleReset completion)
 
       // Apply damage with card bonus (no gun level)
       const totalDamage = calcDamage();
@@ -478,12 +542,28 @@ export default function GameBoard() {
     if (player.coins < RANDOMIZE_COST) return;
     if (countdownValue !== null) return; // already counting down
 
+    // Check if gun has rounds remaining
+    const currentRounds = roundsPlayed[gunSkin.id] || 0;
+    if (currentRounds >= MAX_ROUNDS_PER_GUN) {
+      // Start recharge if not already started
+      if (!energyCooldowns[gunSkin.id]) {
+        setEnergyCooldowns(prev => ({ ...prev, [gunSkin.id]: Date.now() }));
+      }
+      return;
+    }
+
     playClickSound();
 
     // Deduct coins
     setPlayer((prev) => ({
       ...prev,
       coins: prev.coins - RANDOMIZE_COST,
+    }));
+
+    // Increment round count for this gun
+    setRoundsPlayed(prev => ({
+      ...prev,
+      [gunSkin.id]: (prev[gunSkin.id] || 0) + 1,
     }));
 
     // Reset game state
@@ -516,7 +596,7 @@ export default function GameBoard() {
       setIsRoundActive(true);
       setRoundTimeLeft(30);
     }, 3800);
-  }, [player.coins, countdownValue]);
+  }, [player.coins, countdownValue, roundsPlayed, gunSkin.id, energyCooldowns]);
 
   const handleRewardComplete = useCallback(() => {
     setActiveReward(null);
@@ -648,7 +728,7 @@ export default function GameBoard() {
   }, []);
 
   return (
-    <div className="min-h-screen flex flex-col relative z-10">
+    <div className="h-screen flex flex-col relative z-10 overflow-hidden">
       {/* Header */}
       <header
         className="py-2 sm:py-3 px-4 sm:px-6 flex items-center justify-between border-b"
@@ -701,9 +781,9 @@ export default function GameBoard() {
       </header>
 
       {/* Main Content */}
-      <main className="flex-1 p-2 sm:p-4 lg:p-6 overflow-auto">
+      <main className="flex-1 p-2 sm:p-3 lg:p-4 overflow-hidden">
         {activeTab === 'game' ? (
-          <div className="h-full max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-[220px_1fr_260px] gap-3 sm:gap-4 lg:gap-6">
+          <div className="h-full mx-auto grid grid-cols-1 lg:grid-cols-[200px_1fr_240px] gap-2 sm:gap-3 lg:gap-4">
             {/* Left Panel - Player Info */}
             <aside className="hidden lg:block">
               <PlayerPanel
@@ -715,7 +795,7 @@ export default function GameBoard() {
             </aside>
 
             {/* Center - Game Board */}
-            <div className="flex flex-col gap-3 sm:gap-4 min-h-0" ref={gameBoardRef}>
+            <div className="flex flex-col gap-2 sm:gap-3 min-h-0 h-full overflow-hidden" ref={gameBoardRef}>
               {/* Title + Round Timer */}
               <div className="text-center">
                 <h2
@@ -763,44 +843,65 @@ export default function GameBoard() {
               </div>
 
               {/* Target Grid with Aim Line */}
-              <div className="flex-1 min-h-0 relative">
-                <div className="max-w-lg mx-auto">
-                  <TargetGrid
-                    balls={balls.map((b) => b)}
-                    onBallClick={handleBallClick}
-                    onBallHover={handleBallHover}
-                    onBallLeave={handleBallLeave}
-                  />
+              <div className="flex-1 min-h-0 relative overflow-hidden">
+                <div className="w-full h-full flex items-center justify-center">
+                  <div className="w-full max-w-2xl">
+                    <TargetGrid
+                      balls={balls.map((b) => b)}
+                      onBallClick={handleBallClick}
+                      onBallHover={handleBallHover}
+                      onBallLeave={handleBallLeave}
+                    />
+                  </div>
                 </div>
-                {/* Aim Line SVG */}
-                {hoveredBallId && isRoundActive && (() => {
-                  const ballEl = document.getElementById(`ball-wrapper-${hoveredBallId}`);
-                  const cannonEl = document.getElementById('shooter-cannon');
-                  const boardEl = gameBoardRef.current;
-                  if (!ballEl || !cannonEl || !boardEl) return null;
-                  const boardRect = boardEl.getBoundingClientRect();
-                  const ballRect = ballEl.getBoundingClientRect();
-                  const cannonRect = cannonEl.getBoundingClientRect();
-                  const x1 = cannonRect.left + cannonRect.width / 2 - boardRect.left;
-                  const y1 = cannonRect.top - boardRect.top;
-                  const x2 = ballRect.left + ballRect.width / 2 - boardRect.left;
-                  const y2 = ballRect.top + ballRect.height / 2 - boardRect.top;
-                  return (
-                    <svg className="absolute inset-0 w-full h-full pointer-events-none z-20" style={{ overflow: 'visible' }}>
-                      <line
-                        x1={x1} y1={y1} x2={x2} y2={y2}
-                        stroke={selectedAmmo.color}
-                        strokeWidth="2"
-                        strokeDasharray="8 6"
-                        strokeLinecap="round"
-                        opacity="0.6"
-                        className="animate-aim-dash"
-                      />
-                      <circle cx={x2} cy={y2} r="6" fill="none" stroke={selectedAmmo.color} strokeWidth="1.5" opacity="0.5" className="animate-aim-pulse" />
-                      <circle cx={x2} cy={y2} r="12" fill="none" stroke={selectedAmmo.color} strokeWidth="1" opacity="0.25" className="animate-aim-pulse" />
-                    </svg>
-                  );
-                })()}
+                {/* Bullet Projectiles */}
+                {bullets.length > 0 && (
+                  <svg className="absolute inset-0 w-full h-full pointer-events-none z-20" style={{ overflow: 'visible' }}>
+                    {bullets.map(bullet => {
+                      const cx = bullet.startX + (bullet.endX - bullet.startX) * bullet.progress;
+                      const cy = bullet.startY + (bullet.endY - bullet.startY) * bullet.progress;
+                      const opacity = bullet.progress >= 0.95 ? (1 - (bullet.progress - 0.95) / 0.05) : 1;
+                      return (
+                        <g key={bullet.id}>
+                          {/* Bullet trail */}
+                          <line
+                            x1={bullet.startX + (bullet.endX - bullet.startX) * Math.max(0, bullet.progress - 0.3)}
+                            y1={bullet.startY + (bullet.endY - bullet.startY) * Math.max(0, bullet.progress - 0.3)}
+                            x2={cx}
+                            y2={cy}
+                            stroke={bullet.color}
+                            strokeWidth="3"
+                            strokeLinecap="round"
+                            opacity={opacity * 0.4}
+                          />
+                          {/* Bullet glow */}
+                          <circle cx={cx} cy={cy} r="8" fill={bullet.color} opacity={opacity * 0.15} />
+                          <circle cx={cx} cy={cy} r="5" fill={bullet.color} opacity={opacity * 0.3} />
+                          {/* Bullet core */}
+                          <circle cx={cx} cy={cy} r="3" fill="white" opacity={opacity * 0.9} />
+                          <circle cx={cx} cy={cy} r="4" fill={bullet.color} opacity={opacity * 0.7} />
+                        </g>
+                      );
+                    })}
+                  </svg>
+                )}
+                {/* Impact flash at target */}
+                {bullets.filter(b => b.progress >= 0.9).map(bullet => (
+                  <div
+                    key={`impact-${bullet.id}`}
+                    className="absolute pointer-events-none z-20"
+                    style={{
+                      left: bullet.endX - 12,
+                      top: bullet.endY - 12,
+                      width: 24,
+                      height: 24,
+                      borderRadius: '50%',
+                      background: `radial-gradient(circle, ${bullet.color}80, transparent)`,
+                      opacity: 1 - bullet.progress,
+                      transform: `scale(${1 + bullet.progress})`,
+                    }}
+                  />
+                ))}
               </div>
 
               {/* Shooter - Centered */}
@@ -820,6 +921,8 @@ export default function GameBoard() {
                   onCardSlotClick={() => setShowCardPicker(true)}
                   energyCooldownRemain={energyCooldownRemain}
                   energyCooldownActive={energyCooldownActive}
+                  roundsPlayed={currentRoundsPlayed}
+                  maxRounds={MAX_ROUNDS_PER_GUN}
                 />
               </div>
             </div>
