@@ -14,6 +14,7 @@ import {
   AMMO_TYPES,
   GUN_SKINS,
   AVAILABLE_CARDS,
+  MARKETPLACE_ITEMS,
   GRID_ROWS,
   GRID_COLS,
 } from '@/lib/gameTypes';
@@ -716,10 +717,12 @@ export default function GameBoard() {
     );
   }, []);
 
-  // Handle sell from inventory
+  // Handle sell from inventory — 50% of Official Shop price
   const handleSellFromInventory = useCallback((item: InventoryItem) => {
-    // Quick sell for 50% of lowest market price
-    const sellValue = Math.floor(200 * (item.rarity === 'Legendary' ? 5 : item.rarity === 'Rare' ? 2 : 1));
+    const shopItem = MARKETPLACE_ITEMS.find((m) => m.name === item.name);
+    const shopPrice = shopItem?.priceCoins ?? 0;
+    const sellValue = Math.floor(shopPrice * 0.5);
+    if (sellValue <= 0) return;
     setPlayer((prev) => ({ ...prev, coins: prev.coins + sellValue }));
     setInventory((prev) => {
       if (item.quantity <= 1) return prev.filter((i) => i.id !== item.id);
@@ -751,7 +754,6 @@ export default function GameBoard() {
             { label: 'HOME', tab: 'game' as const },
             { label: 'GAME', tab: 'game' as const },
             { label: 'MARKETPLACE', tab: 'marketplace' as const },
-            { label: '👛 WALLET', tab: 'inventory' as const },
             { label: 'TOP EARNING', tab: 'game' as const },
           ].map((item) => (
             <button
@@ -761,7 +763,7 @@ export default function GameBoard() {
                 setActiveTab(item.tab);
               }}
               className={`px-4 py-2 rounded-lg transition-all cursor-pointer ${
-                (item.tab === activeTab && (item.label === 'GAME' || item.label === 'MARKETPLACE' || item.label === '👛 WALLET'))
+                (item.tab === activeTab && (item.label === 'GAME' || item.label === 'MARKETPLACE'))
                   ? 'bg-pink-500/20 text-pink-300 border border-pink-500/30'
                   : 'hover:text-white hover:bg-slate-800/50'
               }`}
@@ -773,6 +775,17 @@ export default function GameBoard() {
 
         <div className="flex items-center gap-3 sm:gap-4">
           <SoundToggle />
+          <button
+            onClick={() => { playClickSound(); setActiveTab('inventory'); }}
+            className={`hidden sm:flex items-center gap-2 px-4 py-2 rounded-lg text-sm transition-all cursor-pointer hover:scale-105 active:scale-95 ${
+              activeTab === 'inventory'
+                ? 'bg-pink-500/20 text-pink-300 border border-pink-500/30'
+                : 'bg-slate-800/50 border border-slate-700/50 hover:bg-slate-700/50'
+            }`}
+          >
+            <span className="text-lg">👛</span>
+            <span className="text-slate-200 font-semibold">Wallet</span>
+          </button>
           <div className="hidden sm:flex items-center gap-2 px-4 py-2 rounded-lg bg-slate-800/50 border border-slate-700/50 text-sm">
             <span className="text-green-400">●</span>
             <span className="text-slate-200 font-mono">0x8F...7a3B</span>
@@ -781,7 +794,7 @@ export default function GameBoard() {
       </header>
 
       {/* Main Content */}
-      <main className="flex-1 p-3 sm:p-4 lg:p-5 overflow-hidden">
+      <main className={`flex-1 p-3 sm:p-4 lg:p-5 ${activeTab === 'game' ? 'overflow-hidden' : 'overflow-y-auto custom-scrollbar'}`}>
         {activeTab === 'game' ? (
           <div className="h-full mx-auto grid grid-cols-1 lg:grid-cols-[260px_1fr_300px] gap-3 sm:gap-4 lg:gap-5">
             {/* Left Panel - Player Info */}
@@ -978,6 +991,7 @@ export default function GameBoard() {
             onBuyFromShop={handleMarketPurchase}
             onBuyFromPlayer={handleBuyFromPlayer}
             onListForSale={handleListForSale}
+            onSellToSystem={handleSellFromInventory}
           />
         ) : (
           /* Inventory Tab */

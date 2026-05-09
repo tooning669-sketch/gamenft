@@ -38,16 +38,6 @@ export default function PlayerPanel({ player, ballsRemaining, totalBalls, onOpen
           🎯
         </div>
         <h2 className="text-base sm:text-lg font-bold text-white">Player#4287</h2>
-        <div className="flex items-center justify-center gap-2 mt-1.5">
-          <span className="text-xs sm:text-sm font-semibold text-pink-400">LV. {player.level}</span>
-          <div className="w-20 sm:w-24 h-2 rounded-full bg-slate-800 overflow-hidden">
-            <div
-              className="h-full rounded-full bg-gradient-to-r from-pink-500 to-purple-500 transition-all duration-300"
-              style={{ width: `${xpPercent}%` }}
-            />
-          </div>
-          <span className="text-[10px] text-slate-400">{xpPercent.toFixed(0)}%</span>
-        </div>
       </div>
 
       {/* Divider */}

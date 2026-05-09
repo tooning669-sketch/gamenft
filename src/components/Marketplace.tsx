@@ -19,9 +19,10 @@ interface MarketplaceProps {
   onBuyFromShop: (item: MarketplaceItem, currency: 'coins' | 'gems') => void;
   onBuyFromPlayer: (listing: MarketListing) => void;
   onListForSale: (item: InventoryItem, price: number) => void;
+  onSellToSystem?: (item: InventoryItem) => void;
 }
 
-type MarketView = 'shop' | 'p2p' | 'sell';
+type MarketView = 'shop' | 'p2p' | 'sell' | 'sellback';
 
 const CATEGORIES: { key: MarketCategory | 'all'; label: string; icon: string }[] = [
   { key: 'all', label: 'All', icon: '🏪' },
@@ -39,11 +40,12 @@ function timeAgo(ts: number): string {
   return `${Math.floor(diff / 86400)}d ago`;
 }
 
-export default function Marketplace({ player, inventory, onBuyFromShop, onBuyFromPlayer, onListForSale }: MarketplaceProps) {
+export default function Marketplace({ player, inventory, onBuyFromShop, onBuyFromPlayer, onListForSale, onSellToSystem }: MarketplaceProps) {
   const [view, setView] = useState<MarketView>('shop');
   const [selectedCategory, setSelectedCategory] = useState<MarketCategory | 'all'>('all');
   const [listings, setListings] = useState<MarketListing[]>(SAMPLE_LISTINGS);
   const [showPurchaseAnim, setShowPurchaseAnim] = useState<string | null>(null);
+  const [showSellbackAnim, setShowSellbackAnim] = useState<string | null>(null);
   const [sellPrice, setSellPrice] = useState<Record<string, number>>({});
   const [shopPage, setShopPage] = useState(0);
   const [detailItem, setDetailItem] = useState<MarketplaceItem | null>(null);
@@ -169,6 +171,7 @@ export default function Marketplace({ player, inventory, onBuyFromShop, onBuyFro
           { key: 'shop' as const, label: '🏬 Official Shop', desc: 'Buy from game' },
           { key: 'p2p' as const, label: '🤝 Player Market', desc: 'Buy from players' },
           { key: 'sell' as const, label: '💰 Sell Items', desc: 'List your items' },
+          { key: 'sellback' as const, label: '🏦 Sell to System', desc: 'Quick sell at 50%' },
         ]).map((tab) => {
           const isActive = view === tab.key;
           return (
@@ -190,7 +193,7 @@ export default function Marketplace({ player, inventory, onBuyFromShop, onBuyFro
       </div>
 
       {/* Category filter (for shop & p2p) */}
-      {view !== 'sell' && (
+      {view !== 'sell' && view !== 'sellback' && (
         <div className="flex gap-2 justify-center flex-wrap">
           {CATEGORIES.map((cat) => {
             const isActive = selectedCategory === cat.key;
@@ -255,30 +258,17 @@ export default function Marketplace({ player, inventory, onBuyFromShop, onBuyFro
                   </div>
                 </div>
 
-                <div className="flex items-center justify-between px-3 py-2 border-t" style={{ borderColor: `${rarityColor}15` }}>
-                  <div className="flex items-center gap-3">
-                    <div className="flex items-center gap-1">
-                      <span className="text-xs">🪙</span>
-                      {item.discount ? (
-                        <><span className="text-[10px] text-slate-500 line-through">{item.priceCoins}</span>
-                          <span className="text-xs font-bold text-yellow-400">{discountedCoins}</span></>
-                      ) : <span className="text-xs font-bold text-yellow-400">{item.priceCoins.toLocaleString()}</span>}
-                    </div>
-                    {item.priceGems > 0 && (
-                      <><span className="text-[10px] text-slate-600">or</span>
-                        <div className="flex items-center gap-1"><span className="text-xs">💎</span>
-                          <span className="text-xs font-bold text-cyan-400">{item.priceGems}</span></div></>
-                    )}
-                  </div>
+                <div className="flex items-center justify-end gap-1.5 px-3 py-2 border-t" style={{ borderColor: `${rarityColor}15` }}>
                   <div className="flex items-center gap-1.5">
                     <button onClick={() => handleShopBuy(item, 'coins')} disabled={isOutOfStock || player.coins < discountedCoins}
-                      className={`px-3 py-1.5 rounded-lg text-[10px] font-bold uppercase transition-all cursor-pointer ${!isOutOfStock && player.coins >= discountedCoins ? 'bg-gradient-to-r from-yellow-500/20 to-amber-500/20 text-yellow-400 border border-yellow-500/30 hover:scale-105 active:scale-95' : 'bg-slate-800/50 text-slate-600 border border-slate-700/30 cursor-not-allowed'}`}>
-                      🪙 Buy
+                      className={`px-3 py-1.5 rounded-lg text-[10px] font-bold uppercase transition-all cursor-pointer flex items-center gap-1.5 ${!isOutOfStock && player.coins >= discountedCoins ? 'bg-gradient-to-r from-yellow-500/20 to-amber-500/20 text-yellow-400 border border-yellow-500/30 hover:scale-105 active:scale-95' : 'bg-slate-800/50 text-slate-600 border border-slate-700/30 cursor-not-allowed'}`}>
+                      🪙 {item.discount ? (<><span className="line-through text-slate-500 text-[9px]">{item.priceCoins}</span> <span>{discountedCoins.toLocaleString()}</span></>) : <span>{item.priceCoins.toLocaleString()}</span>}
+                      <span className="ml-0.5">Buy</span>
                     </button>
                     {item.priceGems > 0 && (
                       <button onClick={() => handleShopBuy(item, 'gems')} disabled={isOutOfStock || player.gems < item.priceGems}
-                        className={`px-3 py-1.5 rounded-lg text-[10px] font-bold uppercase transition-all cursor-pointer ${!isOutOfStock && player.gems >= item.priceGems ? 'bg-gradient-to-r from-cyan-500/20 to-blue-500/20 text-cyan-400 border border-cyan-500/30 hover:scale-105 active:scale-95' : 'bg-slate-800/50 text-slate-600 border border-slate-700/30 cursor-not-allowed'}`}>
-                        💎 Buy
+                        className={`px-3 py-1.5 rounded-lg text-[10px] font-bold uppercase transition-all cursor-pointer flex items-center gap-1.5 ${!isOutOfStock && player.gems >= item.priceGems ? 'bg-gradient-to-r from-cyan-500/20 to-blue-500/20 text-cyan-400 border border-cyan-500/30 hover:scale-105 active:scale-95' : 'bg-slate-800/50 text-slate-600 border border-slate-700/30 cursor-not-allowed'}`}>
+                        💎 {item.priceGems} Buy
                       </button>
                     )}
                   </div>
@@ -504,6 +494,115 @@ export default function Marketplace({ player, inventory, onBuyFromShop, onBuyFro
                       )}
                     </div>
                   </div>
+                </div>
+              );
+            })
+          )}
+        </div>
+      )}
+
+      {/* ===== SELL TO SYSTEM VIEW ===== */}
+      {view === 'sellback' && (
+        <div className="space-y-3">
+          {/* Info banner */}
+          <div className="rounded-xl p-3 text-center"
+            style={{ background: 'linear-gradient(135deg, rgba(234,179,8,0.1), rgba(245,158,11,0.05))', border: '1px solid rgba(234,179,8,0.25)' }}>
+            <div className="flex items-center justify-center gap-2 text-sm font-bold text-amber-400">
+              <span>🏦</span>
+              <span>Sell items back to the system at 50% of Official Shop price</span>
+            </div>
+            <p className="text-[10px] text-amber-400/60 mt-1">Items will be removed from your inventory. Coins are credited instantly.</p>
+          </div>
+
+          {inventory.length === 0 ? (
+            <div className="flex flex-col items-center justify-center py-16 gap-3 rounded-xl"
+              style={{ background: 'rgba(15,23,42,0.5)', border: '1px dashed rgba(100,116,139,0.3)' }}>
+              <span className="text-4xl">📦</span>
+              <span className="text-sm text-slate-500 font-semibold">No items to sell</span>
+              <span className="text-[11px] text-slate-600">Buy items first from the shop!</span>
+            </div>
+          ) : (
+            inventory.map((item) => {
+              const rarityColor = getRarityColor(item.rarity);
+              // Find matching shop price
+              const shopItem = MARKETPLACE_ITEMS.find((m) => m.name === item.name);
+              const shopPrice = shopItem?.priceCoins ?? 0;
+              const sellbackPrice = Math.floor(shopPrice * 0.5);
+              const isSellbackAnim = showSellbackAnim === item.id;
+
+              return (
+                <div key={item.id}
+                  className={`relative rounded-xl overflow-hidden transition-all duration-300 ${isSellbackAnim ? 'scale-[1.02]' : 'hover:scale-[1.01]'}`}
+                  style={{
+                    background: 'linear-gradient(135deg, rgba(15,23,42,0.95), rgba(30,41,59,0.8))',
+                    border: `1px solid ${rarityColor}20`,
+                  }}
+                >
+                  <div className="flex items-center gap-3 p-3">
+                    {/* Item image */}
+                    <div className="flex-shrink-0 w-14 h-14 flex items-center justify-center rounded-lg"
+                      style={{ background: `radial-gradient(circle, ${rarityColor}10, transparent)` }}>
+                      {item.image ? <img src={item.image} alt={item.name} className="w-12 h-12 object-contain" />
+                        : <span className="text-2xl">{item.icon}</span>}
+                    </div>
+
+                    {/* Item info */}
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-2">
+                        <span className="text-sm font-bold text-white truncate">{item.name}</span>
+                        <span className="text-[8px] px-1.5 py-0.5 rounded-full font-bold uppercase"
+                          style={{ color: rarityColor, background: `${rarityColor}15`, border: `1px solid ${rarityColor}25` }}>{item.rarity}</span>
+                        {item.quantity > 1 && <span className="text-[9px] text-indigo-400 font-bold">×{item.quantity}</span>}
+                      </div>
+                      <div className="flex items-center gap-3 mt-0.5">
+                        <span className="text-[10px] text-slate-400">{item.category}</span>
+                        {shopPrice > 0 && (
+                          <span className="text-[9px] text-slate-500">Shop: 🪙{shopPrice.toLocaleString()}</span>
+                        )}
+                      </div>
+                    </div>
+
+                    {/* Price & Sell */}
+                    <div className="flex items-center gap-3 flex-shrink-0">
+                      <div className="text-right">
+                        <div className="text-[9px] text-slate-500 mb-0.5">Sell Price (50%)</div>
+                        <div className="flex items-center gap-1">
+                          <span className="text-sm">🪙</span>
+                          <span className={`text-base font-black ${sellbackPrice > 0 ? 'text-yellow-400' : 'text-slate-600'}`}>
+                            {sellbackPrice > 0 ? sellbackPrice.toLocaleString() : 'N/A'}
+                          </span>
+                        </div>
+                      </div>
+                      <button
+                        onClick={() => {
+                          if (sellbackPrice <= 0 || !onSellToSystem) return;
+                          playClickSound();
+                          setShowSellbackAnim(item.id);
+                          setTimeout(() => setShowSellbackAnim(null), 1500);
+                          // Custom sell to system: add coins = 50% of shop price
+                          onSellToSystem(item);
+                        }}
+                        disabled={sellbackPrice <= 0}
+                        className={`px-4 py-2 rounded-xl text-xs font-bold uppercase transition-all cursor-pointer flex items-center gap-1.5 ${
+                          sellbackPrice > 0
+                            ? 'bg-gradient-to-r from-amber-500/20 to-orange-500/20 text-amber-400 border border-amber-500/30 hover:scale-105 active:scale-95'
+                            : 'bg-slate-800/50 text-slate-600 border border-slate-700/30 cursor-not-allowed'
+                        }`}
+                      >
+                        🪙 {sellbackPrice > 0 ? sellbackPrice.toLocaleString() : '—'} Sell
+                      </button>
+                    </div>
+                  </div>
+
+                  {/* Sell animation */}
+                  {isSellbackAnim && (
+                    <div className="absolute inset-0 z-30 flex items-center justify-center bg-amber-500/10 rounded-xl animate-slide-in">
+                      <div className="flex items-center gap-2 px-4 py-2 rounded-xl bg-amber-500/20 border border-amber-500/40">
+                        <span className="text-lg">💰</span>
+                        <span className="text-sm font-bold text-amber-400">Sold for 🪙{sellbackPrice.toLocaleString()}!</span>
+                      </div>
+                    </div>
+                  )}
                 </div>
               );
             })
