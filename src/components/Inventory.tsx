@@ -1,15 +1,18 @@
 'use client';
 
 import React, { useState } from 'react';
-import { InventoryItem, MarketCategory, GUN_SKINS } from '@/lib/gameTypes';
+import { InventoryItem, MarketCategory, GUN_SKINS, CurrencyType } from '@/lib/gameTypes';
 import { getRarityColor, getRarityGlow } from '@/lib/gameUtils';
 import { playClickSound } from './SoundManager';
+import ExchangePanel from './ExchangePanel';
 
 interface InventoryProps {
   items: InventoryItem[];
   onRepairItem: (item: InventoryItem) => void;
   playerCoins: number;
   playerGems: number;
+  playerUsdt: number;
+  onExchange: (from: CurrencyType, to: CurrencyType, fromAmount: number, toAmount: number) => void;
 }
 
 const TABS: { key: MarketCategory | 'all'; label: string; icon: string }[] = [
@@ -28,9 +31,10 @@ function formatDate(ts: number) {
   return new Date(ts).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric', hour: '2-digit', minute: '2-digit' });
 }
 
-export default function Inventory({ items, onRepairItem, playerCoins, playerGems }: InventoryProps) {
+export default function Inventory({ items, onRepairItem, playerCoins, playerGems, playerUsdt, onExchange }: InventoryProps) {
   const [selectedTab, setSelectedTab] = useState<MarketCategory | 'all'>('all');
   const [detailItem, setDetailItem] = useState<InventoryItem | null>(null);
+  const [showExchange, setShowExchange] = useState(false);
 
   const filtered = selectedTab === 'all' ? items : items.filter((i) => i.category === selectedTab);
   const totalItems = items.reduce((acc, i) => acc + i.quantity, 0);
@@ -67,13 +71,17 @@ export default function Inventory({ items, onRepairItem, playerCoins, playerGems
           </div>
           <div className="rounded-xl p-3 text-center" style={{ background: 'linear-gradient(135deg, rgba(34,197,94,0.1), rgba(16,185,129,0.05))', border: '1px solid rgba(34,197,94,0.25)' }}>
             <span className="text-2xl">💵</span>
-            <div className="text-lg font-black text-green-400 mt-1">0.00</div>
+            <div className="text-lg font-black text-green-400 mt-1">{playerUsdt.toFixed(2)}</div>
             <div className="text-[9px] text-green-400/60 font-semibold uppercase">USDT</div>
           </div>
-          <div className="rounded-xl p-3 text-center cursor-pointer hover:scale-105 transition-all" style={{ background: 'linear-gradient(135deg, rgba(168,85,247,0.1), rgba(139,92,246,0.05))', border: '1px solid rgba(168,85,247,0.25)' }}>
-            <span className="text-2xl">🔄</span>
+          <div
+            className="rounded-xl p-3 text-center cursor-pointer hover:scale-105 active:scale-95 transition-all"
+            style={{ background: 'linear-gradient(135deg, rgba(168,85,247,0.15), rgba(139,92,246,0.08))', border: '1px solid rgba(168,85,247,0.35)', boxShadow: '0 0 15px rgba(139,92,246,0.1)' }}
+            onClick={() => { playClickSound(); setShowExchange(true); }}
+          >
+            <span className="text-2xl">💱</span>
             <div className="text-sm font-black text-purple-400 mt-1">Exchange</div>
-            <div className="text-[9px] text-purple-400/60 font-semibold uppercase">Coming Soon</div>
+            <div className="text-[9px] text-purple-400/60 font-semibold uppercase">Swap Now</div>
           </div>
         </div>
 
@@ -218,6 +226,17 @@ export default function Inventory({ items, onRepairItem, playerCoins, playerGems
           playerCoins={playerCoins}
           onRepair={() => { onRepairItem(detailItem); setDetailItem(null); }}
           onClose={() => setDetailItem(null)}
+        />
+      )}
+
+      {/* Exchange Panel Modal */}
+      {showExchange && (
+        <ExchangePanel
+          coins={playerCoins}
+          gems={playerGems}
+          usdt={playerUsdt}
+          onExchange={onExchange}
+          onClose={() => setShowExchange(false)}
         />
       )}
     </>

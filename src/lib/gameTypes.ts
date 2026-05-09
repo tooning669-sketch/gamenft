@@ -46,6 +46,7 @@ export interface PlayerState {
   maxEnergy: number;
   coins: number;
   gems: number;
+  usdt: number;
   level: number;
   xp: number;
   maxXp: number;
@@ -61,6 +62,35 @@ export interface Projectile {
   ammo: AmmoType;
   active: boolean;
 }
+
+// ==========================================
+// Exchange Rate Constants
+// ==========================================
+
+export type CurrencyType = 'coins' | 'gems' | 'usdt';
+
+export interface ExchangeRate {
+  from: CurrencyType;
+  to: CurrencyType;
+  rate: number; // how many 'to' units you get for 1 'from' unit
+  label: string;
+}
+
+// Core rates
+export const USDT_TO_GOLD = 175;       // 1 USDT = 175 Gold
+export const DIAMOND_TO_USDT = 5;      // 1 Diamond = 5 USDT
+export const DIAMOND_TO_GOLD = USDT_TO_GOLD * DIAMOND_TO_USDT; // 1 Diamond = 875 Gold
+export const EXCHANGE_FEE_PERCENT = 2; // 2% fee
+export const GOLD_TO_THB = 0.183;      // 1 Gold ≈ 0.183 THB (display only)
+
+export const EXCHANGE_PAIRS: ExchangeRate[] = [
+  { from: 'coins', to: 'gems',  rate: 1 / DIAMOND_TO_GOLD, label: '🪙 Gold → 💎 Diamond' },
+  { from: 'gems',  to: 'coins', rate: DIAMOND_TO_GOLD,     label: '💎 Diamond → 🪙 Gold' },
+  { from: 'coins', to: 'usdt',  rate: 1 / USDT_TO_GOLD,    label: '🪙 Gold → 💵 USDT' },
+  { from: 'usdt',  to: 'coins', rate: USDT_TO_GOLD,        label: '💵 USDT → 🪙 Gold' },
+  { from: 'gems',  to: 'usdt',  rate: DIAMOND_TO_USDT,     label: '💎 Diamond → 💵 USDT' },
+  { from: 'usdt',  to: 'gems',  rate: 1 / DIAMOND_TO_USDT, label: '💵 USDT → 💎 Diamond' },
+];
 
 // ==========================================
 // Game Constants

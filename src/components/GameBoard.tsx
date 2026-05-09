@@ -11,6 +11,7 @@ import {
   MarketplaceItem,
   MarketListing,
   InventoryItem,
+  CurrencyType,
   AMMO_TYPES,
   GUN_SKINS,
   AVAILABLE_CARDS,
@@ -35,6 +36,7 @@ const INITIAL_PLAYER: PlayerState = {
   maxEnergy: 100,
   coins: 12450,
   gems: 1250,
+  usdt: 0,
   level: 25,
   xp: 68,
   maxXp: 100,
@@ -730,6 +732,26 @@ export default function GameBoard() {
     });
   }, []);
 
+  // Handle currency exchange
+  const handleExchange = useCallback((from: CurrencyType, to: CurrencyType, fromAmount: number, toAmount: number) => {
+    setPlayer((prev) => {
+      const updated = { ...prev };
+      // Deduct from source
+      if (from === 'coins') updated.coins = Math.max(0, updated.coins - fromAmount);
+      else if (from === 'gems') updated.gems = Math.max(0, updated.gems - fromAmount);
+      else updated.usdt = Math.max(0, updated.usdt - fromAmount);
+      // Add to destination
+      if (to === 'coins') updated.coins += Math.floor(toAmount);
+      else if (to === 'gems') updated.gems += toAmount;
+      else updated.usdt += toAmount;
+      // Round to avoid floating-point drift
+      updated.coins = Math.floor(updated.coins);
+      updated.gems = parseFloat(updated.gems.toFixed(4));
+      updated.usdt = parseFloat(updated.usdt.toFixed(4));
+      return updated;
+    });
+  }, []);
+
   return (
     <div className="h-screen flex flex-col relative z-10 overflow-hidden">
       {/* Header */}
@@ -1010,6 +1032,8 @@ export default function GameBoard() {
             }}
             playerCoins={player.coins}
             playerGems={player.gems}
+            playerUsdt={player.usdt}
+            onExchange={handleExchange}
           />
         )}
       </main>
