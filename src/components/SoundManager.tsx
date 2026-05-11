@@ -160,35 +160,37 @@ export function playCountdownBeep(isFinal: boolean = false) {
 }
 
 // ==========================================
-// Tense / Thriller Background Music
+// Fun / Upbeat Background Music (Chiptune)
 // ==========================================
 
 let tenseNodes: { osc: OscillatorNode; gain: GainNode }[] = [];
 let tensePlaying = false;
+let melodyInterval: ReturnType<typeof setInterval> | null = null;
+let arpeggioInterval: ReturnType<typeof setInterval> | null = null;
 
 export function startTenseMusic() {
   if (tensePlaying) return;
   try {
     const ctx = getAudioContext();
 
-    // Low pulsing bass
+    // === Bouncy Bass Line ===
     const bassOsc = ctx.createOscillator();
     const bassGain = ctx.createGain();
     const bassLfo = ctx.createOscillator();
     const bassLfoGain = ctx.createGain();
 
-    bassOsc.type = 'sawtooth';
-    bassOsc.frequency.setValueAtTime(55, ctx.currentTime);
+    bassOsc.type = 'square';
+    bassOsc.frequency.setValueAtTime(110, ctx.currentTime);
 
     bassLfo.type = 'sine';
-    bassLfo.frequency.setValueAtTime(4, ctx.currentTime); // 4Hz pulse
-    bassLfoGain.gain.setValueAtTime(0.04, ctx.currentTime);
+    bassLfo.frequency.setValueAtTime(8, ctx.currentTime); // 8Hz bounce
+    bassLfoGain.gain.setValueAtTime(0.03, ctx.currentTime);
 
     bassLfo.connect(bassLfoGain);
     bassLfoGain.connect(bassGain.gain);
     bassOsc.connect(bassGain);
     bassGain.connect(ctx.destination);
-    bassGain.gain.setValueAtTime(0.06, ctx.currentTime);
+    bassGain.gain.setValueAtTime(0.045, ctx.currentTime);
 
     bassOsc.start(ctx.currentTime);
     bassLfo.start(ctx.currentTime);
@@ -196,41 +198,91 @@ export function startTenseMusic() {
     tenseNodes.push({ osc: bassOsc, gain: bassGain });
     tenseNodes.push({ osc: bassLfo, gain: bassLfoGain });
 
-    // High tension drone
-    const droneOsc = ctx.createOscillator();
-    const droneGain = ctx.createGain();
-    droneOsc.type = 'sine';
-    droneOsc.frequency.setValueAtTime(220, ctx.currentTime);
-    droneOsc.frequency.linearRampToValueAtTime(280, ctx.currentTime + 30);
-    droneGain.gain.setValueAtTime(0.025, ctx.currentTime);
-    droneOsc.connect(droneGain);
-    droneGain.connect(ctx.destination);
-    droneOsc.start(ctx.currentTime);
-    tenseNodes.push({ osc: droneOsc, gain: droneGain });
+    // === Happy Pad Chord (C major) ===
+    const padFreqs = [261.63, 329.63, 392.0]; // C4, E4, G4
+    padFreqs.forEach((freq) => {
+      const padOsc = ctx.createOscillator();
+      const padGain = ctx.createGain();
+      padOsc.type = 'triangle';
+      padOsc.frequency.setValueAtTime(freq, ctx.currentTime);
+      padGain.gain.setValueAtTime(0.018, ctx.currentTime);
+      padOsc.connect(padGain);
+      padGain.connect(ctx.destination);
+      padOsc.start(ctx.currentTime);
+      tenseNodes.push({ osc: padOsc, gain: padGain });
+    });
 
-    // Ticking clock effect
-    const tickOsc = ctx.createOscillator();
-    const tickGain = ctx.createGain();
-    const tickLfo = ctx.createOscillator();
-    const tickLfoGain = ctx.createGain();
+    // === Upbeat Arpeggio Melody (looping chiptune pattern) ===
+    const melodyNotes = [
+      523.25, 659.25, 783.99, 1046.50, // C5 E5 G5 C6
+      783.99, 659.25, 523.25, 392.00,  // G5 E5 C5 G4
+      587.33, 698.46, 880.00, 1174.66, // D5 F5 A5 D6
+      880.00, 698.46, 587.33, 523.25,  // A5 F5 D5 C5
+    ];
+    let melodyIdx = 0;
 
-    tickOsc.type = 'square';
-    tickOsc.frequency.setValueAtTime(1200, ctx.currentTime);
-    tickLfo.type = 'square';
-    tickLfo.frequency.setValueAtTime(2, ctx.currentTime); // 2Hz tick
-    tickLfoGain.gain.setValueAtTime(0.015, ctx.currentTime);
+    melodyInterval = setInterval(() => {
+      try {
+        const mCtx = getAudioContext();
+        const noteOsc = mCtx.createOscillator();
+        const noteGain = mCtx.createGain();
+        noteOsc.type = 'square';
+        noteOsc.frequency.setValueAtTime(melodyNotes[melodyIdx % melodyNotes.length], mCtx.currentTime);
+        noteGain.gain.setValueAtTime(0.04, mCtx.currentTime);
+        noteGain.gain.exponentialRampToValueAtTime(0.001, mCtx.currentTime + 0.12);
+        noteOsc.connect(noteGain);
+        noteGain.connect(mCtx.destination);
+        noteOsc.start(mCtx.currentTime);
+        noteOsc.stop(mCtx.currentTime + 0.13);
+        melodyIdx++;
+      } catch {}
+    }, 150); // fast 16th note feel
 
-    tickLfo.connect(tickLfoGain);
-    tickLfoGain.connect(tickGain.gain);
-    tickOsc.connect(tickGain);
-    tickGain.connect(ctx.destination);
-    tickGain.gain.setValueAtTime(0.015, ctx.currentTime);
+    // === Rhythmic Hi-hat Pattern ===
+    const hihatPattern = [1, 0, 1, 1, 0, 1, 1, 0]; // syncopated
+    let hihatIdx = 0;
 
-    tickOsc.start(ctx.currentTime);
-    tickLfo.start(ctx.currentTime);
+    arpeggioInterval = setInterval(() => {
+      try {
+        if (hihatPattern[hihatIdx % hihatPattern.length]) {
+          const hCtx = getAudioContext();
+          // Use noise-like sound via high-freq oscillator
+          const hatOsc = hCtx.createOscillator();
+          const hatGain = hCtx.createGain();
+          hatOsc.type = 'square';
+          hatOsc.frequency.setValueAtTime(6000 + Math.random() * 2000, hCtx.currentTime);
+          hatGain.gain.setValueAtTime(0.015, hCtx.currentTime);
+          hatGain.gain.exponentialRampToValueAtTime(0.001, hCtx.currentTime + 0.04);
+          hatOsc.connect(hatGain);
+          hatGain.connect(hCtx.destination);
+          hatOsc.start(hCtx.currentTime);
+          hatOsc.stop(hCtx.currentTime + 0.05);
+        }
+        hihatIdx++;
+      } catch {}
+    }, 125); // 8th note at ~120 BPM
 
-    tenseNodes.push({ osc: tickOsc, gain: tickGain });
-    tenseNodes.push({ osc: tickLfo, gain: tickLfoGain });
+    // === Bass Note Changes (chord progression loop) ===
+    const bassNotes = [110, 110, 130.81, 130.81, 146.83, 146.83, 130.81, 130.81]; // A2 A2 C3 C3 D3 D3 C3 C3
+    let bassIdx = 0;
+
+    const bassChangeInterval = setInterval(() => {
+      try {
+        bassOsc.frequency.setValueAtTime(bassNotes[bassIdx % bassNotes.length], getAudioContext().currentTime);
+        bassIdx++;
+      } catch {}
+    }, 500); // change every half second
+
+    // Store the bass change interval for cleanup (hack: reuse a dummy oscillator)
+    const dummyOsc = ctx.createOscillator();
+    const dummyGain = ctx.createGain();
+    dummyGain.gain.setValueAtTime(0, ctx.currentTime);
+    dummyOsc.connect(dummyGain);
+    dummyGain.connect(ctx.destination);
+    dummyOsc.start(ctx.currentTime);
+    tenseNodes.push({ osc: dummyOsc, gain: dummyGain });
+    // Store interval ID on the gain node for cleanup
+    (dummyGain as any).__intervalId = bassChangeInterval;
 
     tensePlaying = true;
   } catch {}
@@ -240,11 +292,70 @@ export function stopTenseMusic() {
   try {
     const ctx = getAudioContext();
     tenseNodes.forEach(({ osc, gain }) => {
+      // Clean up any attached interval
+      if ((gain as any).__intervalId) {
+        clearInterval((gain as any).__intervalId);
+      }
       gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.3);
       osc.stop(ctx.currentTime + 0.4);
     });
     tenseNodes = [];
     tensePlaying = false;
+    if (melodyInterval) { clearInterval(melodyInterval); melodyInterval = null; }
+    if (arpeggioInterval) { clearInterval(arpeggioInterval); arpeggioInterval = null; }
+  } catch {}
+}
+
+// ==========================================
+// Map Change Transition Sound
+// ==========================================
+
+export function playMapChangeSound() {
+  try {
+    const ctx = getAudioContext();
+
+    // Whoosh sweep up
+    const sweepOsc = ctx.createOscillator();
+    const sweepGain = ctx.createGain();
+    sweepOsc.type = 'sawtooth';
+    sweepOsc.frequency.setValueAtTime(200, ctx.currentTime);
+    sweepOsc.frequency.exponentialRampToValueAtTime(2000, ctx.currentTime + 0.3);
+    sweepOsc.frequency.exponentialRampToValueAtTime(400, ctx.currentTime + 0.5);
+    sweepGain.gain.setValueAtTime(0.08, ctx.currentTime);
+    sweepGain.gain.exponentialRampToValueAtTime(0.12, ctx.currentTime + 0.15);
+    sweepGain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.5);
+    sweepOsc.connect(sweepGain);
+    sweepGain.connect(ctx.destination);
+    sweepOsc.start(ctx.currentTime);
+    sweepOsc.stop(ctx.currentTime + 0.5);
+
+    // Sparkle chime overlay
+    const chimeNotes = [784, 988, 1175, 1568]; // G5, B5, D6, G6
+    chimeNotes.forEach((freq, i) => {
+      const chimeOsc = ctx.createOscillator();
+      const chimeGain = ctx.createGain();
+      chimeOsc.type = 'sine';
+      chimeOsc.frequency.setValueAtTime(freq, ctx.currentTime + 0.1 + i * 0.06);
+      chimeGain.gain.setValueAtTime(0.06, ctx.currentTime + 0.1 + i * 0.06);
+      chimeGain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.1 + i * 0.06 + 0.25);
+      chimeOsc.connect(chimeGain);
+      chimeGain.connect(ctx.destination);
+      chimeOsc.start(ctx.currentTime + 0.1 + i * 0.06);
+      chimeOsc.stop(ctx.currentTime + 0.1 + i * 0.06 + 0.25);
+    });
+
+    // Low thud impact
+    const thudOsc = ctx.createOscillator();
+    const thudGain = ctx.createGain();
+    thudOsc.type = 'sine';
+    thudOsc.frequency.setValueAtTime(80, ctx.currentTime + 0.25);
+    thudOsc.frequency.exponentialRampToValueAtTime(40, ctx.currentTime + 0.5);
+    thudGain.gain.setValueAtTime(0.1, ctx.currentTime + 0.25);
+    thudGain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.55);
+    thudOsc.connect(thudGain);
+    thudGain.connect(ctx.destination);
+    thudOsc.start(ctx.currentTime + 0.25);
+    thudOsc.stop(ctx.currentTime + 0.55);
   } catch {}
 }
 

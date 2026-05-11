@@ -29,7 +29,7 @@ import GunSkinPicker from './GunSkinPicker';
 import CardPicker from './CardPicker';
 import Marketplace from './Marketplace';
 import Inventory from './Inventory';
-import SoundToggle, { playShootSound, playPopSound, playRewardSound, playClickSound, playCountdownBeep, startTenseMusic, stopTenseMusic, playTimeUpSound } from './SoundManager';
+import SoundToggle, { playShootSound, playPopSound, playRewardSound, playClickSound, playCountdownBeep, startTenseMusic, stopTenseMusic, playTimeUpSound, playMapChangeSound } from './SoundManager';
 
 const INITIAL_PLAYER: PlayerState = {
   energy: 100,
@@ -601,6 +601,14 @@ export default function GameBoard() {
     }, 3800);
   }, [player.coins, countdownValue, roundsPlayed, gunSkin.id, energyCooldowns]);
 
+  // Change map: just re-randomize the grid without starting a new round
+  const handleChangeMap = useCallback(() => {
+    if (!isRoundActive) return; // only allow during active round
+    playMapChangeSound();
+    setBalls(generateGrid());
+    setActiveReward(null);
+  }, [isRoundActive]);
+
   const handleRewardComplete = useCallback(() => {
     setActiveReward(null);
   }, []);
@@ -917,6 +925,27 @@ export default function GameBoard() {
                           <span className="text-2xl">🎮</span>
                           <span className="text-white">START GAME</span>
                           <span className="text-yellow-300 text-sm">🪙{RANDOMIZE_COST}</span>
+                        </button>
+                      </div>
+                    )}
+                    {/* Change Map button - visible during active round */}
+                    {isRoundActive && countdownValue === null && !showRoundSummary && (
+                      <div className="absolute top-2 right-2 z-30">
+                        <button
+                          onClick={handleChangeMap}
+                          className="px-4 py-2 rounded-xl text-sm font-bold uppercase tracking-wider
+                            transition-all duration-200 cursor-pointer
+                            hover:scale-105 active:scale-95
+                            flex items-center gap-2"
+                          style={{
+                            background: 'linear-gradient(135deg, rgba(139,92,246,0.85), rgba(59,130,246,0.85))',
+                            boxShadow: '0 4px 16px rgba(139,92,246,0.35), inset 0 1px 0 rgba(255,255,255,0.2)',
+                            border: '1px solid rgba(167,139,250,0.5)',
+                            textShadow: '0 1px 4px rgba(0,0,0,0.4)',
+                          }}
+                        >
+                          <span>🗺️</span>
+                          <span className="text-white">CHANGE MAP</span>
                         </button>
                       </div>
                     )}
