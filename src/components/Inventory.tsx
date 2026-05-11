@@ -49,7 +49,7 @@ export default function Inventory({ items, onRepairItem, playerCoins, playerGems
       <div className="flex flex-col gap-4 sm:gap-6 max-w-5xl mx-auto">
         {/* Header */}
         <div className="text-center">
-          <h2 className="text-xl sm:text-2xl font-black text-transparent bg-clip-text bg-gradient-to-r from-pink-400 via-fuchsia-400 to-purple-400">
+          <h2 className="text-xl sm:text-2xl font-black text-transparent bg-clip-text bg-gradient-to-r from-sky-200 via-lime-200 to-yellow-200">
             👛 WALLET
           </h2>
           <p className="text-[11px] text-slate-500 mt-1">
@@ -76,17 +76,17 @@ export default function Inventory({ items, onRepairItem, playerCoins, playerGems
           </div>
           <div
             className="rounded-xl p-3 text-center cursor-pointer hover:scale-105 active:scale-95 transition-all"
-            style={{ background: 'linear-gradient(135deg, rgba(168,85,247,0.15), rgba(139,92,246,0.08))', border: '1px solid rgba(168,85,247,0.35)', boxShadow: '0 0 15px rgba(139,92,246,0.1)' }}
+            style={{ background: 'linear-gradient(135deg, rgba(56,189,248,0.16), rgba(52,211,153,0.08))', border: '1px solid rgba(125,211,252,0.36)', boxShadow: '0 0 15px rgba(56,189,248,0.12)' }}
             onClick={() => { playClickSound(); setShowExchange(true); }}
           >
             <span className="text-2xl">💱</span>
-            <div className="text-sm font-black text-purple-400 mt-1">Exchange</div>
-            <div className="text-[9px] text-purple-400/60 font-semibold uppercase">Swap Now</div>
+            <div className="text-sm font-black text-sky-300 mt-1">Exchange</div>
+            <div className="text-[9px] text-sky-300/70 font-semibold uppercase">Swap Now</div>
           </div>
         </div>
 
         {/* Divider */}
-        <div className="h-px bg-gradient-to-r from-transparent via-pink-500/30 to-transparent" />
+        <div className="h-px bg-gradient-to-r from-transparent via-cyan-200/35 to-transparent" />
 
         {/* Category Tabs */}
         <div className="flex gap-2 justify-center flex-wrap">
@@ -138,14 +138,14 @@ export default function Inventory({ items, onRepairItem, playerCoins, playerGems
                   className={`relative rounded-xl overflow-hidden transition-all duration-200 cursor-pointer hover:scale-[1.03] ${isBroken ? 'ring-1 ring-red-500/50' : ''}`}
                   onClick={() => { playClickSound(); setDetailItem(item); }}
                   style={{
-                    background: 'linear-gradient(135deg, rgba(15,23,42,0.95), rgba(30,41,59,0.8))',
+                    background: 'linear-gradient(135deg, rgba(7,47,62,0.9), rgba(8,96,95,0.72))',
                     border: `1px solid ${isBroken ? 'rgba(239,68,68,0.4)' : rarityColor + '30'}`,
                   }}
                 >
                   {/* Quantity badge */}
                   {item.quantity > 1 && (
                     <div className="absolute top-2 right-2 z-10 px-2 py-0.5 rounded-full text-[10px] font-black text-white"
-                      style={{ background: 'rgba(99,102,241,0.8)' }}>
+                      style={{ background: 'rgba(14,165,233,0.86)' }}>
                       ×{item.quantity}
                     </div>
                   )}
@@ -330,7 +330,7 @@ function ItemDetailModal({ item, gunStats, playerCoins, onRepair, onClose }: Ite
           )}
           {item.quantity > 1 && (
             <div className="absolute top-3 right-12 px-2.5 py-1 rounded-full text-[10px] font-black text-white"
-              style={{ background: 'rgba(99,102,241,0.8)' }}>
+              style={{ background: 'rgba(14,165,233,0.86)' }}>
               ×{item.quantity}
             </div>
           )}
@@ -358,14 +358,14 @@ function ItemDetailModal({ item, gunStats, playerCoins, onRepair, onClose }: Ite
           {/* Gun Stats (if weapon) */}
           {gunStats && (
             <div className="rounded-xl p-3 space-y-2"
-              style={{ background: 'rgba(15,23,42,0.6)', border: '1px solid rgba(99,102,241,0.15)' }}>
-              <h4 className="text-[10px] font-bold text-indigo-300 uppercase tracking-wider">⚔️ Weapon Stats</h4>
+              style={{ background: 'rgba(8,47,73,0.56)', border: '1px solid rgba(125,211,252,0.18)' }}>
+              <h4 className="text-[10px] font-bold text-sky-300 uppercase tracking-wider">⚔️ Weapon Stats</h4>
               <div className="grid grid-cols-2 gap-2">
                 {[
                   { label: 'DMG', value: gunStats.dmg, icon: '💥', color: '#ef4444' },
                   { label: 'Energy', value: gunStats.energy, icon: '⚡', color: '#f59e0b' },
                   { label: 'Durability', value: `${item.durability ?? gunStats.durability}/${gunStats.durability}`, icon: '🔧', color: '#06b6d4' },
-                  { label: 'Cooldown', value: `${gunStats.cooldownSec}s`, icon: '⏱️', color: '#8b5cf6' },
+                  { label: 'Cooldown', value: `${gunStats.cooldownSec}s`, icon: '⏱️', color: '#38bdf8' },
                 ].map((stat) => (
                   <div key={stat.label} className="flex items-center gap-2 px-2.5 py-1.5 rounded-lg"
                     style={{ background: `${stat.color}08`, border: `1px solid ${stat.color}15` }}>
@@ -414,8 +414,8 @@ function ItemDetailModal({ item, gunStats, playerCoins, onRepair, onClose }: Ite
 
           {/* Attributes */}
           <div className="rounded-xl p-3 space-y-2"
-            style={{ background: 'rgba(15,23,42,0.6)', border: '1px solid rgba(99,102,241,0.15)' }}>
-            <h4 className="text-[10px] font-bold text-indigo-300 uppercase tracking-wider">📋 Attributes</h4>
+            style={{ background: 'rgba(8,47,73,0.56)', border: '1px solid rgba(125,211,252,0.18)' }}>
+            <h4 className="text-[10px] font-bold text-sky-300 uppercase tracking-wider">📋 Attributes</h4>
             <div className="space-y-1.5">
               <div className="flex justify-between items-center text-[11px]">
                 <span className="text-slate-500">Category</span>
@@ -445,12 +445,12 @@ function ItemDetailModal({ item, gunStats, playerCoins, onRepair, onClose }: Ite
           {/* NFT Info */}
           {item.tokenId && (
             <div className="rounded-xl p-3 space-y-2"
-              style={{ background: 'linear-gradient(135deg, rgba(139,92,246,0.08), rgba(99,102,241,0.05))', border: '1px solid rgba(139,92,246,0.2)' }}>
-              <h4 className="text-[10px] font-bold text-purple-300 uppercase tracking-wider">🔗 NFT Information</h4>
+              style={{ background: 'linear-gradient(135deg, rgba(56,189,248,0.08), rgba(52,211,153,0.05))', border: '1px solid rgba(125,211,252,0.2)' }}>
+              <h4 className="text-[10px] font-bold text-sky-300 uppercase tracking-wider">🔗 NFT Information</h4>
               <div className="space-y-1.5">
                 <div className="flex justify-between items-center text-[11px]">
                   <span className="text-slate-500">Token ID</span>
-                  <span className="text-purple-300 font-mono font-bold text-[10px]">{item.tokenId}</span>
+                  <span className="text-sky-300 font-mono font-bold text-[10px]">{item.tokenId}</span>
                 </div>
                 <div className="flex justify-between items-center text-[11px]">
                   <span className="text-slate-500">Chain</span>

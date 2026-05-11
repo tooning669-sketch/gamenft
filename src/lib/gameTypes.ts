@@ -113,13 +113,13 @@ export const TIER_CONFIG: Record<Tier, { hp: number; colors: { color: string; fr
     colors: [
       { color: '#f97316', from: '#fb923c', to: '#ea580c' },
       { color: '#ef4444', from: '#f87171', to: '#dc2626' },
-      { color: '#ec4899', from: '#f472b6', to: '#db2777' },
+      { color: '#fb7185', from: '#fda4af', to: '#f43f5e' },
     ],
   },
   3: {
     hp: 200,
     colors: [
-      { color: '#a855f7', from: '#c084fc', to: '#9333ea' },
+      { color: '#38bdf8', from: '#7dd3fc', to: '#0284c7' },
       { color: '#eab308', from: '#facc15', to: '#ca8a04' },
       { color: '#f59e0b', from: '#fbbf24', to: '#d97706' },
     ],

@@ -22,14 +22,14 @@ export default function RewardPanel({ rewards, stats, player, onRandomize, rando
     <div
       className="h-full rounded-2xl p-4 sm:p-5 flex flex-col"
       style={{
-        background: 'linear-gradient(180deg, rgba(15,10,40,0.95), rgba(30,15,60,0.9))',
-        border: '1px solid rgba(236, 72, 153, 0.2)',
+        background: 'linear-gradient(180deg, rgba(5, 58, 75, 0.9), rgba(8, 96, 95, 0.82))',
+        border: '1px solid rgba(125, 211, 252, 0.26)',
         backdropFilter: 'blur(10px)',
-        boxShadow: '0 0 30px rgba(0,0,0,0.3)',
+        boxShadow: '0 16px 36px rgba(8,47,73,0.22)',
       }}
     >
       {/* Header */}
-      <h2 className="text-base sm:text-lg font-bold text-transparent bg-clip-text bg-gradient-to-r from-pink-400 to-purple-400 uppercase tracking-wider text-center mb-4">
+      <h2 className="text-base sm:text-lg font-bold text-transparent bg-clip-text bg-gradient-to-r from-yellow-200 via-lime-200 to-cyan-200 uppercase tracking-wider text-center mb-4">
         🏆 Reward Rate
       </h2>
 
@@ -53,7 +53,7 @@ export default function RewardPanel({ rewards, stats, player, onRandomize, rando
                   {count}x | ~{avgRate.toFixed(0)}%
                 </span>
               </div>
-              <div className="h-2.5 rounded-full bg-slate-800 overflow-hidden">
+              <div className="h-2.5 rounded-full bg-cyan-950/70 overflow-hidden">
                 <div
                   className="h-full rounded-full transition-all duration-500"
                   style={{
@@ -83,12 +83,12 @@ export default function RewardPanel({ rewards, stats, player, onRandomize, rando
         `}
         style={{
           background: canAffordRandomize
-            ? 'linear-gradient(135deg, #6366f1, #8b5cf6, #a855f7)'
+            ? 'linear-gradient(135deg, #22c55e, #38bdf8, #facc15)'
             : 'linear-gradient(135deg, #475569, #334155)',
           boxShadow: canAffordRandomize
-            ? '0 4px 20px rgba(99, 102, 241, 0.4), inset 0 1px 0 rgba(255,255,255,0.1)'
+            ? '0 4px 20px rgba(56, 189, 248, 0.34), inset 0 1px 0 rgba(255,255,255,0.22)'
             : 'none',
-          border: '1px solid rgba(139, 92, 246, 0.3)',
+          border: '1px solid rgba(255, 255, 255, 0.34)',
         }}
       >
         <span className="text-xl">🎲</span>
@@ -97,10 +97,10 @@ export default function RewardPanel({ rewards, stats, player, onRandomize, rando
       </button>
 
       {/* Divider */}
-      <div className="h-px bg-gradient-to-r from-transparent via-pink-500/30 to-transparent mb-4" />
+      <div className="h-px bg-gradient-to-r from-transparent via-cyan-200/35 to-transparent mb-4" />
 
       {/* Rewards header — only 3 latest */}
-      <h3 className="text-sm sm:text-base font-bold text-pink-300 uppercase tracking-wider mb-3">
+      <h3 className="text-sm sm:text-base font-bold text-yellow-200 uppercase tracking-wider mb-3">
         🎁 Latest Rewards
       </h3>
 
@@ -118,7 +118,7 @@ export default function RewardPanel({ rewards, stats, player, onRandomize, rando
                 key={`${reward.id}-${idx}`}
                 className="flex items-center gap-3 rounded-lg p-3 transition-all duration-200 hover:scale-[1.02] animate-slide-in"
                 style={{
-                  background: 'rgba(15,23,42,0.6)',
+                  background: 'rgba(8,47,73,0.56)',
                   border: `1px solid ${rarityColor}30`,
                 }}
               >

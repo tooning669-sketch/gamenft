@@ -758,20 +758,21 @@ export default function GameBoard() {
       <header
         className="py-3 sm:py-4 px-5 sm:px-8 flex items-center justify-between border-b"
         style={{
-          background: 'linear-gradient(90deg, rgba(15,10,40,0.97), rgba(30,15,60,0.95), rgba(15,10,40,0.97))',
-          borderColor: 'rgba(236, 72, 153, 0.3)',
+          background: 'linear-gradient(90deg, rgba(4,47,70,0.92), rgba(8,115,124,0.88), rgba(4,47,70,0.92))',
+          borderColor: 'rgba(125, 211, 252, 0.32)',
+          boxShadow: '0 10px 30px rgba(8,47,73,0.18)',
         }}
       >
         <div className="flex items-center gap-3">
-          <h1 className="text-2xl sm:text-3xl font-black text-transparent bg-clip-text bg-gradient-to-r from-indigo-400 via-purple-400 to-pink-400">
+          <h1 className="text-2xl sm:text-3xl font-black text-transparent bg-clip-text bg-gradient-to-r from-sky-200 via-cyan-200 to-yellow-200">
             🎮 BUBBLE BLAST
           </h1>
-          <span className="hidden sm:inline text-xs px-3 py-1 rounded-full bg-pink-500/20 text-pink-300 border border-pink-500/30 font-semibold">
+          <span className="hidden sm:inline text-xs px-3 py-1 rounded-full bg-yellow-300/20 text-yellow-100 border border-yellow-200/40 font-semibold">
             NFT
           </span>
         </div>
 
-        <nav className="hidden md:flex items-center gap-5 text-sm font-semibold text-slate-400">
+        <nav className="hidden md:flex items-center gap-5 text-sm font-semibold text-cyan-100/75">
           {[
             { label: 'HOME', tab: 'game' as const },
             { label: 'GAME', tab: 'game' as const },
@@ -786,8 +787,8 @@ export default function GameBoard() {
               }}
               className={`px-4 py-2 rounded-lg transition-all cursor-pointer ${
                 (item.tab === activeTab && (item.label === 'GAME' || item.label === 'MARKETPLACE'))
-                  ? 'bg-pink-500/20 text-pink-300 border border-pink-500/30'
-                  : 'hover:text-white hover:bg-slate-800/50'
+                  ? 'bg-yellow-300/20 text-yellow-100 border border-yellow-200/40'
+                  : 'hover:text-white hover:bg-cyan-900/35'
               }`}
             >
               {item.label}
@@ -801,16 +802,16 @@ export default function GameBoard() {
             onClick={() => { playClickSound(); setActiveTab('inventory'); }}
             className={`hidden sm:flex items-center gap-2 px-4 py-2 rounded-lg text-sm transition-all cursor-pointer hover:scale-105 active:scale-95 ${
               activeTab === 'inventory'
-                ? 'bg-pink-500/20 text-pink-300 border border-pink-500/30'
-                : 'bg-slate-800/50 border border-slate-700/50 hover:bg-slate-700/50'
+                ? 'bg-yellow-300/20 text-yellow-100 border border-yellow-200/40'
+                : 'bg-cyan-950/35 border border-cyan-200/20 hover:bg-cyan-800/35'
             }`}
           >
             <span className="text-lg">👛</span>
-            <span className="text-slate-200 font-semibold">Wallet</span>
+            <span className="text-cyan-50 font-semibold">Wallet</span>
           </button>
-          <div className="hidden sm:flex items-center gap-2 px-4 py-2 rounded-lg bg-slate-800/50 border border-slate-700/50 text-sm">
-            <span className="text-green-400">●</span>
-            <span className="text-slate-200 font-mono">0x8F...7a3B</span>
+          <div className="hidden sm:flex items-center gap-2 px-4 py-2 rounded-lg bg-cyan-950/35 border border-cyan-200/20 text-sm">
+            <span className="text-lime-300">●</span>
+            <span className="text-cyan-50 font-mono">0x8F...7a3B</span>
           </div>
         </div>
       </header>
@@ -866,7 +867,7 @@ export default function GameBoard() {
               </div>
 
               {/* Mobile player info bar */}
-              <div className="lg:hidden flex items-center justify-between gap-3 rounded-xl p-3 bg-slate-900/80 border border-slate-700/50">
+              <div className="lg:hidden flex items-center justify-between gap-3 rounded-xl p-3 bg-cyan-950/70 border border-cyan-200/20">
                 <div className="flex items-center gap-4">
                   <span className="text-sm">🪙 <span className="text-yellow-400 font-bold">{player.coins.toLocaleString()}</span></span>
                   <span className="text-sm">💎 <span className="text-cyan-400 font-bold">{player.gems.toLocaleString()}</span></span>
@@ -904,12 +905,12 @@ export default function GameBoard() {
                           `}
                           style={{
                             background: player.coins >= RANDOMIZE_COST
-                              ? 'linear-gradient(135deg, #ec4899, #a855f7, #6366f1)'
+                              ? 'linear-gradient(135deg, #fb7185, #facc15, #22c55e, #38bdf8)'
                               : 'linear-gradient(135deg, #475569, #334155)',
                             boxShadow: player.coins >= RANDOMIZE_COST
-                              ? '0 6px 30px rgba(236, 72, 153, 0.5), 0 0 60px rgba(168,85,247,0.3), inset 0 1px 0 rgba(255,255,255,0.2)'
+                              ? '0 8px 28px rgba(251, 191, 36, 0.42), 0 0 56px rgba(45,212,191,0.32), inset 0 1px 0 rgba(255,255,255,0.34)'
                               : 'none',
-                            border: '2px solid rgba(236, 72, 153, 0.4)',
+                            border: '2px solid rgba(255, 255, 255, 0.55)',
                             textShadow: '0 2px 8px rgba(0,0,0,0.5)',
                           }}
                         >
@@ -1106,9 +1107,9 @@ export default function GameBoard() {
           <div
             className="relative w-[90vw] max-w-lg rounded-2xl p-8 animate-skin-picker-enter"
             style={{
-              background: 'linear-gradient(135deg, rgba(15,23,42,0.98), rgba(30,41,59,0.98))',
-              border: '2px solid rgba(99, 102, 241, 0.4)',
-              boxShadow: '0 0 60px rgba(99,102,241,0.3)',
+              background: 'linear-gradient(135deg, rgba(7,47,62,0.98), rgba(10,96,100,0.96))',
+              border: '2px solid rgba(125, 211, 252, 0.45)',
+              boxShadow: '0 0 60px rgba(45,212,191,0.24)',
             }}
           >
             <h2 className="text-2xl font-black text-center text-transparent bg-clip-text bg-gradient-to-r from-amber-400 via-yellow-300 to-amber-400 mb-2">
@@ -1122,8 +1123,8 @@ export default function GameBoard() {
                 <div className="text-2xl font-bold text-white">{roundRewards.length}</div>
                 <div className="text-xs text-slate-400">Total</div>
               </div>
-              <div className="text-center p-3 rounded-xl bg-slate-800/50 border border-indigo-500/30">
-                <div className="text-2xl font-bold text-indigo-400">{roundRewards.filter(r => r.rarity === 'Rare').length}</div>
+              <div className="text-center p-3 rounded-xl bg-cyan-950/45 border border-sky-300/30">
+                <div className="text-2xl font-bold text-sky-300">{roundRewards.filter(r => r.rarity === 'Rare').length}</div>
                 <div className="text-xs text-slate-400">Rare</div>
               </div>
               <div className="text-center p-3 rounded-xl bg-slate-800/50 border border-amber-500/30">
@@ -1140,7 +1141,7 @@ export default function GameBoard() {
                 roundRewards.map((r, i) => {
                   const rc = getRarityColor(r.rarity);
                   return (
-                    <div key={`${r.id}-${i}`} className="flex items-center gap-3 rounded-lg p-3" style={{ background: 'rgba(15,23,42,0.6)', border: `1px solid ${rc}30` }}>
+                    <div key={`${r.id}-${i}`} className="flex items-center gap-3 rounded-lg p-3" style={{ background: 'rgba(8,47,73,0.56)', border: `1px solid ${rc}30` }}>
                       <span className="text-xl">{r.icon}</span>
                       <span className="text-sm font-semibold text-white flex-1 truncate">{r.name}</span>
                       <span className="text-xs font-bold uppercase" style={{ color: rc }}>{r.rarity}</span>
@@ -1159,9 +1160,9 @@ export default function GameBoard() {
               }}
               className="w-full py-4 rounded-xl text-base font-bold uppercase tracking-wider cursor-pointer hover:scale-105 active:scale-95 transition-all"
               style={{
-                background: 'linear-gradient(135deg, #8b5cf6, #6366f1, #3b82f6)',
-                boxShadow: '0 4px 20px rgba(99, 102, 241, 0.4)',
-                border: '1px solid rgba(139, 92, 246, 0.3)',
+                background: 'linear-gradient(135deg, #22c55e, #38bdf8)',
+                boxShadow: '0 4px 20px rgba(56, 189, 248, 0.35)',
+                border: '1px solid rgba(125, 211, 252, 0.42)',
               }}
             >
               ✅ Continue

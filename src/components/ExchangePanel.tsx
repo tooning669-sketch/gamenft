@@ -162,7 +162,7 @@ export default function ExchangePanel({ coins, gems, usdt, onExchange, onClose }
         </button>
         {showDropdown && (
           <div className="absolute top-full left-0 mt-1 z-50 rounded-xl overflow-hidden min-w-[140px] animate-slide-in"
-            style={{ background: 'rgba(15,23,42,0.98)', border: '1px solid rgba(99,102,241,0.3)', boxShadow: '0 10px 40px rgba(0,0,0,0.5)' }}>
+            style={{ background: 'rgba(7,47,62,0.98)', border: '1px solid rgba(125,211,252,0.3)', boxShadow: '0 10px 40px rgba(0,0,0,0.45)' }}>
             {(Object.keys(CURRENCY_INFO) as CurrencyType[]).filter(c => c !== exclude).map(c => {
               const ci = CURRENCY_INFO[c];
               return (
@@ -189,9 +189,9 @@ export default function ExchangePanel({ coins, gems, usdt, onExchange, onClose }
       <div
         className="relative w-full max-w-md rounded-2xl overflow-hidden animate-skin-picker-enter"
         style={{
-          background: 'linear-gradient(180deg, rgba(10,6,30,0.99), rgba(20,10,50,0.97))',
-          border: '1px solid rgba(139,92,246,0.3)',
-          boxShadow: '0 0 60px rgba(139,92,246,0.15), 0 0 120px rgba(139,92,246,0.05)',
+          background: 'linear-gradient(180deg, rgba(7,47,62,0.99), rgba(8,96,95,0.97))',
+          border: '1px solid rgba(125,211,252,0.32)',
+          boxShadow: '0 0 60px rgba(45,212,191,0.16), 0 0 120px rgba(56,189,248,0.06)',
         }}
         onClick={e => e.stopPropagation()}
       >
@@ -199,7 +199,7 @@ export default function ExchangePanel({ coins, gems, usdt, onExchange, onClose }
         <div className="relative px-5 pt-5 pb-3">
           <button onClick={onClose}
             className="absolute top-4 right-4 w-8 h-8 rounded-full flex items-center justify-center text-slate-400 hover:text-white hover:bg-slate-700/50 transition-all cursor-pointer z-10">✕</button>
-          <h2 className="text-lg font-black text-transparent bg-clip-text bg-gradient-to-r from-purple-400 via-pink-400 to-amber-400">
+          <h2 className="text-lg font-black text-transparent bg-clip-text bg-gradient-to-r from-sky-200 via-lime-200 to-yellow-200">
             💱 CURRENCY EXCHANGE
           </h2>
           <p className="text-[10px] text-slate-500 mt-0.5">Swap your currencies instantly • {EXCHANGE_FEE_PERCENT}% fee</p>
@@ -224,7 +224,7 @@ export default function ExchangePanel({ coins, gems, usdt, onExchange, onClose }
         <div className="px-5 pb-4 space-y-3">
           {/* FROM section */}
           <div className="rounded-xl p-3"
-            style={{ background: 'rgba(15,23,42,0.7)', border: '1px solid rgba(99,102,241,0.15)' }}>
+            style={{ background: 'rgba(8,47,73,0.58)', border: '1px solid rgba(125,211,252,0.18)' }}>
             <div className="flex items-center justify-between mb-2">
               <span className="text-[10px] font-bold text-slate-500 uppercase tracking-wider">From</span>
               <span className="text-[10px] text-slate-500">
@@ -258,9 +258,9 @@ export default function ExchangePanel({ coins, gems, usdt, onExchange, onClose }
             <button onClick={handleSwapDirection}
               className={`w-10 h-10 rounded-full flex items-center justify-center text-lg transition-all cursor-pointer hover:scale-110 active:scale-90 ${isSwapping ? 'animate-spin' : ''}`}
               style={{
-                background: 'linear-gradient(135deg, rgba(139,92,246,0.3), rgba(99,102,241,0.2))',
-                border: '2px solid rgba(139,92,246,0.5)',
-                boxShadow: '0 0 20px rgba(139,92,246,0.2)',
+                background: 'linear-gradient(135deg, rgba(34,211,238,0.28), rgba(250,204,21,0.18))',
+                border: '2px solid rgba(125,211,252,0.52)',
+                boxShadow: '0 0 20px rgba(56,189,248,0.22)',
               }}>
               ⇅
             </button>
@@ -268,7 +268,7 @@ export default function ExchangePanel({ coins, gems, usdt, onExchange, onClose }
 
           {/* TO section */}
           <div className="rounded-xl p-3"
-            style={{ background: 'rgba(15,23,42,0.7)', border: '1px solid rgba(99,102,241,0.15)' }}>
+            style={{ background: 'rgba(8,47,73,0.58)', border: '1px solid rgba(125,211,252,0.18)' }}>
             <div className="flex items-center justify-between mb-2">
               <span className="text-[10px] font-bold text-slate-500 uppercase tracking-wider">To (You Receive)</span>
               <span className="text-[10px] text-slate-500">
@@ -288,7 +288,7 @@ export default function ExchangePanel({ coins, gems, usdt, onExchange, onClose }
           {/* Rate Info */}
           {numAmount > 0 && (
             <div className="rounded-xl p-3 space-y-1.5"
-              style={{ background: 'rgba(139,92,246,0.05)', border: '1px solid rgba(139,92,246,0.15)' }}>
+              style={{ background: 'rgba(56,189,248,0.06)', border: '1px solid rgba(125,211,252,0.16)' }}>
               <div className="flex justify-between text-[11px]">
                 <span className="text-slate-500">Exchange Rate</span>
                 <span className="text-white font-semibold">
@@ -328,12 +328,12 @@ export default function ExchangePanel({ coins, gems, usdt, onExchange, onClose }
             }`}
             style={{
               background: canExchange
-                ? 'linear-gradient(135deg, #8b5cf6, #ec4899)'
+                ? 'linear-gradient(135deg, #22c55e, #38bdf8)'
                 : 'rgba(30,41,59,0.5)',
               border: canExchange
-                ? '1px solid rgba(139,92,246,0.5)'
+                ? '1px solid rgba(125,211,252,0.5)'
                 : '1px solid rgba(100,116,139,0.2)',
-              boxShadow: canExchange ? '0 0 20px rgba(139,92,246,0.25)' : 'none',
+              boxShadow: canExchange ? '0 0 20px rgba(56,189,248,0.28)' : 'none',
             }}
           >
             <span>💱</span>
@@ -368,7 +368,7 @@ export default function ExchangePanel({ coins, gems, usdt, onExchange, onClose }
 
           {/* Exchange Rate Table */}
           <div className="rounded-xl p-3"
-            style={{ background: 'rgba(15,23,42,0.5)', border: '1px solid rgba(99,102,241,0.1)' }}>
+            style={{ background: 'rgba(8,47,73,0.48)', border: '1px solid rgba(125,211,252,0.14)' }}>
             <div className="text-[9px] font-bold text-slate-500 uppercase tracking-wider mb-2">📊 Live Rates</div>
             <div className="space-y-1">
               {[

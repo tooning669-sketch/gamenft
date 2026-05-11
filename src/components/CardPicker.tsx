@@ -50,7 +50,7 @@ export default function CardPicker({ isOpen, equippedCard, ownedCards, onSelectC
     <div className="fixed inset-0 z-[100] flex items-center justify-center animate-skin-picker-backdrop">
       <div
         className="absolute inset-0"
-        style={{ background: 'radial-gradient(ellipse at center, rgba(0,0,0,0.7), rgba(0,0,0,0.9))', backdropFilter: 'blur(8px)' }}
+        style={{ background: 'radial-gradient(ellipse at center, rgba(8,47,73,0.64), rgba(3,7,18,0.86))', backdropFilter: 'blur(8px)' }}
         onClick={onClose}
       />
 
@@ -58,16 +58,16 @@ export default function CardPicker({ isOpen, equippedCard, ownedCards, onSelectC
         ref={panelRef}
         className="relative z-10 w-[90vw] max-w-[600px] max-h-[80vh] rounded-2xl overflow-hidden animate-skin-picker-enter"
         style={{
-          background: 'linear-gradient(135deg, rgba(15,23,42,0.98), rgba(30,41,59,0.95))',
-          border: '1px solid rgba(168,85,247,0.3)',
-          boxShadow: '0 0 60px rgba(168,85,247,0.15), 0 20px 60px rgba(0,0,0,0.5)',
+          background: 'linear-gradient(135deg, rgba(7,47,62,0.98), rgba(10,96,100,0.95))',
+          border: '1px solid rgba(125,211,252,0.34)',
+          boxShadow: '0 0 60px rgba(45,212,191,0.16), 0 20px 60px rgba(0,0,0,0.4)',
         }}
       >
         {/* Header */}
-        <div className="flex items-center justify-between px-5 py-3 border-b" style={{ borderColor: 'rgba(168,85,247,0.2)' }}>
+        <div className="flex items-center justify-between px-5 py-3 border-b" style={{ borderColor: 'rgba(125,211,252,0.24)' }}>
           <div className="flex items-center gap-2">
             <span className="text-xl">🃏</span>
-            <h3 className="text-base sm:text-lg font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-purple-400 via-pink-400 to-amber-400">
+            <h3 className="text-base sm:text-lg font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-sky-200 via-lime-200 to-yellow-200">
               SELECT BOOST CARD
             </h3>
             <span className="text-[10px] text-slate-500 font-semibold">({ownedCards.length} owned)</span>
@@ -76,7 +76,7 @@ export default function CardPicker({ isOpen, equippedCard, ownedCards, onSelectC
         </div>
 
         {/* Currently equipped */}
-        <div className="flex items-center gap-3 px-5 py-3 border-b" style={{ borderColor: 'rgba(168,85,247,0.15)' }}>
+        <div className="flex items-center gap-3 px-5 py-3 border-b" style={{ borderColor: 'rgba(125,211,252,0.18)' }}>
           {equippedCard ? (
             <>
               <div className="w-14 h-18 rounded-xl overflow-hidden flex items-center justify-center" style={{
@@ -126,7 +126,7 @@ export default function CardPicker({ isOpen, equippedCard, ownedCards, onSelectC
                     onClick={() => handleSelect(card)}
                     className={`group relative flex flex-col items-center gap-2 p-3 rounded-xl transition-all duration-200 cursor-pointer hover:scale-105 active:scale-95 ${isEquipped ? 'ring-2 ring-green-400' : ''}`}
                     style={{
-                      background: isEquipped ? `linear-gradient(135deg, ${rarityColor}20, ${rarityColor}08)` : 'rgba(15,23,42,0.6)',
+                      background: isEquipped ? `linear-gradient(135deg, ${rarityColor}20, ${rarityColor}08)` : 'rgba(8,47,73,0.56)',
                       border: isEquipped ? `2px solid ${rarityColor}80` : '1px solid rgba(100,116,139,0.2)',
                       boxShadow: isEquipped ? `0 0 20px ${rarityColor}30` : 'none',
                     }}
@@ -139,7 +139,7 @@ export default function CardPicker({ isOpen, equippedCard, ownedCards, onSelectC
                     {/* Quantity badge */}
                     {invItem.quantity > 1 && (
                       <div className="absolute top-1 right-1 z-10 px-1.5 py-0.5 rounded-full text-[9px] font-black text-white"
-                        style={{ background: 'rgba(99,102,241,0.8)' }}>
+                        style={{ background: 'rgba(14,165,233,0.86)' }}>
                         ×{invItem.quantity}
                       </div>
                     )}

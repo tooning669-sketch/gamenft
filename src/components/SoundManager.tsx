@@ -344,7 +344,7 @@ export default function SoundToggle({ className }: SoundToggleProps) {
         text-xs font-semibold flex items-center gap-1.5
         ${muted
           ? 'bg-slate-800/60 text-slate-400 border border-slate-700/50 hover:bg-slate-700/60'
-          : 'bg-indigo-500/20 text-indigo-300 border border-indigo-500/30 hover:bg-indigo-500/30'
+          : 'bg-cyan-400/20 text-cyan-100 border border-cyan-200/30 hover:bg-cyan-300/30'
         }
         ${className || ''}
       `}

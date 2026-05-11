@@ -26,13 +26,13 @@ export default function AmmoSelector({ selectedAmmo, onSelectAmmo, currentEnergy
     <div
       className="rounded-xl p-3 sm:p-4"
       style={{
-        background: 'linear-gradient(135deg, rgba(15,23,42,0.9), rgba(30,41,59,0.8))',
-        border: '1px solid rgba(99, 102, 241, 0.2)',
+        background: 'linear-gradient(135deg, rgba(7,47,62,0.86), rgba(8,96,95,0.72))',
+        border: '1px solid rgba(125, 211, 252, 0.24)',
         backdropFilter: 'blur(10px)',
         boxShadow: '0 4px 20px rgba(0,0,0,0.3)',
       }}
     >
-      <h3 className="text-xs sm:text-sm font-semibold text-indigo-300 uppercase tracking-wider mb-2 sm:mb-3 text-center">
+      <h3 className="text-xs sm:text-sm font-semibold text-yellow-200 uppercase tracking-wider mb-2 sm:mb-3 text-center">
         ⚔️ Ammo Select
       </h3>
 
@@ -57,7 +57,7 @@ export default function AmmoSelector({ selectedAmmo, onSelectAmmo, currentEnergy
               style={{
                 background: isSelected
                   ? `linear-gradient(135deg, ${ammo.color}30, ${ammo.color}10)`
-                  : 'rgba(15,23,42,0.6)',
+                  : 'rgba(8,47,73,0.56)',
                 borderColor: isSelected ? ammo.color : 'transparent',
                 boxShadow: isSelected ? `0 0 20px ${ammo.glowColor}` : 'none',
                 outline: isSelected ? `2px solid ${ammo.color}` : 'none',

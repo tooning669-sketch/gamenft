@@ -153,7 +153,7 @@ export default function Marketplace({ player, inventory, onBuyFromShop, onBuyFro
 
       {/* Balance Bar */}
       <div className="flex items-center justify-center gap-4 sm:gap-6 py-2 px-4 rounded-xl mx-auto"
-        style={{ background: 'linear-gradient(135deg, rgba(15,23,42,0.9), rgba(30,41,59,0.7))', border: '1px solid rgba(99,102,241,0.2)' }}>
+        style={{ background: 'linear-gradient(135deg, rgba(7,47,62,0.82), rgba(8,96,95,0.62))', border: '1px solid rgba(125,211,252,0.25)' }}>
         <div className="flex items-center gap-1.5">
           <span className="text-lg">🪙</span>
           <span className="text-sm font-bold text-yellow-400">{player.coins.toLocaleString()}</span>
@@ -180,9 +180,9 @@ export default function Marketplace({ player, inventory, onBuyFromShop, onBuyFro
               onClick={() => { playClickSound(); setView(tab.key); }}
               className="flex flex-col items-center gap-0.5 px-4 sm:px-6 py-2.5 rounded-xl text-xs font-bold transition-all cursor-pointer hover:scale-105 active:scale-95"
               style={{
-                background: isActive ? 'linear-gradient(135deg, rgba(99,102,241,0.25), rgba(99,102,241,0.08))' : 'rgba(15,23,42,0.6)',
-                border: isActive ? '1px solid rgba(99,102,241,0.5)' : '1px solid rgba(100,116,139,0.2)',
-                color: isActive ? '#a5b4fc' : '#94a3b8',
+                background: isActive ? 'linear-gradient(135deg, rgba(34,211,238,0.24), rgba(250,204,21,0.09))' : 'rgba(8,47,73,0.52)',
+                border: isActive ? '1px solid rgba(125,211,252,0.55)' : '1px solid rgba(125,211,252,0.18)',
+                color: isActive ? '#cffafe' : '#bae6fd',
               }}
             >
               <span className="text-sm">{tab.label}</span>
@@ -202,9 +202,9 @@ export default function Marketplace({ player, inventory, onBuyFromShop, onBuyFro
                 onClick={() => { playClickSound(); setSelectedCategory(cat.key); }}
                 className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[11px] font-bold uppercase tracking-wider transition-all cursor-pointer hover:scale-105 active:scale-95"
                 style={{
-                  background: isActive ? 'linear-gradient(135deg, rgba(99,102,241,0.3), rgba(99,102,241,0.1))' : 'rgba(15,23,42,0.5)',
-                  border: isActive ? '1px solid rgba(99,102,241,0.5)' : '1px solid rgba(100,116,139,0.15)',
-                  color: isActive ? '#a5b4fc' : '#94a3b8',
+                  background: isActive ? 'linear-gradient(135deg, rgba(34,211,238,0.26), rgba(52,211,153,0.1))' : 'rgba(8,47,73,0.48)',
+                  border: isActive ? '1px solid rgba(125,211,252,0.55)' : '1px solid rgba(125,211,252,0.16)',
+                  color: isActive ? '#cffafe' : '#bae6fd',
                 }}
               >
                 <span>{cat.icon}</span>
@@ -230,7 +230,7 @@ export default function Marketplace({ player, inventory, onBuyFromShop, onBuyFro
               <div key={item.id}
                 className={`relative rounded-xl overflow-hidden transition-all duration-300 ${isPurchaseAnim ? 'scale-[1.03]' : ''} ${isOutOfStock ? 'opacity-50' : 'hover:scale-[1.02]'}`}
                 style={{
-                  background: 'linear-gradient(135deg, rgba(15,23,42,0.95), rgba(30,41,59,0.8))',
+                  background: 'linear-gradient(135deg, rgba(7,47,62,0.9), rgba(8,96,95,0.72))',
                   border: `1px solid ${rarityColor}30`,
                   boxShadow: item.isFeatured ? `0 0 20px ${rarityColor}15` : 'none',
                 }}
@@ -290,10 +290,10 @@ export default function Marketplace({ player, inventory, onBuyFromShop, onBuyFro
         {totalPages > 1 && (
           <div className="flex items-center justify-center gap-3 mt-4">
             <button onClick={() => { playClickSound(); setShopPage(p => Math.max(0, p-1)); }} disabled={shopPage === 0}
-              className="px-4 py-2 rounded-lg text-xs font-bold text-pink-300 bg-pink-500/10 border border-pink-500/30 hover:bg-pink-500/20 transition-all cursor-pointer disabled:opacity-30 disabled:cursor-not-allowed">← Prev</button>
+              className="px-4 py-2 rounded-lg text-xs font-bold text-cyan-100 bg-cyan-400/10 border border-cyan-200/30 hover:bg-cyan-300/20 transition-all cursor-pointer disabled:opacity-30 disabled:cursor-not-allowed">← Prev</button>
             <span className="text-xs text-slate-400 font-mono">{shopPage + 1} / {totalPages}</span>
             <button onClick={() => { playClickSound(); setShopPage(p => Math.min(totalPages-1, p+1)); }} disabled={shopPage >= totalPages-1}
-              className="px-4 py-2 rounded-lg text-xs font-bold text-pink-300 bg-pink-500/10 border border-pink-500/30 hover:bg-pink-500/20 transition-all cursor-pointer disabled:opacity-30 disabled:cursor-not-allowed">Next →</button>
+              className="px-4 py-2 rounded-lg text-xs font-bold text-cyan-100 bg-cyan-400/10 border border-cyan-200/30 hover:bg-cyan-300/20 transition-all cursor-pointer disabled:opacity-30 disabled:cursor-not-allowed">Next →</button>
           </div>
         )}
         </>
@@ -319,7 +319,7 @@ export default function Marketplace({ player, inventory, onBuyFromShop, onBuyFro
                   style={{
                     background: listing.isOwnListing
                       ? 'linear-gradient(135deg, rgba(15,23,42,0.95), rgba(34,197,94,0.05))'
-                      : 'linear-gradient(135deg, rgba(15,23,42,0.95), rgba(30,41,59,0.8))',
+                      : 'linear-gradient(135deg, rgba(7,47,62,0.9), rgba(8,96,95,0.72))',
                     border: listing.isOwnListing ? '1px solid rgba(34,197,94,0.3)' : `1px solid ${rarityColor}20`,
                   }}
                 >
@@ -408,8 +408,8 @@ export default function Marketplace({ player, inventory, onBuyFromShop, onBuyFro
                 <div key={item.id} className="rounded-xl overflow-hidden"
                   style={{
                     background: isListed
-                      ? 'linear-gradient(135deg, rgba(15,23,42,0.95), rgba(34,197,94,0.06))'
-                      : 'linear-gradient(135deg, rgba(15,23,42,0.95), rgba(30,41,59,0.8))',
+                      ? 'linear-gradient(135deg, rgba(7,47,62,0.9), rgba(34,197,94,0.08))'
+                      : 'linear-gradient(135deg, rgba(7,47,62,0.9), rgba(8,96,95,0.72))',
                     border: isListed ? '1px solid rgba(34,197,94,0.3)' : `1px solid ${rarityColor}20`,
                   }}>
                   <div className="flex items-center gap-3 p-3">
@@ -424,7 +424,7 @@ export default function Marketplace({ player, inventory, onBuyFromShop, onBuyFro
                         <span className="text-sm font-bold text-white truncate">{item.name}</span>
                         <span className="text-[8px] px-1.5 py-0.5 rounded-full font-bold uppercase"
                           style={{ color: rarityColor, background: `${rarityColor}15`, border: `1px solid ${rarityColor}25` }}>{item.rarity}</span>
-                        {item.quantity > 1 && <span className="text-[9px] text-indigo-400 font-bold">×{item.quantity}</span>}
+                        {item.quantity > 1 && <span className="text-[9px] text-sky-300 font-bold">×{item.quantity}</span>}
                         {isListed && (
                           <span className="text-[8px] px-1.5 py-0.5 rounded-full font-bold bg-green-500/20 text-green-400 border border-green-500/30 animate-pulse">
                             📢 LISTED
@@ -534,7 +534,7 @@ export default function Marketplace({ player, inventory, onBuyFromShop, onBuyFro
                 <div key={item.id}
                   className={`relative rounded-xl overflow-hidden transition-all duration-300 ${isSellbackAnim ? 'scale-[1.02]' : 'hover:scale-[1.01]'}`}
                   style={{
-                    background: 'linear-gradient(135deg, rgba(15,23,42,0.95), rgba(30,41,59,0.8))',
+                    background: 'linear-gradient(135deg, rgba(7,47,62,0.9), rgba(8,96,95,0.72))',
                     border: `1px solid ${rarityColor}20`,
                   }}
                 >
@@ -552,7 +552,7 @@ export default function Marketplace({ player, inventory, onBuyFromShop, onBuyFro
                         <span className="text-sm font-bold text-white truncate">{item.name}</span>
                         <span className="text-[8px] px-1.5 py-0.5 rounded-full font-bold uppercase"
                           style={{ color: rarityColor, background: `${rarityColor}15`, border: `1px solid ${rarityColor}25` }}>{item.rarity}</span>
-                        {item.quantity > 1 && <span className="text-[9px] text-indigo-400 font-bold">×{item.quantity}</span>}
+                        {item.quantity > 1 && <span className="text-[9px] text-sky-300 font-bold">×{item.quantity}</span>}
                       </div>
                       <div className="flex items-center gap-3 mt-0.5">
                         <span className="text-[10px] text-slate-400">{item.category}</span>
@@ -613,7 +613,7 @@ export default function Marketplace({ player, inventory, onBuyFromShop, onBuyFro
       {/* Item Detail Popup */}
       {detailItem && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 animate-skin-picker-backdrop" style={{ background: 'rgba(0,0,0,0.7)' }} onClick={() => setDetailItem(null)}>
-          <div className="relative w-full max-w-sm rounded-2xl overflow-hidden animate-skin-picker-enter" style={{ background: 'linear-gradient(180deg, rgba(15,10,40,0.98), rgba(30,15,60,0.95))', border: `1px solid ${getRarityColor(detailItem.rarity)}40`, boxShadow: `0 0 40px ${getRarityColor(detailItem.rarity)}20` }} onClick={e => e.stopPropagation()}>
+          <div className="relative w-full max-w-sm rounded-2xl overflow-hidden animate-skin-picker-enter" style={{ background: 'linear-gradient(180deg, rgba(7,47,62,0.98), rgba(8,96,95,0.95))', border: `1px solid ${getRarityColor(detailItem.rarity)}40`, boxShadow: `0 0 40px ${getRarityColor(detailItem.rarity)}20` }} onClick={e => e.stopPropagation()}>
             <button onClick={() => setDetailItem(null)} className="absolute top-3 right-3 z-10 w-8 h-8 rounded-full flex items-center justify-center text-slate-400 hover:text-white hover:bg-slate-700/50 transition-all cursor-pointer">✕</button>
             <div className="flex items-center justify-center py-8" style={{ background: `radial-gradient(circle, ${getRarityColor(detailItem.rarity)}15, transparent 70%)` }}>
               {detailItem.image ? <img src={detailItem.image} alt={detailItem.name} className="w-28 h-28 object-contain" /> : <span className="text-6xl">{detailItem.icon}</span>}
@@ -628,7 +628,7 @@ export default function Marketplace({ player, inventory, onBuyFromShop, onBuyFro
                 {detailItem.priceGems > 0 && <div className="flex items-center gap-1"><span>💎</span><span className="text-sm font-bold text-cyan-400">{detailItem.priceGems}</span></div>}
               </div>
               <button onClick={() => { handleShopBuy(detailItem, 'coins'); setDetailItem(null); }} disabled={player.coins < getDiscountedPrice(detailItem.priceCoins, detailItem.discount)}
-                className="w-full py-2.5 rounded-xl text-xs font-bold uppercase cursor-pointer hover:scale-105 active:scale-95 transition-all disabled:opacity-40 disabled:cursor-not-allowed" style={{ background: 'linear-gradient(135deg, #ec4899, #8b5cf6)', border: '1px solid rgba(236,72,153,0.3)' }}>🪙 Buy Now</button>
+                className="w-full py-2.5 rounded-xl text-xs font-bold uppercase cursor-pointer hover:scale-105 active:scale-95 transition-all disabled:opacity-40 disabled:cursor-not-allowed" style={{ background: 'linear-gradient(135deg, #22c55e, #38bdf8)', border: '1px solid rgba(125,211,252,0.38)' }}>🪙 Buy Now</button>
             </div>
           </div>
         </div>

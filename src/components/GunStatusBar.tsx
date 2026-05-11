@@ -47,13 +47,13 @@ export default function GunStatusBar({
     <div
       className="rounded-xl p-4 space-y-3.5"
       style={{
-        background: 'linear-gradient(135deg, rgba(15,23,42,0.9), rgba(30,41,59,0.8))',
-        border: '1px solid rgba(236,72,153,0.2)',
+        background: 'linear-gradient(135deg, rgba(7,47,62,0.86), rgba(8,96,95,0.72))',
+        border: '1px solid rgba(125,211,252,0.24)',
         backdropFilter: 'blur(10px)',
         boxShadow: '0 4px 20px rgba(0,0,0,0.3)',
       }}
     >
-      <h3 className="text-xs sm:text-sm font-semibold text-pink-300 uppercase tracking-wider text-center">
+      <h3 className="text-xs sm:text-sm font-semibold text-yellow-200 uppercase tracking-wider text-center">
         🔫 Gun Status
       </h3>
 
@@ -79,7 +79,7 @@ export default function GunStatusBar({
                   borderColor: isFilled ? 'rgba(245,158,11,0.3)' : 'rgba(100,116,139,0.2)',
                   background: isFilled
                     ? 'linear-gradient(180deg, #f59e0b, #d97706)'
-                    : 'rgba(15,23,42,0.6)',
+                    : 'rgba(8,47,73,0.56)',
                   boxShadow: isFilled ? '0 0 6px rgba(245,158,11,0.3)' : 'none',
                 }}
               >

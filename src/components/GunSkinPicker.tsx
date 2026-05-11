@@ -76,7 +76,7 @@ export default function GunSkinPicker({
       <div
         className="absolute inset-0"
         style={{
-          background: 'radial-gradient(ellipse at center, rgba(0,0,0,0.7), rgba(0,0,0,0.9))',
+          background: 'radial-gradient(ellipse at center, rgba(8,47,73,0.64), rgba(3,7,18,0.86))',
           backdropFilter: 'blur(8px)',
         }}
         onClick={onClose}
@@ -87,19 +87,19 @@ export default function GunSkinPicker({
         ref={panelRef}
         className="relative z-10 w-[90vw] max-w-[700px] max-h-[80vh] rounded-2xl overflow-hidden animate-skin-picker-enter"
         style={{
-          background: 'linear-gradient(135deg, rgba(15,23,42,0.98), rgba(30,41,59,0.95))',
-          border: '1px solid rgba(99,102,241,0.3)',
-          boxShadow: '0 0 60px rgba(99,102,241,0.15), 0 20px 60px rgba(0,0,0,0.5)',
+          background: 'linear-gradient(135deg, rgba(7,47,62,0.98), rgba(10,96,100,0.95))',
+          border: '1px solid rgba(125,211,252,0.34)',
+          boxShadow: '0 0 60px rgba(45,212,191,0.16), 0 20px 60px rgba(0,0,0,0.4)',
         }}
       >
         {/* Header */}
         <div
           className="flex items-center justify-between px-5 py-3 border-b"
-          style={{ borderColor: 'rgba(99,102,241,0.2)' }}
+          style={{ borderColor: 'rgba(125,211,252,0.24)' }}
         >
           <div className="flex items-center gap-2">
             <span className="text-xl">🎨</span>
-            <h3 className="text-base sm:text-lg font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-indigo-400 via-purple-400 to-pink-400">
+            <h3 className="text-base sm:text-lg font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-sky-200 via-lime-200 to-yellow-200">
               SELECT YOUR WEAPON
             </h3>
             <span className="text-[10px] text-slate-500 font-semibold">({ownedGuns.length} owned)</span>
@@ -116,7 +116,7 @@ export default function GunSkinPicker({
         <div
           className="flex items-center gap-3 px-5 py-3 border-b"
           style={{
-            borderColor: 'rgba(99,102,241,0.15)',
+            borderColor: 'rgba(125,211,252,0.18)',
             background: `linear-gradient(90deg, ${selectedSkin.color}10, transparent)`,
           }}
         >
@@ -203,7 +203,7 @@ export default function GunSkinPicker({
                         style={{
                           background: isSelected
                             ? `linear-gradient(135deg, ${rarityColor}20, ${rarityColor}08)`
-                            : 'rgba(15,23,42,0.6)',
+                            : 'rgba(8,47,73,0.56)',
                           border: isSelected
                             ? `2px solid ${rarityColor}80`
                             : '1px solid rgba(100,116,139,0.2)',
