@@ -8,6 +8,7 @@ import {
   TIER_CONFIG,
   DROP_RATES,
   REWARD_ITEMS,
+  RewardItemDef,
 } from './gameTypes';
 
 // ==========================================
@@ -86,10 +87,42 @@ export function applyDamage(ball: Ball, damage: number): Ball {
 
 let rewardIdCounter = 0;
 
+/** Roll a random amount between min and max (inclusive). Respects decimals for BTC. */
+function rollAmount(item: RewardItemDef): number {
+  const min = item.min ?? 0;
+  const max = item.max ?? 0;
+  const decimals = item.decimals ?? 0;
+  if (decimals > 0) {
+    // For BTC: random float with precision
+    const val = min + Math.random() * (max - min);
+    return parseFloat(val.toFixed(decimals));
+  }
+  // For coins/gems/usdt: random integer
+  return Math.floor(min + Math.random() * (max - min + 1));
+}
+
 export function rollReward(tier: Tier): Reward {
   const rarity = rollRarity(tier);
   const items = REWARD_ITEMS[rarity];
   const item = items[Math.floor(Math.random() * items.length)];
+
+  // Handle currency-type rewards with random amounts
+  if (item.currency && item.min != null && item.max != null) {
+    const amount = rollAmount(item);
+    const decimals = item.decimals ?? 0;
+    const displayAmount = decimals > 0 ? amount.toFixed(decimals) : amount.toString();
+    return {
+      id: `reward-${rewardIdCounter++}`,
+      name: `${displayAmount} ${item.name}`,
+      rarity,
+      icon: item.icon,
+      description: item.description,
+      timestamp: Date.now(),
+      ballTier: tier,
+      currency: item.currency,
+      amount,
+    };
+  }
 
   return {
     id: `reward-${rewardIdCounter++}`,

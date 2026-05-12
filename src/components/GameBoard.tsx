@@ -38,6 +38,7 @@ const INITIAL_PLAYER: PlayerState = {
   coins: 12450,
   gems: 1250,
   usdt: 0,
+  btc: 0,
   level: 25,
   xp: 68,
   maxXp: 100,
@@ -482,19 +483,21 @@ export default function GameBoard() {
           playRewardSound(reward.rarity === 'Legendary');
         }, 200);
 
-        // Add coins/gems from reward
+        // Add currency from reward using structured fields
         setPlayer((prev) => {
           let newCoins = prev.coins;
           let newGems = prev.gems;
+          let newUsdt = prev.usdt;
+          let newBtc = prev.btc;
           let newXp = prev.xp;
 
-          if (reward.name.includes('Coins') || reward.name.includes('USDT')) {
-            const match = reward.name.match(/(\d+)/);
-            if (match) newCoins += parseInt(match[1]);
-          }
-          if (reward.name.includes('Gem')) {
-            const match = reward.name.match(/(\d+)/);
-            if (match) newGems += parseInt(match[1]);
+          if (reward.currency && reward.amount) {
+            switch (reward.currency) {
+              case 'coins': newCoins += reward.amount; break;
+              case 'gems': newGems += reward.amount; break;
+              case 'usdt': newUsdt += reward.amount; break;
+              case 'btc': newBtc += reward.amount; break;
+            }
           }
 
           // XP for popping
@@ -502,8 +505,10 @@ export default function GameBoard() {
 
           return {
             ...prev,
-            coins: newCoins,
-            gems: newGems,
+            coins: Math.floor(newCoins),
+            gems: parseFloat(newGems.toFixed(4)),
+            usdt: parseFloat(newUsdt.toFixed(4)),
+            btc: parseFloat(newBtc.toFixed(6)),
             xp: newXp > prev.maxXp ? newXp - prev.maxXp : newXp,
             level: newXp > prev.maxXp ? prev.level + 1 : prev.level,
           };

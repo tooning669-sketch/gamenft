@@ -39,6 +39,10 @@ export interface Reward {
   description: string;
   timestamp: number;
   ballTier: Tier;
+  /** Set when this reward is a currency drop */
+  currency?: 'coins' | 'gems' | 'usdt' | 'btc';
+  /** Rolled amount for currency rewards */
+  amount?: number;
 }
 
 export interface PlayerState {
@@ -47,6 +51,7 @@ export interface PlayerState {
   coins: number;
   gems: number;
   usdt: number;
+  btc: number;
   level: number;
   xp: number;
   maxXp: number;
@@ -159,24 +164,59 @@ export const AMMO_TYPES: AmmoType[] = [
   },
 ];
 
-export const REWARD_ITEMS: Record<RewardRarity, { name: string; icon: string; description: string }[]> = {
+// Reward item definition with optional min/max for random currency amounts
+export interface RewardItemDef {
+  name: string;
+  icon: string;
+  description: string;
+  /** If set, the reward name becomes "{rolled amount} {currencyLabel}" */
+  currency?: 'coins' | 'gems' | 'usdt' | 'btc';
+  min?: number;
+  max?: number;
+  decimals?: number; // decimal precision for BTC
+}
+
+export const REWARD_ITEMS: Record<RewardRarity, RewardItemDef[]> = {
   Common: [
-    { name: '10 Coins', icon: '🪙', description: 'A small pile of coins' },
-    { name: '5 Coins', icon: '🪙', description: 'A few coins' },
+    // Gold coins 10-200 (easy-medium range)
+    { name: 'Gold Coins', icon: '🪙', description: 'A pile of gold coins', currency: 'coins', min: 10, max: 200 },
+    // Blue gems 1-2
+    { name: 'Blue Gems', icon: '💎', description: 'Shiny blue gems', currency: 'gems', min: 1, max: 2 },
+    // Common items & cards
     { name: 'HP Potion', icon: '🧪', description: 'Restores energy' },
     { name: 'Bronze Shard', icon: '🔶', description: 'A common crafting material' },
+    { name: 'Free Blast Ticket', icon: '🎟️', description: 'Free Shot ×1 card' },
+    { name: 'Coin Pouch', icon: '👝', description: 'A small bag of coins' },
   ],
   Rare: [
-    { name: '50 Coins', icon: '💰', description: 'A bag of coins' },
-    { name: '5 Gems', icon: '💎', description: 'Precious gems' },
+    // Gold coins 200-600
+    { name: 'Gold Coins', icon: '💰', description: 'A heavy bag of gold', currency: 'coins', min: 200, max: 600 },
+    // Blue gems 2-3
+    { name: 'Blue Gems', icon: '💎', description: 'Rare blue gems', currency: 'gems', min: 2, max: 3 },
+    // USDT 1-20
+    { name: 'USDT', icon: '💵', description: 'Crypto stablecoin reward', currency: 'usdt', min: 1, max: 20 },
+    // BTC small
+    { name: 'BTC', icon: '₿', description: 'Bitcoin micro-reward', currency: 'btc', min: 0.000005, max: 0.0001, decimals: 6 },
+    // Rare items & cards
     { name: 'Dark Bat', icon: '🦇', description: 'A rare pet companion' },
     { name: 'Silver Shard', icon: '⬜', description: 'A rare crafting material' },
+    { name: 'Discount Coupon', icon: '🏷️', description: '50% OFF Shop card' },
+    { name: 'Free Item Box', icon: '📦', description: 'Random Item ×1 card' },
   ],
   Legendary: [
-    { name: '250 USDT', icon: '💵', description: 'Crypto reward!' },
-    { name: '50 Gems', icon: '💎', description: 'A treasure trove of gems' },
+    // Gold coins 600-1000
+    { name: 'Gold Coins', icon: '👑', description: 'A king\'s ransom in gold!', currency: 'coins', min: 600, max: 1000 },
+    // Blue gems 3
+    { name: 'Blue Gems', icon: '💎', description: 'Legendary blue gems', currency: 'gems', min: 3, max: 3 },
+    // USDT 20-100
+    { name: 'USDT', icon: '💵', description: 'Huge crypto payout!', currency: 'usdt', min: 20, max: 100 },
+    // BTC big
+    { name: 'BTC', icon: '₿', description: 'Bitcoin jackpot!', currency: 'btc', min: 0.0001, max: 0.001, decimals: 6 },
+    // Legendary items & cards
     { name: 'Angel Cat', icon: '😺', description: 'A legendary pet!' },
     { name: 'Gold NFT', icon: '🏆', description: 'A golden NFT collectible' },
+    { name: 'Free Blast ×10', icon: '🎫', description: 'Free Shot ×10 card' },
+    { name: 'Mystery Box', icon: '🎁', description: 'Contains a random legendary item!' },
   ],
 };
 

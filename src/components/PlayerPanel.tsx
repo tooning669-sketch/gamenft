@@ -72,6 +72,24 @@ export default function PlayerPanel({ player, ballsRemaining, totalBalls, onOpen
             +
           </button>
         </div>
+        <div className="flex items-center justify-between rounded-lg px-4 py-3 bg-cyan-950/40 border border-green-400/25">
+          <div className="flex items-center gap-2.5">
+            <span className="text-xl sm:text-2xl">💵</span>
+            <div>
+              <span className="text-sm font-bold text-green-400">{player.usdt.toFixed(2)}</span>
+              <div className="text-[10px] text-cyan-100/70">USDT</div>
+            </div>
+          </div>
+        </div>
+        <div className="flex items-center justify-between rounded-lg px-4 py-3 bg-cyan-950/40 border border-orange-400/25">
+          <div className="flex items-center gap-2.5">
+            <span className="text-xl sm:text-2xl">₿</span>
+            <div>
+              <span className="text-sm font-bold text-orange-400">{player.btc.toFixed(6)}</span>
+              <div className="text-[10px] text-cyan-100/70">BTC</div>
+            </div>
+          </div>
+        </div>
         {/* Open full wallet button */}
         {onOpenWallet && (
           <button
