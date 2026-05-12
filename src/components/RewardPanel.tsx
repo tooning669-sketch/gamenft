@@ -9,10 +9,12 @@ interface RewardPanelProps {
   stats: { common: number; rare: number; legendary: number; total: number };
   player: PlayerState;
   onRandomize: () => void;
+  onChangeMap: () => void;
+  isRoundActive: boolean;
   randomizeCost: number;
 }
 
-export default function RewardPanel({ rewards, stats, player, onRandomize, randomizeCost }: RewardPanelProps) {
+export default function RewardPanel({ rewards, stats, player, onRandomize, onChangeMap, isRoundActive, randomizeCost }: RewardPanelProps) {
   const canAffordRandomize = player.coins >= randomizeCost;
 
   // Show only last 3 rewards (newest first)
@@ -68,32 +70,31 @@ export default function RewardPanel({ rewards, stats, player, onRandomize, rando
         })}
       </div>
 
-      {/* Randomize Map Button (was Start Game, now changed) */}
+      {/* Change Map Button — only works during active round */}
       <button
-        onClick={onRandomize}
-        disabled={!canAffordRandomize}
+        onClick={onChangeMap}
+        disabled={!isRoundActive}
         className={`
           w-full py-3.5 rounded-xl text-sm font-bold uppercase tracking-wider
           transition-all duration-200 cursor-pointer mb-4
           flex items-center justify-center gap-2
-          ${canAffordRandomize
+          ${isRoundActive
             ? 'hover:scale-105 active:scale-95'
             : 'opacity-40 cursor-not-allowed'
           }
         `}
         style={{
-          background: canAffordRandomize
-            ? 'linear-gradient(135deg, #22c55e, #38bdf8, #facc15)'
+          background: isRoundActive
+            ? 'linear-gradient(135deg, #8b5cf6, #3b82f6)'
             : 'linear-gradient(135deg, #475569, #334155)',
-          boxShadow: canAffordRandomize
-            ? '0 4px 20px rgba(56, 189, 248, 0.34), inset 0 1px 0 rgba(255,255,255,0.22)'
+          boxShadow: isRoundActive
+            ? '0 4px 20px rgba(139, 92, 246, 0.34), inset 0 1px 0 rgba(255,255,255,0.22)'
             : 'none',
           border: '1px solid rgba(255, 255, 255, 0.34)',
         }}
       >
-        <span className="text-xl">🎲</span>
-        <span className="text-white">เปลี่ยนแมพใหม่</span>
-        <span className="text-yellow-300 text-xs">🪙{randomizeCost}</span>
+        <span className="text-xl">🗺️</span>
+        <span className="text-white">CHANGE MAP</span>
       </button>
 
       {/* Divider */}

@@ -16,7 +16,7 @@ import { playClickSound, playRewardSound } from './SoundManager';
 interface MarketplaceProps {
   player: PlayerState;
   inventory: InventoryItem[];
-  onBuyFromShop: (item: MarketplaceItem, currency: 'coins' | 'gems') => void;
+  onBuyFromShop: (item: MarketplaceItem, currency: 'coins' | 'gems', dualCurrency?: boolean) => void;
   onBuyFromPlayer: (listing: MarketListing) => void;
   onListForSale: (item: InventoryItem, price: number) => void;
   onSellToSystem?: (item: InventoryItem) => void;
@@ -75,10 +75,16 @@ export default function Marketplace({ player, inventory, onBuyFromShop, onBuyFro
     ? listings
     : listings.filter((l) => l.item.category === selectedCategory);
 
-  const handleShopBuy = useCallback((item: MarketplaceItem, currency: 'coins' | 'gems') => {
+  const handleShopBuy = useCallback((item: MarketplaceItem, currency: 'coins' | 'gems', dualCurrency?: boolean) => {
     const price = currency === 'coins' ? getDiscountedPrice(item.priceCoins, item.discount) : item.priceGems;
-    if (currency === 'coins' && player.coins < price) return;
-    if (currency === 'gems' && player.gems < price) return;
+    if (dualCurrency) {
+      // Dual currency: need both coins AND gems
+      const coinPrice = getDiscountedPrice(item.priceCoins, item.discount);
+      if (player.coins < coinPrice || player.gems < item.priceGems) return;
+    } else {
+      if (currency === 'coins' && player.coins < price) return;
+      if (currency === 'gems' && player.gems < price) return;
+    }
     if (stockMap[item.id] === 0) return;
 
     playClickSound();
@@ -86,7 +92,7 @@ export default function Marketplace({ player, inventory, onBuyFromShop, onBuyFro
     if (stockMap[item.id] > 0) setStockMap((prev) => ({ ...prev, [item.id]: prev[item.id] - 1 }));
     setShowPurchaseAnim(item.id);
     setTimeout(() => setShowPurchaseAnim(null), 1500);
-    onBuyFromShop(item, currency);
+    onBuyFromShop(item, currency, dualCurrency);
   }, [player, stockMap, getDiscountedPrice, onBuyFromShop]);
 
   const handleP2PBuy = useCallback((listing: MarketListing) => {
@@ -260,16 +266,30 @@ export default function Marketplace({ player, inventory, onBuyFromShop, onBuyFro
 
                 <div className="flex items-center justify-end gap-1.5 px-3 py-2 border-t" style={{ borderColor: `${rarityColor}15` }}>
                   <div className="flex items-center gap-1.5">
-                    <button onClick={() => handleShopBuy(item, 'coins')} disabled={isOutOfStock || player.coins < discountedCoins}
-                      className={`px-3 py-1.5 rounded-lg text-[10px] font-bold uppercase transition-all cursor-pointer flex items-center gap-1.5 ${!isOutOfStock && player.coins >= discountedCoins ? 'bg-gradient-to-r from-yellow-500/20 to-amber-500/20 text-yellow-400 border border-yellow-500/30 hover:scale-105 active:scale-95' : 'bg-slate-800/50 text-slate-600 border border-slate-700/30 cursor-not-allowed'}`}>
-                      🪙 {item.discount ? (<><span className="line-through text-slate-500 text-[9px]">{item.priceCoins}</span> <span>{discountedCoins.toLocaleString()}</span></>) : <span>{item.priceCoins.toLocaleString()}</span>}
-                      <span className="ml-0.5">Buy</span>
-                    </button>
-                    {item.priceGems > 0 && (
-                      <button onClick={() => handleShopBuy(item, 'gems')} disabled={isOutOfStock || player.gems < item.priceGems}
-                        className={`px-3 py-1.5 rounded-lg text-[10px] font-bold uppercase transition-all cursor-pointer flex items-center gap-1.5 ${!isOutOfStock && player.gems >= item.priceGems ? 'bg-gradient-to-r from-cyan-500/20 to-blue-500/20 text-cyan-400 border border-cyan-500/30 hover:scale-105 active:scale-95' : 'bg-slate-800/50 text-slate-600 border border-slate-700/30 cursor-not-allowed'}`}>
-                        💎 {item.priceGems} Buy
+                    {/* Non-Common guns require BOTH gold + diamond */}
+                    {item.category === 'guns' && item.rarity !== 'Common' && item.priceGems > 0 ? (
+                      <button onClick={() => handleShopBuy(item, 'coins', true)}
+                        disabled={isOutOfStock || player.coins < discountedCoins || player.gems < item.priceGems}
+                        className={`px-3 py-1.5 rounded-lg text-[10px] font-bold uppercase transition-all cursor-pointer flex items-center gap-1.5 ${!isOutOfStock && player.coins >= discountedCoins && player.gems >= item.priceGems ? 'bg-gradient-to-r from-yellow-500/20 via-cyan-500/10 to-cyan-500/20 text-yellow-400 border border-yellow-500/30 hover:scale-105 active:scale-95' : 'bg-slate-800/50 text-slate-600 border border-slate-700/30 cursor-not-allowed'}`}>
+                        🪙{item.discount ? (<><span className="line-through text-slate-500 text-[9px]">{item.priceCoins}</span> <span>{discountedCoins.toLocaleString()}</span></>) : <span>{item.priceCoins.toLocaleString()}</span>}
+                        <span className="text-cyan-400">+</span>
+                        <span className="text-cyan-400">💎{item.priceGems}</span>
+                        <span className="ml-0.5">Buy</span>
                       </button>
+                    ) : (
+                      <>
+                        <button onClick={() => handleShopBuy(item, 'coins')} disabled={isOutOfStock || player.coins < discountedCoins}
+                          className={`px-3 py-1.5 rounded-lg text-[10px] font-bold uppercase transition-all cursor-pointer flex items-center gap-1.5 ${!isOutOfStock && player.coins >= discountedCoins ? 'bg-gradient-to-r from-yellow-500/20 to-amber-500/20 text-yellow-400 border border-yellow-500/30 hover:scale-105 active:scale-95' : 'bg-slate-800/50 text-slate-600 border border-slate-700/30 cursor-not-allowed'}`}>
+                          🪙 {item.discount ? (<><span className="line-through text-slate-500 text-[9px]">{item.priceCoins}</span> <span>{discountedCoins.toLocaleString()}</span></>) : <span>{item.priceCoins.toLocaleString()}</span>}
+                          <span className="ml-0.5">Buy</span>
+                        </button>
+                        {item.priceGems > 0 && (
+                          <button onClick={() => handleShopBuy(item, 'gems')} disabled={isOutOfStock || player.gems < item.priceGems}
+                            className={`px-3 py-1.5 rounded-lg text-[10px] font-bold uppercase transition-all cursor-pointer flex items-center gap-1.5 ${!isOutOfStock && player.gems >= item.priceGems ? 'bg-gradient-to-r from-cyan-500/20 to-blue-500/20 text-cyan-400 border border-cyan-500/30 hover:scale-105 active:scale-95' : 'bg-slate-800/50 text-slate-600 border border-slate-700/30 cursor-not-allowed'}`}>
+                            💎 {item.priceGems} Buy
+                          </button>
+                        )}
+                      </>
                     )}
                   </div>
                 </div>
@@ -627,8 +647,18 @@ export default function Marketplace({ player, inventory, onBuyFromShop, onBuyFro
                 <div className="flex items-center gap-1"><span>🪙</span><span className="text-sm font-bold text-yellow-400">{detailItem.discount ? getDiscountedPrice(detailItem.priceCoins, detailItem.discount) : detailItem.priceCoins}</span></div>
                 {detailItem.priceGems > 0 && <div className="flex items-center gap-1"><span>💎</span><span className="text-sm font-bold text-cyan-400">{detailItem.priceGems}</span></div>}
               </div>
-              <button onClick={() => { handleShopBuy(detailItem, 'coins'); setDetailItem(null); }} disabled={player.coins < getDiscountedPrice(detailItem.priceCoins, detailItem.discount)}
-                className="w-full py-2.5 rounded-xl text-xs font-bold uppercase cursor-pointer hover:scale-105 active:scale-95 transition-all disabled:opacity-40 disabled:cursor-not-allowed" style={{ background: 'linear-gradient(135deg, #22c55e, #38bdf8)', border: '1px solid rgba(125,211,252,0.38)' }}>🪙 Buy Now</button>
+              <button onClick={() => { handleShopBuy(detailItem, 'coins', detailItem.category === 'guns' && detailItem.rarity !== 'Common' && detailItem.priceGems > 0 ? true : undefined); setDetailItem(null); }}
+                disabled={
+                  detailItem.category === 'guns' && detailItem.rarity !== 'Common' && detailItem.priceGems > 0
+                    ? (player.coins < getDiscountedPrice(detailItem.priceCoins, detailItem.discount) || player.gems < detailItem.priceGems)
+                    : player.coins < getDiscountedPrice(detailItem.priceCoins, detailItem.discount)
+                }
+                className="w-full py-2.5 rounded-xl text-xs font-bold uppercase cursor-pointer hover:scale-105 active:scale-95 transition-all disabled:opacity-40 disabled:cursor-not-allowed" style={{ background: 'linear-gradient(135deg, #22c55e, #38bdf8)', border: '1px solid rgba(125,211,252,0.38)' }}>
+                {detailItem.category === 'guns' && detailItem.rarity !== 'Common' && detailItem.priceGems > 0
+                  ? <>🪙{getDiscountedPrice(detailItem.priceCoins, detailItem.discount)} + 💎{detailItem.priceGems} Buy Now</>
+                  : <>🪙 Buy Now</>
+                }
+              </button>
             </div>
           </div>
         </div>

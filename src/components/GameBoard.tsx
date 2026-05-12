@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState, useCallback, useEffect, useRef, useMemo } from 'react';
+import HomePage from './HomePage';
 import {
   Ball as BallType,
   AmmoType,
@@ -61,6 +62,7 @@ export default function GameBoard() {
   const [balls, setBalls] = useState<BallType[]>(() => generateGrid());
   const [selectedAmmo, setSelectedAmmo] = useState<AmmoType>(AMMO_TYPES[0]);
   const [rewards, setRewards] = useState<Reward[]>([]);
+  const rewardsRef = useRef<Reward[]>([]);
   const [player, setPlayer] = useState<PlayerState>(INITIAL_PLAYER);
   const [isFiring, setIsFiring] = useState(false);
   const [activeReward, setActiveReward] = useState<Reward | null>(null);
@@ -104,7 +106,7 @@ export default function GameBoard() {
   const [showSkinPicker, setShowSkinPicker] = useState(false);
 
   // Active tab (game vs marketplace vs inventory)
-  const [activeTab, setActiveTab] = useState<'game' | 'marketplace' | 'inventory'>('game');
+  const [activeTab, setActiveTab] = useState<'home' | 'game' | 'marketplace' | 'inventory'>('home');
 
   // Card picker modal
   const [showCardPicker, setShowCardPicker] = useState(false);
@@ -220,6 +222,11 @@ export default function GameBoard() {
     }
   }, [isGunExhausted, gunSkin.id, energyCooldowns]);
 
+  // Keep rewardsRef in sync
+  useEffect(() => {
+    rewardsRef.current = rewards;
+  }, [rewards]);
+
   // Round timer effect
   useEffect(() => {
     if (isRoundActive && !showRoundSummary) {
@@ -230,7 +237,7 @@ export default function GameBoard() {
             if (roundTimerRef.current) clearInterval(roundTimerRef.current);
             setIsRoundActive(false);
             setShowRoundSummary(true);
-            setRoundRewards([...rewards]);
+            setRoundRewards([...rewardsRef.current]);
             stopTenseMusic();
             playTimeUpSound();
             return 0;
@@ -624,9 +631,14 @@ export default function GameBoard() {
   }, []);
 
   // Handle marketplace purchase (from shop)
-  const handleMarketPurchase = useCallback((item: MarketplaceItem, currency: 'coins' | 'gems') => {
+  // dualCurrency: true = deduct BOTH coins AND gems (for non-Common guns)
+  const handleMarketPurchase = useCallback((item: MarketplaceItem, currency: 'coins' | 'gems', dualCurrency?: boolean) => {
     setPlayer((prev) => {
       const price = item.discount ? Math.floor(item.priceCoins * (1 - item.discount / 100)) : item.priceCoins;
+      if (dualCurrency) {
+        // Deduct both coins AND gems
+        return { ...prev, coins: prev.coins - price, gems: prev.gems - item.priceGems };
+      }
       if (currency === 'coins') {
         return { ...prev, coins: prev.coins - price };
       } else {
@@ -760,6 +772,14 @@ export default function GameBoard() {
     });
   }, []);
 
+  // Handle USDT top-up
+  const handleTopUp = useCallback((amount: number) => {
+    setPlayer((prev) => ({
+      ...prev,
+      usdt: parseFloat((prev.usdt + amount).toFixed(4)),
+    }));
+  }, []);
+
   return (
     <div className="h-screen flex flex-col relative z-10 overflow-hidden">
       {/* Header */}
@@ -782,7 +802,7 @@ export default function GameBoard() {
 
         <nav className="hidden md:flex items-center gap-5 text-sm font-semibold text-cyan-100/75">
           {[
-            { label: 'HOME', tab: 'game' as const },
+            { label: 'HOME', tab: 'home' as const },
             { label: 'GAME', tab: 'game' as const },
             { label: 'MARKETPLACE', tab: 'marketplace' as const },
             { label: 'TOP EARNING', tab: 'game' as const },
@@ -794,7 +814,7 @@ export default function GameBoard() {
                 setActiveTab(item.tab);
               }}
               className={`px-4 py-2 rounded-lg transition-all cursor-pointer ${
-                (item.tab === activeTab && (item.label === 'GAME' || item.label === 'MARKETPLACE'))
+                item.tab === activeTab
                   ? 'bg-yellow-300/20 text-yellow-100 border border-yellow-200/40'
                   : 'hover:text-white hover:bg-cyan-900/35'
               }`}
@@ -826,7 +846,9 @@ export default function GameBoard() {
 
       {/* Main Content */}
       <main className={`flex-1 p-3 sm:p-4 lg:p-5 ${activeTab === 'game' ? 'overflow-hidden' : 'overflow-y-auto custom-scrollbar'}`}>
-        {activeTab === 'game' ? (
+        {activeTab === 'home' ? (
+          <HomePage onPlayNow={() => { playClickSound(); setActiveTab('game'); }} />
+        ) : activeTab === 'game' ? (
           <div className="h-full mx-auto grid grid-cols-1 lg:grid-cols-[260px_1fr_300px] gap-3 sm:gap-4 lg:gap-5">
             {/* Left Panel - Player Info */}
             <aside className="hidden lg:block">
@@ -1031,6 +1053,8 @@ export default function GameBoard() {
                 stats={rewardStats}
                 player={player}
                 onRandomize={handleReset}
+                onChangeMap={handleChangeMap}
+                isRoundActive={isRoundActive}
                 randomizeCost={RANDOMIZE_COST}
               />
             </aside>
@@ -1064,6 +1088,7 @@ export default function GameBoard() {
             playerGems={player.gems}
             playerUsdt={player.usdt}
             onExchange={handleExchange}
+            onTopUp={handleTopUp}
           />
         )}
       </main>
@@ -1147,10 +1172,14 @@ export default function GameBoard() {
             <div className="text-center text-slate-400 text-sm mb-5">Round Complete</div>
 
             {/* Stats */}
-            <div className="grid grid-cols-3 gap-4 mb-5">
+            <div className="grid grid-cols-4 gap-3 mb-5">
               <div className="text-center p-3 rounded-xl bg-slate-800/50 border border-slate-700/50">
                 <div className="text-2xl font-bold text-white">{roundRewards.length}</div>
                 <div className="text-xs text-slate-400">Total</div>
+              </div>
+              <div className="text-center p-3 rounded-xl bg-slate-800/50 border border-gray-400/30">
+                <div className="text-2xl font-bold" style={{ color: '#9ca3af' }}>{roundRewards.filter(r => r.rarity === 'Common').length}</div>
+                <div className="text-xs text-slate-400">Common</div>
               </div>
               <div className="text-center p-3 rounded-xl bg-cyan-950/45 border border-sky-300/30">
                 <div className="text-2xl font-bold text-sky-300">{roundRewards.filter(r => r.rarity === 'Rare').length}</div>
