@@ -1,6 +1,7 @@
 'use client';
 
-import React, { useState, useCallback, useEffect } from 'react';
+import React, { useState, useCallback } from 'react';
+import ScratchCard from './ScratchCard';
 import {
   RewardRarity,
   GUN_SKINS,
@@ -196,6 +197,7 @@ interface GachaPanelProps {
 // ==========================================
 
 export default function GachaPanel({ playerGems, onSpendGems, onAddReward }: GachaPanelProps) {
+  const [mode, setMode] = useState<'box' | 'scratch'>('box');
   const [selectedBox, setSelectedBox] = useState<GachaBox>(GACHA_BOXES[1]);
   const [phase, setPhase] = useState<'idle' | 'shake' | 'burst' | 'reveal'>('idle');
   const [result, setResult] = useState<GachaResult | null>(null);
@@ -260,6 +262,51 @@ export default function GachaPanel({ playerGems, onSpendGems, onAddReward }: Gac
           <span className="font-black text-lg text-purple-200">{playerGems.toLocaleString()}</span>
         </div>
       </div>
+
+      {/* ====== MODE TOGGLE ====== */}
+      <div className="flex items-center justify-center">
+        <div
+          className="inline-flex rounded-xl overflow-hidden"
+          style={{
+            background: 'rgba(7,35,51,0.7)',
+            border: '1px solid rgba(125,211,252,0.2)',
+          }}
+        >
+          {[
+            { id: 'box' as const, icon: '🎁', label: 'เปิดกล่อง' },
+            { id: 'scratch' as const, icon: '🎫', label: 'ขูดการ์ด' },
+          ].map((m) => (
+            <button
+              key={m.id}
+              onClick={() => setMode(m.id)}
+              className="px-6 sm:px-8 py-3 text-sm font-bold transition-all duration-300 cursor-pointer flex items-center gap-2"
+              style={{
+                background: mode === m.id
+                  ? 'linear-gradient(135deg, rgba(168,85,247,0.3), rgba(236,72,153,0.2))'
+                  : 'transparent',
+                color: mode === m.id ? '#e9d5ff' : '#94a3b8',
+                borderBottom: mode === m.id ? '2px solid #a855f7' : '2px solid transparent',
+              }}
+            >
+              <span className="text-lg">{m.icon}</span>
+              {m.label}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      {/* ====== SCRATCH MODE ====== */}
+      {mode === 'scratch' ? (
+        <ScratchCard
+          playerGems={playerGems}
+          onSpendGems={onSpendGems}
+          onAddReward={(r: any) => {
+            setHistory((prev) => [r, ...prev].slice(0, 20));
+            onAddReward(r);
+          }}
+        />
+      ) : (
+      <>
 
       {/* ====== BOX SELECTOR ====== */}
       <div className="grid grid-cols-3 gap-3 sm:gap-5">
@@ -560,6 +607,9 @@ export default function GachaPanel({ playerGems, onSpendGems, onAddReward }: Gac
             ))}
           </div>
         </div>
+      )}
+
+      </> /* end box mode */
       )}
     </div>
   );
