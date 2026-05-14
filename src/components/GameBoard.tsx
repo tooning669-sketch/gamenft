@@ -30,6 +30,7 @@ import GunSkinPicker from './GunSkinPicker';
 import CardPicker from './CardPicker';
 import Marketplace from './Marketplace';
 import Inventory from './Inventory';
+import GachaPanel from './GachaPanel';
 import SoundToggle, { playShootSound, playPopSound, playRewardSound, playClickSound, playCountdownBeep, startTenseMusic, stopTenseMusic, playTimeUpSound, playMapChangeSound } from './SoundManager';
 
 const INITIAL_PLAYER: PlayerState = {
@@ -107,7 +108,7 @@ export default function GameBoard() {
   const [showSkinPicker, setShowSkinPicker] = useState(false);
 
   // Active tab (game vs marketplace vs inventory)
-  const [activeTab, setActiveTab] = useState<'home' | 'game' | 'marketplace' | 'inventory'>('home');
+  const [activeTab, setActiveTab] = useState<'home' | 'game' | 'marketplace' | 'inventory' | 'gacha'>('home');
 
   // Card picker modal
   const [showCardPicker, setShowCardPicker] = useState(false);
@@ -810,7 +811,7 @@ export default function GameBoard() {
             { label: 'HOME', tab: 'home' as const },
             { label: 'GAME', tab: 'game' as const },
             { label: 'MARKETPLACE', tab: 'marketplace' as const },
-            { label: 'TOP EARNING', tab: 'game' as const },
+            { label: '🎰 GACHA', tab: 'gacha' as const },
           ].map((item) => (
             <button
               key={item.label}
@@ -1073,6 +1074,72 @@ export default function GameBoard() {
             onBuyFromPlayer={handleBuyFromPlayer}
             onListForSale={handleListForSale}
             onSellToSystem={handleSellFromInventory}
+          />
+        ) : activeTab === 'gacha' ? (
+          /* Gacha Tab */
+          <GachaPanel
+            playerGems={player.gems}
+            onSpendGems={(amount) => {
+              playClickSound();
+              setPlayer((prev) => ({ ...prev, gems: prev.gems - amount }));
+            }}
+            onAddReward={(result) => {
+              if (result.currency && result.amount) {
+                setPlayer((prev) => {
+                  const updated = { ...prev };
+                  switch (result.currency) {
+                    case 'coins': updated.coins += Math.floor(result.amount!); break;
+                    case 'gems': updated.gems += result.amount!; break;
+                    case 'usdt': updated.usdt += result.amount!; break;
+                    case 'btc': updated.btc += result.amount!; break;
+                  }
+                  updated.coins = Math.floor(updated.coins);
+                  updated.gems = parseFloat(updated.gems.toFixed(4));
+                  updated.usdt = parseFloat(updated.usdt.toFixed(4));
+                  updated.btc = parseFloat(updated.btc.toFixed(6));
+                  return updated;
+                });
+              }
+              if (result.isGun && result.gunSkin) {
+                const gun = result.gunSkin;
+                setInventory((prev) => [...prev, {
+                  id: `inv-gacha-${Date.now()}-${Math.random().toString(36).slice(2)}`,
+                  itemId: gun.id,
+                  name: gun.name,
+                  image: gun.image,
+                  icon: '🔫',
+                  category: 'guns' as const,
+                  rarity: gun.rarity,
+                  quantity: 1,
+                  acquiredAt: Date.now(),
+                  durability: gun.durability,
+                  maxDurability: gun.durability,
+                  description: `DMG ${gun.dmg} • Energy ${gun.energy} • Cooldown ${gun.cooldownSec}s`,
+                  tokenId: genTokenId(),
+                }]);
+              } else if (!result.currency) {
+                setInventory((prev) => {
+                  const existing = prev.find((i) => i.name === result.name);
+                  if (existing) {
+                    return prev.map((i) => i.name === result.name ? { ...i, quantity: i.quantity + 1 } : i);
+                  }
+                  return [...prev, {
+                    id: `inv-gacha-${Date.now()}-${Math.random().toString(36).slice(2)}`,
+                    itemId: `gacha-${result.name}`,
+                    name: result.name,
+                    image: '',
+                    icon: result.icon,
+                    category: 'special' as const,
+                    rarity: result.rarity,
+                    quantity: 1,
+                    acquiredAt: Date.now(),
+                    description: result.description,
+                    tokenId: genTokenId(),
+                  }];
+                });
+              }
+              playRewardSound(result.rarity === 'Legendary');
+            }}
           />
         ) : (
           /* Inventory Tab */

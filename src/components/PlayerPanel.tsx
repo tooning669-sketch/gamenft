@@ -124,23 +124,6 @@ export default function PlayerPanel({ player, ballsRemaining, totalBalls, onOpen
       {/* Spacer */}
       <div className="flex-1" />
 
-      {/* Top Earning Section */}
-      <div className="space-y-2.5">
-        <h3 className="text-xs sm:text-sm font-bold text-amber-400 uppercase tracking-wider text-center">
-          🏅 Top Earning
-        </h3>
-        {[
-          { rank: 1, name: 'CryptoKing', coins: 98750, icon: '👑' },
-          { rank: 2, name: 'BubblePro', coins: 76200, icon: '🥈' },
-          { rank: 3, name: 'NFT_Hero', coins: 54100, icon: '🥉' },
-        ].map((p) => (
-          <div key={p.rank} className="flex items-center gap-2.5 rounded-lg px-3 py-2.5 bg-cyan-950/35 border border-cyan-200/15">
-            <span className="text-lg">{p.icon}</span>
-            <span className="text-xs font-semibold text-white flex-1 truncate">{p.name}</span>
-            <span className="text-[11px] text-yellow-400 font-mono">🪙{p.coins.toLocaleString()}</span>
-          </div>
-        ))}
-      </div>
     </div>
   );
 }
