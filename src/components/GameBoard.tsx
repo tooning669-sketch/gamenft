@@ -24,7 +24,7 @@ import {
   GRID_ROWS,
   GRID_COLS,
 } from '@/lib/gameTypes';
-import { generateGrid, applyDamage, rollReward, getRarityColor } from '@/lib/gameUtils';
+import { generateGrid, applyDamage, rollReward, getRarityColor, setGameConfig, GameConfig } from '@/lib/gameUtils';
 import TargetGrid from './TargetGrid';
 import Shooter from './Shooter';
 import RewardDrop from './RewardDrop';
@@ -184,24 +184,31 @@ export default function GameBoard() {
   const totalBalls = GRID_ROWS * GRID_COLS;
   const ballsRemaining = balls.filter((b) => !b.isPopping && b.hp > 0).length;
 
-  // === LOAD PLAYER STATE FROM DB ON MOUNT ===
+  // === LOAD GAME CONFIG + PLAYER STATE FROM DB ON MOUNT ===
   useEffect(() => {
-    fetch('/api/player')
-      .then((r) => r.json())
-      .then((res) => {
-        if (res.data) {
-          const d = res.data;
-          if (d.player) setPlayer(d.player);
-          if (d.inventory) setInventory(d.inventory);
-          if (d.equippedGunInvId) setEquippedGunInvId(d.equippedGunInvId);
-          if (d.gunSkinId) {
-            const skin = GUN_SKINS.find((g) => g.id === d.gunSkinId);
-            if (skin) setGunSkin(skin);
-          }
+    Promise.all([
+      fetch('/api/admin/config').then((r) => r.json()).catch(() => ({})),
+      fetch('/api/player').then((r) => r.json()).catch(() => ({ data: null })),
+    ]).then(([configData, playerRes]) => {
+      // Apply game config from DB (affects ball HP, drop rates, rewards, etc.)
+      if (configData && Object.keys(configData).length > 0) {
+        setGameConfig(configData as GameConfig);
+        // Regenerate grid with new config
+        setBalls(generateGrid());
+      }
+
+      // Load player state
+      if (playerRes.data) {
+        const d = playerRes.data;
+        if (d.player) setPlayer(d.player);
+        if (d.inventory) setInventory(d.inventory);
+        if (d.equippedGunInvId) setEquippedGunInvId(d.equippedGunInvId);
+        if (d.gunSkinId) {
+          const skin = GUN_SKINS.find((g) => g.id === d.gunSkinId);
+          if (skin) setGunSkin(skin);
         }
-      })
-      .catch(() => {})
-      .finally(() => setIsLoadingData(false));
+      }
+    }).finally(() => setIsLoadingData(false));
   }, []);
 
   // === AUTO-SAVE PLAYER STATE TO DB ===

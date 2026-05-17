@@ -12,6 +12,82 @@ import {
 } from './gameTypes';
 
 // ==========================================
+// Dynamic Game Config (from DB)
+// ==========================================
+
+/** Runtime config fetched from Turso DB — overrides hardcoded defaults */
+export interface GameConfig {
+  game_settings?: {
+    gridRows?: number;
+    gridCols?: number;
+    roundTimer?: number;
+    startCost?: number;
+    maxRoundsPerGun?: number;
+    energyCooldownHours?: number;
+  };
+  ball_tiers?: Record<string, { hp: number; colors: { color: string; from: string; to: string }[] }>;
+  drop_rates?: Record<string, { Common: number; Rare: number; Legendary: number }>;
+  rewards?: Record<string, RewardItemDef[]>;
+  guns?: unknown[];
+  ammo?: unknown[];
+  cards?: unknown[];
+  marketplace?: unknown[];
+  exchange?: {
+    usdtToGold?: number;
+    diamondToUsdt?: number;
+    feePercent?: number;
+    goldToThb?: number;
+  };
+}
+
+// Global config — set once on load
+let _cfg: GameConfig = {};
+
+export function setGameConfig(cfg: GameConfig) {
+  _cfg = cfg;
+}
+
+export function getGameConfig(): GameConfig {
+  return _cfg;
+}
+
+// ==========================================
+// Config-aware helpers
+// ==========================================
+
+function getGridRows(): number {
+  return _cfg.game_settings?.gridRows ?? GRID_ROWS;
+}
+
+function getGridCols(): number {
+  return _cfg.game_settings?.gridCols ?? GRID_COLS;
+}
+
+function getTierHp(tier: Tier): number {
+  const bt = _cfg.ball_tiers;
+  if (bt && bt[String(tier)]) return bt[String(tier)].hp;
+  return TIER_CONFIG[tier].hp;
+}
+
+function getTierColors(tier: Tier): { color: string; from: string; to: string }[] {
+  const bt = _cfg.ball_tiers;
+  if (bt && bt[String(tier)]?.colors) return bt[String(tier)].colors;
+  return TIER_CONFIG[tier].colors;
+}
+
+function getDropRates(tier: Tier): { Common: number; Rare: number; Legendary: number } {
+  const dr = _cfg.drop_rates;
+  if (dr && dr[String(tier)]) return dr[String(tier)];
+  return DROP_RATES[tier];
+}
+
+function getRewardItems(rarity: RewardRarity): RewardItemDef[] {
+  const ri = _cfg.rewards;
+  if (ri && ri[rarity]) return ri[rarity];
+  return REWARD_ITEMS[rarity];
+}
+
+// ==========================================
 // Grid Generation
 // ==========================================
 
@@ -21,18 +97,22 @@ export function generateGrid(): Ball[] {
   const balls: Ball[] = [];
   ballIdCounter = 0;
 
-  for (let row = 0; row < GRID_ROWS; row++) {
-    for (let col = 0; col < GRID_COLS; col++) {
+  const rows = getGridRows();
+  const cols = getGridCols();
+
+  for (let row = 0; row < rows; row++) {
+    for (let col = 0; col < cols; col++) {
       const tier = randomTier(row);
-      const config = TIER_CONFIG[tier];
-      const colorSet = config.colors[Math.floor(Math.random() * config.colors.length)];
+      const hp = getTierHp(tier);
+      const colors = getTierColors(tier);
+      const colorSet = colors[Math.floor(Math.random() * colors.length)];
 
       balls.push({
         id: `ball-${ballIdCounter++}`,
         row,
         col,
-        hp: config.hp,
-        maxHp: config.hp,
+        hp,
+        maxHp: hp,
         tier,
         color: colorSet.color,
         gradientFrom: colorSet.from,
@@ -103,7 +183,7 @@ function rollAmount(item: RewardItemDef): number {
 
 export function rollReward(tier: Tier): Reward {
   const rarity = rollRarity(tier);
-  const items = REWARD_ITEMS[rarity];
+  const items = getRewardItems(rarity);
   const item = items[Math.floor(Math.random() * items.length)];
 
   // Handle currency-type rewards with random amounts
@@ -136,7 +216,7 @@ export function rollReward(tier: Tier): Reward {
 }
 
 function rollRarity(tier: Tier): RewardRarity {
-  const rates = DROP_RATES[tier];
+  const rates = getDropRates(tier);
   const rand = Math.random();
 
   if (rand < rates.Legendary) return 'Legendary';
