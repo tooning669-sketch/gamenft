@@ -3,7 +3,7 @@
 import React, { useState, useCallback, useEffect, useRef, useMemo } from 'react';
 import {
   Gamepad2, Wallet, ShoppingBag, Gift, Coins, Gem, Zap, Wrench,
-  Timer, Map, Menu, X, Play, Clock, Star
+  Timer, Map, Menu, X, Play, Clock, Star, Loader2
 } from 'lucide-react';
 import HomePage from './HomePage';
 import {
@@ -52,6 +52,19 @@ const INITIAL_PLAYER: PlayerState = {
 const RANDOMIZE_COST = 500;
 const MAX_ROUNDS_PER_GUN = 4;
 
+// Debounced save to DB
+let saveTimer: ReturnType<typeof setTimeout> | null = null;
+function debouncedSavePlayer(data: unknown) {
+  if (saveTimer) clearTimeout(saveTimer);
+  saveTimer = setTimeout(() => {
+    fetch('/api/player', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(data),
+    }).catch(() => {});
+  }, 1000);
+}
+
 // Bullet projectile type
 interface BulletProjectile {
   id: string;
@@ -65,6 +78,7 @@ interface BulletProjectile {
 }
 
 export default function GameBoard() {
+  const [isLoadingData, setIsLoadingData] = useState(true);
   const [balls, setBalls] = useState<BallType[]>(() => generateGrid());
   const [selectedAmmo, setSelectedAmmo] = useState<AmmoType>(AMMO_TYPES[0]);
   const [rewards, setRewards] = useState<Reward[]>([]);
@@ -169,6 +183,39 @@ export default function GameBoard() {
 
   const totalBalls = GRID_ROWS * GRID_COLS;
   const ballsRemaining = balls.filter((b) => !b.isPopping && b.hp > 0).length;
+
+  // === LOAD PLAYER STATE FROM DB ON MOUNT ===
+  useEffect(() => {
+    fetch('/api/player')
+      .then((r) => r.json())
+      .then((res) => {
+        if (res.data) {
+          const d = res.data;
+          if (d.player) setPlayer(d.player);
+          if (d.inventory) setInventory(d.inventory);
+          if (d.equippedGunInvId) setEquippedGunInvId(d.equippedGunInvId);
+          if (d.gunSkinId) {
+            const skin = GUN_SKINS.find((g) => g.id === d.gunSkinId);
+            if (skin) setGunSkin(skin);
+          }
+        }
+      })
+      .catch(() => {})
+      .finally(() => setIsLoadingData(false));
+  }, []);
+
+  // === AUTO-SAVE PLAYER STATE TO DB ===
+  const isFirstRender = useRef(true);
+  useEffect(() => {
+    if (isFirstRender.current) { isFirstRender.current = false; return; }
+    if (isLoadingData) return;
+    debouncedSavePlayer({
+      player,
+      inventory,
+      equippedGunInvId,
+      gunSkinId: gunSkin.id,
+    });
+  }, [player, inventory, equippedGunInvId, gunSkin.id, isLoadingData]);
 
   // Compute owned guns & cards from inventory for pickers
   const ownedGuns = inventory
@@ -789,6 +836,18 @@ export default function GameBoard() {
       usdt: parseFloat((prev.usdt + amount).toFixed(4)),
     }));
   }, []);
+
+  // Show loading while data loads from DB
+  if (isLoadingData) {
+    return (
+      <div className="h-screen flex items-center justify-center">
+        <div className="flex flex-col items-center gap-4">
+          <Loader2 size={40} className="text-teal-400 animate-spin" />
+          <p className="text-slate-400 text-sm">Loading game data...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="h-screen flex flex-col relative z-10 overflow-hidden">

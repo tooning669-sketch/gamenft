@@ -45,6 +45,15 @@ export async function initDatabase() {
     )
   `);
 
+  // Create player state table
+  await db.execute(`
+    CREATE TABLE IF NOT EXISTS player_state (
+      player_id TEXT PRIMARY KEY DEFAULT 'default',
+      data TEXT NOT NULL,
+      updated_at TEXT DEFAULT (datetime('now'))
+    )
+  `);
+
   // Seed defaults if empty
   for (const [key, value] of Object.entries(DEFAULTS)) {
     await db.execute({
@@ -76,5 +85,22 @@ export async function setConfig(key: string, value: unknown): Promise<void> {
   await db.execute({
     sql: `INSERT OR REPLACE INTO game_config (key, value, updated_at) VALUES (?, ?, datetime('now'))`,
     args: [key, JSON.stringify(value)],
+  });
+}
+
+// Player state persistence
+export async function getPlayerState(playerId = 'default'): Promise<unknown | null> {
+  const result = await db.execute({
+    sql: `SELECT data FROM player_state WHERE player_id = ?`,
+    args: [playerId],
+  });
+  if (result.rows.length === 0) return null;
+  return JSON.parse(result.rows[0].data as string);
+}
+
+export async function savePlayerState(data: unknown, playerId = 'default'): Promise<void> {
+  await db.execute({
+    sql: `INSERT OR REPLACE INTO player_state (player_id, data, updated_at) VALUES (?, ?, datetime('now'))`,
+    args: [playerId, JSON.stringify(data)],
   });
 }
