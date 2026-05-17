@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useCallback, useEffect, useRef, useState } from 'react';
+import { Volume2, VolumeX } from 'lucide-react';
 
 // ==========================================
 // Web Audio Procedural Sound Manager
@@ -451,17 +452,17 @@ export default function SoundToggle({ className }: SoundToggleProps) {
     <button
       onClick={toggle}
       className={`
-        px-2 py-1.5 rounded-lg transition-all duration-200 cursor-pointer
+        px-2.5 py-2 rounded-xl transition-all duration-200 cursor-pointer
         text-xs font-semibold flex items-center gap-1.5
         ${muted
-          ? 'bg-slate-800/60 text-slate-400 border border-slate-700/50 hover:bg-slate-700/60'
-          : 'bg-cyan-400/20 text-cyan-100 border border-cyan-200/30 hover:bg-cyan-300/30'
+          ? 'bg-slate-800/60 text-slate-400 border border-slate-700/40 hover:bg-slate-700/60 hover:text-slate-300'
+          : 'bg-teal-500/15 text-teal-200 border border-teal-400/30 hover:bg-teal-400/25'
         }
         ${className || ''}
       `}
       title={muted ? 'Turn sound on' : 'Turn sound off'}
     >
-      {muted ? '🔇' : '🔊'}
+      {muted ? <VolumeX size={16} /> : <Volume2 size={16} />}
       <span className="hidden sm:inline">{muted ? 'OFF' : 'ON'}</span>
     </button>
   );

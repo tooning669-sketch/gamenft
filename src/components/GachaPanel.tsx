@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState, useCallback } from 'react';
+import { Gift, Gem, Sparkles, Star, RotateCcw, Check, Package, Ticket, ScrollText, Crosshair, CreditCard, Swords } from 'lucide-react';
 import ScratchCard from './ScratchCard';
 import {
   RewardRarity,
@@ -236,30 +237,31 @@ export default function GachaPanel({ playerGems, onSpendGems, onAddReward }: Gac
       {/* ====== HEADER ====== */}
       <div className="text-center space-y-3">
         <h2
-          className="text-4xl sm:text-5xl font-black"
+          className="text-4xl sm:text-5xl font-extrabold flex items-center justify-center gap-3"
           style={{
-            background: 'linear-gradient(135deg, #f9a8d4, #c084fc, #67e8f9)',
+            background: 'linear-gradient(135deg, #c084fc, #a78bfa, #67e8f9)',
             WebkitBackgroundClip: 'text',
             WebkitTextFillColor: 'transparent',
-            filter: 'drop-shadow(0 2px 8px rgba(192,132,252,0.4))',
+            filter: 'drop-shadow(0 2px 8px rgba(167,139,250,0.4))',
           }}
         >
-          🎰 Lucky Gacha
+          <Gift size={36} className="text-purple-400" style={{ WebkitTextFillColor: 'initial' }} />
+          Lucky Gacha
         </h2>
-        <p className="text-sm text-cyan-100/60">
-          เปิดกล่องสุ่มลุ้นรางวัลสุดพิเศษ! ใช้ 💎 เพชรเท่านั้น
+        <p className="text-sm text-slate-400">
+          Open mystery boxes for amazing rewards!
         </p>
         {/* Gem balance pill */}
         <div
           className="inline-flex items-center gap-2.5 px-5 py-2.5 rounded-full text-sm"
           style={{
-            background: 'linear-gradient(135deg, rgba(139,92,246,0.2), rgba(168,85,247,0.1))',
-            border: '1px solid rgba(168,85,247,0.4)',
-            boxShadow: '0 0 20px rgba(168,85,247,0.15)',
+            background: 'linear-gradient(135deg, rgba(139,92,246,0.15), rgba(168,85,247,0.08))',
+            border: '1px solid rgba(168,85,247,0.3)',
+            boxShadow: '0 0 16px rgba(168,85,247,0.1)',
           }}
         >
-          <span className="text-xl">💎</span>
-          <span className="font-black text-lg text-purple-200">{playerGems.toLocaleString()}</span>
+          <Gem size={20} className="text-purple-300" />
+          <span className="font-extrabold text-lg text-purple-200">{playerGems.toLocaleString()}</span>
         </div>
       </div>
 
@@ -273,8 +275,8 @@ export default function GachaPanel({ playerGems, onSpendGems, onAddReward }: Gac
           }}
         >
           {[
-            { id: 'box' as const, icon: '🎁', label: 'เปิดกล่อง' },
-            { id: 'scratch' as const, icon: '🎫', label: 'ขูดการ์ด' },
+            { id: 'box' as const, icon: Package, label: 'Open Box' },
+            { id: 'scratch' as const, icon: Ticket, label: 'Scratch Card' },
           ].map((m) => (
             <button
               key={m.id}
@@ -282,13 +284,13 @@ export default function GachaPanel({ playerGems, onSpendGems, onAddReward }: Gac
               className="px-6 sm:px-8 py-3 text-sm font-bold transition-all duration-300 cursor-pointer flex items-center gap-2"
               style={{
                 background: mode === m.id
-                  ? 'linear-gradient(135deg, rgba(168,85,247,0.3), rgba(236,72,153,0.2))'
+                  ? 'linear-gradient(135deg, rgba(168,85,247,0.2), rgba(236,72,153,0.12))'
                   : 'transparent',
                 color: mode === m.id ? '#e9d5ff' : '#94a3b8',
                 borderBottom: mode === m.id ? '2px solid #a855f7' : '2px solid transparent',
               }}
             >
-              <span className="text-lg">{m.icon}</span>
+              <m.icon size={18} />
               {m.label}
             </button>
           ))}
@@ -362,8 +364,8 @@ export default function GachaPanel({ playerGems, onSpendGems, onAddReward }: Gac
 
               {/* Cost */}
               <div className="flex items-center justify-center gap-1.5">
-                <span className="text-sm">💎</span>
-                <span className="text-base sm:text-lg font-black text-purple-200">{box.costGems}</span>
+                <Gem size={16} className="text-purple-300" />
+                <span className="text-base sm:text-lg font-extrabold text-purple-200">{box.costGems}</span>
               </div>
 
               {/* Label */}
@@ -475,14 +477,14 @@ export default function GachaPanel({ playerGems, onSpendGems, onAddReward }: Gac
                   textShadow: '0 2px 8px rgba(0,0,0,0.5)',
                 }}
               >
-                <span className="text-2xl">{isOpening ? '✨' : '🎰'}</span>
+                <span className="text-2xl">{isOpening ? <Sparkles size={22} className="text-white animate-spin" /> : <Gift size={22} className="text-white" />}</span>
                 <span className="text-white">{isOpening ? 'Opening...' : 'OPEN!'}</span>
-                <span className="text-sm text-purple-200 flex items-center gap-1">💎 {selectedBox.costGems}</span>
+                <span className="text-sm text-purple-200 flex items-center gap-1"><Gem size={14} /> {selectedBox.costGems}</span>
               </button>
 
               {!canAfford && (
                 <p className="text-xs text-rose-400/80 mt-3 flex items-center gap-1">
-                  💎 เพชรไม่พอ! ต้องการอีก {selectedBox.costGems - playerGems}
+                  <Gem size={12} /> Not enough gems! Need {selectedBox.costGems - playerGems} more
                 </p>
               )}
             </>
@@ -538,13 +540,13 @@ export default function GachaPanel({ playerGems, onSpendGems, onAddReward }: Gac
 
               {/* Tag if gun or card */}
               {result.isGun && (
-                <span className="inline-block text-[10px] px-3 py-1 rounded-full bg-rose-500/15 border border-rose-400/30 text-rose-300 font-bold">
-                  🔫 NFT Weapon
+                <span className="inline-block text-[10px] px-3 py-1 rounded-full bg-rose-500/12 border border-rose-400/25 text-rose-300 font-bold flex items-center gap-1 w-fit mx-auto">
+                  <Crosshair size={12} /> NFT Weapon
                 </span>
               )}
               {result.isCard && (
-                <span className="inline-block text-[10px] px-3 py-1 rounded-full bg-sky-500/15 border border-sky-400/30 text-sky-300 font-bold">
-                  🃏 Boost Card
+                <span className="inline-block text-[10px] px-3 py-1 rounded-full bg-sky-500/12 border border-sky-400/25 text-sky-300 font-bold flex items-center gap-1 w-fit mx-auto">
+                  <CreditCard size={12} /> Boost Card
                 </span>
               )}
 
@@ -559,12 +561,12 @@ export default function GachaPanel({ playerGems, onSpendGems, onAddReward }: Gac
                     color: '#bae6fd',
                   }}
                 >
-                  OK ✨
+                  OK
                 </button>
                 <button
                   onClick={() => { dismiss(); setTimeout(handleOpen, 200); }}
                   disabled={playerGems < selectedBox.costGems}
-                  className={`px-8 py-3 rounded-xl text-sm font-bold transition-all duration-200 cursor-pointer
+                  className={`px-8 py-3 rounded-xl text-sm font-bold transition-all duration-200 cursor-pointer flex items-center gap-1.5
                     ${playerGems >= selectedBox.costGems ? 'hover:scale-105 active:scale-95' : 'opacity-35 cursor-not-allowed'}`}
                   style={{
                     background: `linear-gradient(135deg, ${selectedBox.color}90, #a855f780)`,
@@ -572,7 +574,7 @@ export default function GachaPanel({ playerGems, onSpendGems, onAddReward }: Gac
                     color: '#fff',
                   }}
                 >
-                  🔄 อีกครั้ง! 💎{selectedBox.costGems}
+                  <RotateCcw size={14} /> Again! <Gem size={12} />{selectedBox.costGems}
                 </button>
               </div>
             </div>
@@ -583,8 +585,8 @@ export default function GachaPanel({ playerGems, onSpendGems, onAddReward }: Gac
       {/* ====== HISTORY ====== */}
       {history.length > 0 && (
         <div className="space-y-3">
-          <h3 className="text-xs font-bold text-slate-400 uppercase tracking-widest text-center">
-            📜 ประวัติการสุ่ม
+          <h3 className="text-xs font-bold text-slate-400 uppercase tracking-widest text-center flex items-center justify-center gap-1.5">
+            <ScrollText size={14} /> Roll History
           </h3>
           <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-5 gap-2">
             {history.slice(0, 10).map((item, i) => (

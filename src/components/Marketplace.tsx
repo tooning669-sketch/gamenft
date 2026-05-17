@@ -12,6 +12,10 @@ import {
 } from '@/lib/gameTypes';
 import { getRarityColor } from '@/lib/gameUtils';
 import { playClickSound, playRewardSound } from './SoundManager';
+import {
+  ShoppingBag, Store, Users, Tag, Building2, Coins, Gem,
+  Crosshair, CreditCard, Sparkles, Package, Check, Pencil, XCircle, ChevronLeft, ChevronRight, User, Megaphone
+} from 'lucide-react';
 
 interface MarketplaceProps {
   player: PlayerState;
@@ -24,12 +28,12 @@ interface MarketplaceProps {
 
 type MarketView = 'shop' | 'p2p' | 'sell' | 'sellback';
 
-const CATEGORIES: { key: MarketCategory | 'all'; label: string; icon: string }[] = [
-  { key: 'all', label: 'All', icon: '🏪' },
-  { key: 'guns', label: 'Weapons', icon: '🔫' },
-  { key: 'cards', label: 'Cards', icon: '🃏' },
-  { key: 'ammo', label: 'Ammo', icon: '💣' },
-  { key: 'special', label: 'Special', icon: '✨' },
+const CATEGORIES: { key: MarketCategory | 'all'; label: string; icon: typeof ShoppingBag }[] = [
+  { key: 'all', label: 'All', icon: ShoppingBag },
+  { key: 'guns', label: 'Weapons', icon: Crosshair },
+  { key: 'cards', label: 'Cards', icon: CreditCard },
+  { key: 'ammo', label: 'Ammo', icon: Package },
+  { key: 'special', label: 'Special', icon: Sparkles },
 ];
 
 function timeAgo(ts: number): string {
@@ -151,22 +155,24 @@ export default function Marketplace({ player, inventory, onBuyFromShop, onBuyFro
     <div className="flex flex-col gap-4 sm:gap-6 max-w-5xl mx-auto">
       {/* Header */}
       <div className="text-center">
-        <h2 className="text-xl sm:text-2xl font-black text-transparent bg-clip-text bg-gradient-to-r from-amber-400 via-yellow-300 to-amber-400">
-          🏪 MARKETPLACE
+        <h2 className="text-xl sm:text-2xl font-extrabold text-transparent bg-clip-text flex items-center justify-center gap-2"
+          style={{ backgroundImage: 'linear-gradient(135deg, #fde68a, #fbbf24, #f59e0b)' }}>
+          <ShoppingBag size={22} className="text-amber-400" />
+          MARKETPLACE
         </h2>
         <p className="text-[11px] text-slate-500 mt-1">Buy from shop, trade with players, or sell your items</p>
       </div>
 
       {/* Balance Bar */}
-      <div className="flex items-center justify-center gap-4 sm:gap-6 py-2 px-4 rounded-xl mx-auto"
-        style={{ background: 'linear-gradient(135deg, rgba(7,47,62,0.82), rgba(8,96,95,0.62))', border: '1px solid rgba(125,211,252,0.25)' }}>
+      <div className="flex items-center justify-center gap-4 sm:gap-6 py-2.5 px-5 rounded-xl mx-auto"
+        style={{ background: 'linear-gradient(135deg, rgba(6,28,44,0.9), rgba(8,48,62,0.7))', border: '1px solid rgba(45,212,191,0.12)' }}>
         <div className="flex items-center gap-1.5">
-          <span className="text-lg">🪙</span>
+          <Coins size={18} className="text-yellow-400" />
           <span className="text-sm font-bold text-yellow-400">{player.coins.toLocaleString()}</span>
         </div>
         <div className="w-px h-5 bg-slate-700" />
         <div className="flex items-center gap-1.5">
-          <span className="text-lg">💎</span>
+          <Gem size={18} className="text-cyan-400" />
           <span className="text-sm font-bold text-cyan-400">{player.gems.toLocaleString()}</span>
         </div>
       </div>
@@ -174,10 +180,10 @@ export default function Marketplace({ player, inventory, onBuyFromShop, onBuyFro
       {/* View Tabs: Shop / Player Market / Sell */}
       <div className="flex gap-2 justify-center">
         {([
-          { key: 'shop' as const, label: '🏬 Official Shop', desc: 'Buy from game' },
-          { key: 'p2p' as const, label: '🤝 Player Market', desc: 'Buy from players' },
-          { key: 'sell' as const, label: '💰 Sell Items', desc: 'List your items' },
-          { key: 'sellback' as const, label: '🏦 Sell to System', desc: 'Quick sell at 50%' },
+          { key: 'shop' as const, label: 'Official Shop', icon: Store, desc: 'Buy from game' },
+          { key: 'p2p' as const, label: 'Player Market', icon: Users, desc: 'Buy from players' },
+          { key: 'sell' as const, label: 'Sell Items', icon: Tag, desc: 'List your items' },
+          { key: 'sellback' as const, label: 'Sell to System', icon: Building2, desc: 'Quick sell at 50%' },
         ]).map((tab) => {
           const isActive = view === tab.key;
           return (
@@ -186,12 +192,12 @@ export default function Marketplace({ player, inventory, onBuyFromShop, onBuyFro
               onClick={() => { playClickSound(); setView(tab.key); }}
               className="flex flex-col items-center gap-0.5 px-4 sm:px-6 py-2.5 rounded-xl text-xs font-bold transition-all cursor-pointer hover:scale-105 active:scale-95"
               style={{
-                background: isActive ? 'linear-gradient(135deg, rgba(34,211,238,0.24), rgba(250,204,21,0.09))' : 'rgba(8,47,73,0.52)',
-                border: isActive ? '1px solid rgba(125,211,252,0.55)' : '1px solid rgba(125,211,252,0.18)',
-                color: isActive ? '#cffafe' : '#bae6fd',
+                background: isActive ? 'linear-gradient(135deg, rgba(34,211,238,0.15), rgba(251,191,36,0.06))' : 'rgba(6,28,44,0.6)',
+                border: isActive ? '1px solid rgba(34,211,238,0.35)' : '1px solid rgba(45,212,191,0.1)',
+                color: isActive ? '#a5f3fc' : '#94a3b8',
               }}
             >
-              <span className="text-sm">{tab.label}</span>
+              <span className="text-sm flex items-center gap-1.5"><tab.icon size={14} />{tab.label}</span>
               <span className="text-[8px] font-normal opacity-60">{tab.desc}</span>
             </button>
           );
@@ -206,14 +212,14 @@ export default function Marketplace({ player, inventory, onBuyFromShop, onBuyFro
             return (
               <button key={cat.key}
                 onClick={() => { playClickSound(); setSelectedCategory(cat.key); }}
-                className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[11px] font-bold uppercase tracking-wider transition-all cursor-pointer hover:scale-105 active:scale-95"
+                className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-[11px] font-bold uppercase tracking-wider transition-all cursor-pointer hover:scale-105 active:scale-95"
                 style={{
-                  background: isActive ? 'linear-gradient(135deg, rgba(34,211,238,0.26), rgba(52,211,153,0.1))' : 'rgba(8,47,73,0.48)',
-                  border: isActive ? '1px solid rgba(125,211,252,0.55)' : '1px solid rgba(125,211,252,0.16)',
-                  color: isActive ? '#cffafe' : '#bae6fd',
+                  background: isActive ? 'linear-gradient(135deg, rgba(34,211,238,0.15), rgba(52,211,153,0.06))' : 'rgba(6,28,44,0.6)',
+                  border: isActive ? '1px solid rgba(34,211,238,0.35)' : '1px solid rgba(45,212,191,0.1)',
+                  color: isActive ? '#a5f3fc' : '#94a3b8',
                 }}
               >
-                <span>{cat.icon}</span>
+                <cat.icon size={13} />
                 <span>{cat.label}</span>
               </button>
             );
@@ -271,22 +277,22 @@ export default function Marketplace({ player, inventory, onBuyFromShop, onBuyFro
                       <button onClick={() => handleShopBuy(item, 'coins', true)}
                         disabled={isOutOfStock || player.coins < discountedCoins || player.gems < item.priceGems}
                         className={`px-3 py-1.5 rounded-lg text-[10px] font-bold uppercase transition-all cursor-pointer flex items-center gap-1.5 ${!isOutOfStock && player.coins >= discountedCoins && player.gems >= item.priceGems ? 'bg-gradient-to-r from-yellow-500/20 via-cyan-500/10 to-cyan-500/20 text-yellow-400 border border-yellow-500/30 hover:scale-105 active:scale-95' : 'bg-slate-800/50 text-slate-600 border border-slate-700/30 cursor-not-allowed'}`}>
-                        🪙{item.discount ? (<><span className="line-through text-slate-500 text-[9px]">{item.priceCoins}</span> <span>{discountedCoins.toLocaleString()}</span></>) : <span>{item.priceCoins.toLocaleString()}</span>}
+                                                <Coins size={12} className="text-yellow-400" />{item.discount ? (<><span className="line-through text-slate-500 text-[9px]">{item.priceCoins}</span> <span>{discountedCoins.toLocaleString()}</span></>) : <span>{item.priceCoins.toLocaleString()}</span>}
                         <span className="text-cyan-400">+</span>
-                        <span className="text-cyan-400">💎{item.priceGems}</span>
+                        <span className="text-cyan-400"><Gem size={12} className="text-cyan-400" />{item.priceGems}</span>
                         <span className="ml-0.5">Buy</span>
                       </button>
                     ) : (
                       <>
                         <button onClick={() => handleShopBuy(item, 'coins')} disabled={isOutOfStock || player.coins < discountedCoins}
                           className={`px-3 py-1.5 rounded-lg text-[10px] font-bold uppercase transition-all cursor-pointer flex items-center gap-1.5 ${!isOutOfStock && player.coins >= discountedCoins ? 'bg-gradient-to-r from-yellow-500/20 to-amber-500/20 text-yellow-400 border border-yellow-500/30 hover:scale-105 active:scale-95' : 'bg-slate-800/50 text-slate-600 border border-slate-700/30 cursor-not-allowed'}`}>
-                          🪙 {item.discount ? (<><span className="line-through text-slate-500 text-[9px]">{item.priceCoins}</span> <span>{discountedCoins.toLocaleString()}</span></>) : <span>{item.priceCoins.toLocaleString()}</span>}
+                                                  <Coins size={12} className="text-yellow-400" /> {item.discount ? (<><span className="line-through text-slate-500 text-[9px]">{item.priceCoins}</span> <span>{discountedCoins.toLocaleString()}</span></>) : <span>{item.priceCoins.toLocaleString()}</span>}
                           <span className="ml-0.5">Buy</span>
                         </button>
                         {item.priceGems > 0 && (
                           <button onClick={() => handleShopBuy(item, 'gems')} disabled={isOutOfStock || player.gems < item.priceGems}
                             className={`px-3 py-1.5 rounded-lg text-[10px] font-bold uppercase transition-all cursor-pointer flex items-center gap-1.5 ${!isOutOfStock && player.gems >= item.priceGems ? 'bg-gradient-to-r from-cyan-500/20 to-blue-500/20 text-cyan-400 border border-cyan-500/30 hover:scale-105 active:scale-95' : 'bg-slate-800/50 text-slate-600 border border-slate-700/30 cursor-not-allowed'}`}>
-                            💎 {item.priceGems} Buy
+                            <Gem size={12} className="text-cyan-400" /> {item.priceGems} Buy
                           </button>
                         )}
                       </>
@@ -297,7 +303,7 @@ export default function Marketplace({ player, inventory, onBuyFromShop, onBuyFro
                 {isPurchaseAnim && (
                   <div className="absolute inset-0 z-30 flex items-center justify-center bg-green-500/10 rounded-xl animate-slide-in">
                     <div className="flex items-center gap-2 px-4 py-2 rounded-xl bg-green-500/20 border border-green-500/40">
-                      <span className="text-lg">✅</span>
+                      <span className="text-lg"><Check size={18} className="text-emerald-400" /></span>
                       <span className="text-sm font-bold text-green-400">Purchased!</span>
                     </div>
                   </div>
@@ -325,7 +331,7 @@ export default function Marketplace({ player, inventory, onBuyFromShop, onBuyFro
           {filteredListings.length === 0 ? (
             <div className="flex flex-col items-center justify-center py-16 gap-3 rounded-xl"
               style={{ background: 'rgba(15,23,42,0.5)', border: '1px dashed rgba(100,116,139,0.3)' }}>
-              <span className="text-4xl">🤝</span>
+              <Users size={36} className="text-slate-600" />
               <span className="text-sm text-slate-500 font-semibold">No listings available</span>
             </div>
           ) : (
@@ -376,7 +382,7 @@ export default function Marketplace({ player, inventory, onBuyFromShop, onBuyFro
                     <div className="flex items-center gap-3 flex-shrink-0">
                       <div className="text-right">
                         <div className="flex items-center gap-1">
-                          <span className="text-sm">🪙</span>
+                          <Coins size={14} className="text-yellow-400" />
                           <span className="text-base font-black text-yellow-400">{listing.priceCoins.toLocaleString()}</span>
                         </div>
                       </div>
@@ -397,7 +403,7 @@ export default function Marketplace({ player, inventory, onBuyFromShop, onBuyFro
                   {isPurchaseAnim && (
                     <div className="absolute inset-0 z-30 flex items-center justify-center bg-green-500/10 rounded-xl animate-slide-in">
                       <div className="flex items-center gap-2 px-4 py-2 rounded-xl bg-green-500/20 border border-green-500/40">
-                        <span className="text-lg">✅</span>
+                        <span className="text-lg"><Check size={18} className="text-emerald-400" /></span>
                         <span className="text-sm font-bold text-green-400">Purchased!</span>
                       </div>
                     </div>
@@ -415,7 +421,7 @@ export default function Marketplace({ player, inventory, onBuyFromShop, onBuyFro
           {inventory.length === 0 ? (
             <div className="flex flex-col items-center justify-center py-16 gap-3 rounded-xl"
               style={{ background: 'rgba(15,23,42,0.5)', border: '1px dashed rgba(100,116,139,0.3)' }}>
-              <span className="text-4xl">📦</span>
+              <Package size={36} className="text-slate-600" />
               <span className="text-sm text-slate-500 font-semibold">No items to sell</span>
               <span className="text-[11px] text-slate-600">Buy items first from the shop!</span>
             </div>
@@ -447,7 +453,7 @@ export default function Marketplace({ player, inventory, onBuyFromShop, onBuyFro
                         {item.quantity > 1 && <span className="text-[9px] text-sky-300 font-bold">×{item.quantity}</span>}
                         {isListed && (
                           <span className="text-[8px] px-1.5 py-0.5 rounded-full font-bold bg-green-500/20 text-green-400 border border-green-500/30 animate-pulse">
-                            📢 LISTED
+                            <Megaphone size={10} /> LISTED
                           </span>
                         )}
                       </div>
@@ -462,7 +468,7 @@ export default function Marketplace({ player, inventory, onBuyFromShop, onBuyFro
                     {/* Price input + sell/edit button */}
                     <div className="flex items-center gap-2 flex-shrink-0">
                       <div className="flex items-center gap-1 px-2 py-1.5 rounded-lg bg-slate-800/80 border border-slate-700/50">
-                        <span className="text-xs">🪙</span>
+                        <Coins size={14} className="text-yellow-400" />
                         <input
                           type="number"
                           min={1}
@@ -528,7 +534,7 @@ export default function Marketplace({ player, inventory, onBuyFromShop, onBuyFro
           <div className="rounded-xl p-3 text-center"
             style={{ background: 'linear-gradient(135deg, rgba(234,179,8,0.1), rgba(245,158,11,0.05))', border: '1px solid rgba(234,179,8,0.25)' }}>
             <div className="flex items-center justify-center gap-2 text-sm font-bold text-amber-400">
-              <span>🏦</span>
+              <Building2 size={16} />
               <span>Sell items back to the system at 50% of Official Shop price</span>
             </div>
             <p className="text-[10px] text-amber-400/60 mt-1">Items will be removed from your inventory. Coins are credited instantly.</p>
@@ -537,7 +543,7 @@ export default function Marketplace({ player, inventory, onBuyFromShop, onBuyFro
           {inventory.length === 0 ? (
             <div className="flex flex-col items-center justify-center py-16 gap-3 rounded-xl"
               style={{ background: 'rgba(15,23,42,0.5)', border: '1px dashed rgba(100,116,139,0.3)' }}>
-              <span className="text-4xl">📦</span>
+              <Package size={36} className="text-slate-600" />
               <span className="text-sm text-slate-500 font-semibold">No items to sell</span>
               <span className="text-[11px] text-slate-600">Buy items first from the shop!</span>
             </div>
@@ -577,7 +583,7 @@ export default function Marketplace({ player, inventory, onBuyFromShop, onBuyFro
                       <div className="flex items-center gap-3 mt-0.5">
                         <span className="text-[10px] text-slate-400">{item.category}</span>
                         {shopPrice > 0 && (
-                          <span className="text-[9px] text-slate-500">Shop: 🪙{shopPrice.toLocaleString()}</span>
+                          <span className="text-[9px] text-slate-500 flex items-center gap-0.5">Shop: <Coins size={9} />{shopPrice.toLocaleString()}</span>
                         )}
                       </div>
                     </div>
@@ -587,7 +593,7 @@ export default function Marketplace({ player, inventory, onBuyFromShop, onBuyFro
                       <div className="text-right">
                         <div className="text-[9px] text-slate-500 mb-0.5">Sell Price (50%)</div>
                         <div className="flex items-center gap-1">
-                          <span className="text-sm">🪙</span>
+                          <Coins size={14} className="text-yellow-400" />
                           <span className={`text-base font-black ${sellbackPrice > 0 ? 'text-yellow-400' : 'text-slate-600'}`}>
                             {sellbackPrice > 0 ? sellbackPrice.toLocaleString() : 'N/A'}
                           </span>
@@ -609,7 +615,7 @@ export default function Marketplace({ player, inventory, onBuyFromShop, onBuyFro
                             : 'bg-slate-800/50 text-slate-600 border border-slate-700/30 cursor-not-allowed'
                         }`}
                       >
-                        🪙 {sellbackPrice > 0 ? sellbackPrice.toLocaleString() : '—'} Sell
+                        <Coins size={12} /> {sellbackPrice > 0 ? sellbackPrice.toLocaleString() : '—'} Sell
                       </button>
                     </div>
                   </div>
@@ -618,8 +624,8 @@ export default function Marketplace({ player, inventory, onBuyFromShop, onBuyFro
                   {isSellbackAnim && (
                     <div className="absolute inset-0 z-30 flex items-center justify-center bg-amber-500/10 rounded-xl animate-slide-in">
                       <div className="flex items-center gap-2 px-4 py-2 rounded-xl bg-amber-500/20 border border-amber-500/40">
-                        <span className="text-lg">💰</span>
-                        <span className="text-sm font-bold text-amber-400">Sold for 🪙{sellbackPrice.toLocaleString()}!</span>
+                        <span className="text-lg"><Coins size={20} className="text-amber-400" /></span>
+                        <span className="text-sm font-bold text-amber-400 flex items-center gap-0.5">Sold for <Coins size={10} />{sellbackPrice.toLocaleString()}!</span>
                       </div>
                     </div>
                   )}

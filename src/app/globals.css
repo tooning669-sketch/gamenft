@@ -5,16 +5,26 @@
    ========================================== */
 
 :root {
-  --bg-primary: #062238;
-  --bg-secondary: #0b3b4f;
-  --bg-card: rgba(7, 35, 51, 0.82);
-  --border-subtle: rgba(45, 212, 191, 0.28);
-  --text-primary: #f8fafc;
-  --text-secondary: #c7f9ff;
+  --bg-primary: #041828;
+  --bg-secondary: #0a2e3f;
+  --bg-card: rgba(6, 28, 44, 0.88);
+  --bg-card-hover: rgba(8, 36, 56, 0.92);
+  --border-subtle: rgba(45, 212, 191, 0.2);
+  --border-active: rgba(45, 212, 191, 0.45);
+  --text-primary: #f1f5f9;
+  --text-secondary: #94a3b8;
+  --text-muted: #64748b;
+  --accent-cyan: #22d3ee;
+  --accent-teal: #2dd4bf;
   --accent-sky: #38bdf8;
   --accent-mint: #34d399;
-  --accent-sun: #facc15;
+  --accent-sun: #fbbf24;
+  --accent-lime: #a3e635;
   --accent-coral: #fb7185;
+  --radius-sm: 12px;
+  --radius-md: 16px;
+  --radius-lg: 20px;
+  --radius-xl: 24px;
 }
 
 /* ==========================================
@@ -26,13 +36,17 @@
 }
 
 body {
-  background:
-    linear-gradient(180deg, rgba(8, 94, 126, 0.92) 0%, rgba(10, 134, 136, 0.86) 44%, rgba(27, 181, 137, 0.78) 100%),
-    #0786a0;
+  background: linear-gradient(180deg, #041828 0%, #062a3a 40%, #073a42 100%);
   color: var(--text-primary);
-  font-family: "Trebuchet MS", "Segoe UI", Arial, sans-serif;
+  font-family: 'Inter', 'Segoe UI', -apple-system, sans-serif;
   overflow-x: hidden;
   position: relative;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+h1, h2, h3, h4, h5, h6 {
+  font-family: 'Outfit', 'Inter', sans-serif;
 }
 
 /* Background Image */
@@ -41,9 +55,9 @@ body::after {
   position: fixed;
   inset: 0;
   background:
-    linear-gradient(180deg, rgba(255, 255, 255, 0.08), rgba(255, 255, 255, 0)),
+    linear-gradient(180deg, rgba(4, 24, 40, 0.55) 0%, rgba(4, 24, 40, 0.3) 50%, rgba(7, 58, 66, 0.45) 100%),
     url('/bg.png') center center / cover no-repeat;
-  opacity: 0.58;
+  opacity: 0.5;
   pointer-events: none;
   z-index: 0;
 }
@@ -53,14 +67,36 @@ body::before {
   content: '';
   position: fixed;
   inset: 0;
-  background: 
-    radial-gradient(ellipse at 18% 16%, rgba(255, 255, 255, 0.16) 0%, transparent 42%),
-    radial-gradient(ellipse at 76% 24%, rgba(250, 204, 21, 0.18) 0%, transparent 38%),
-    radial-gradient(ellipse at 82% 82%, rgba(52, 211, 153, 0.2) 0%, transparent 48%),
-    radial-gradient(ellipse at 34% 78%, rgba(56, 189, 248, 0.2) 0%, transparent 46%);
+  background:
+    radial-gradient(ellipse at 18% 16%, rgba(34, 211, 238, 0.08) 0%, transparent 42%),
+    radial-gradient(ellipse at 76% 24%, rgba(251, 191, 36, 0.06) 0%, transparent 38%),
+    radial-gradient(ellipse at 82% 82%, rgba(52, 211, 153, 0.08) 0%, transparent 48%),
+    radial-gradient(ellipse at 34% 78%, rgba(56, 189, 248, 0.06) 0%, transparent 46%);
   pointer-events: none;
   z-index: 0;
   animation: bg-shift 20s ease-in-out infinite alternate;
+}
+
+/* ==========================================
+   Glass Card System
+   ========================================== */
+
+.glass-card {
+  background: linear-gradient(135deg, rgba(6, 28, 44, 0.92), rgba(8, 48, 62, 0.82));
+  border: 1px solid rgba(45, 212, 191, 0.15);
+  border-radius: var(--radius-lg);
+  backdrop-filter: blur(12px);
+  box-shadow:
+    0 4px 24px rgba(0, 0, 0, 0.2),
+    0 0 0 1px rgba(255, 255, 255, 0.02) inset;
+}
+
+.glass-card-hover:hover {
+  border-color: rgba(45, 212, 191, 0.3);
+  box-shadow:
+    0 8px 32px rgba(0, 0, 0, 0.25),
+    0 0 20px rgba(45, 212, 191, 0.08);
+  transform: translateY(-2px);
 }
 
 /* ==========================================
@@ -68,21 +104,21 @@ body::before {
    ========================================== */
 
 .custom-scrollbar::-webkit-scrollbar {
-  width: 6px;
+  width: 5px;
 }
 
 .custom-scrollbar::-webkit-scrollbar-track {
-  background: rgba(8, 47, 73, 0.45);
+  background: rgba(4, 24, 40, 0.5);
   border-radius: 4px;
 }
 
 .custom-scrollbar::-webkit-scrollbar-thumb {
-  background: rgba(45, 212, 191, 0.45);
+  background: rgba(45, 212, 191, 0.3);
   border-radius: 4px;
 }
 
 .custom-scrollbar::-webkit-scrollbar-thumb:hover {
-  background: rgba(250, 204, 21, 0.65);
+  background: rgba(45, 212, 191, 0.5);
 }
 
 /* ==========================================
@@ -95,7 +131,7 @@ body::before {
     opacity: 1;
   }
   50% {
-    opacity: 0.7;
+    opacity: 0.75;
   }
   100% {
     opacity: 1;
@@ -379,4 +415,18 @@ body::before {
 @keyframes gacha-sparkle {
   0%, 100% { opacity: 0; transform: scale(0); }
   50% { opacity: 0.8; transform: scale(1.5); }
+}
+
+/* ==========================================
+   Shimmer / Glow
+   ========================================== */
+
+@keyframes shimmer {
+  0% { background-position: -200% center; }
+  100% { background-position: 200% center; }
+}
+
+.animate-shimmer {
+  background-size: 200% auto;
+  animation: shimmer 3s linear infinite;
 }

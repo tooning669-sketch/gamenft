@@ -5,6 +5,11 @@ import { InventoryItem, MarketCategory, GUN_SKINS, CurrencyType } from '@/lib/ga
 import { getRarityColor, getRarityGlow } from '@/lib/gameUtils';
 import { playClickSound } from './SoundManager';
 import ExchangePanel from './ExchangePanel';
+import {
+  Wallet, Coins, Gem, DollarSign, ArrowRightLeft, Package, Crosshair,
+  CreditCard, Sparkles, Plus, Wrench, Copy, Clock, Link2, FileText,
+  Shield, AlertTriangle, Megaphone, Check, Backpack, Zap, Tag, Swords
+} from 'lucide-react';
 
 interface InventoryProps {
   items: InventoryItem[];
@@ -16,12 +21,12 @@ interface InventoryProps {
   onTopUp?: (amount: number) => void;
 }
 
-const TABS: { key: MarketCategory | 'all'; label: string; icon: string }[] = [
-  { key: 'all', label: 'All', icon: '📦' },
-  { key: 'guns', label: 'Weapons', icon: '🔫' },
-  { key: 'cards', label: 'Cards', icon: '🃏' },
-  { key: 'ammo', label: 'Ammo', icon: '💣' },
-  { key: 'special', label: 'Items', icon: '✨' },
+const TABS: { key: MarketCategory | 'all'; label: string; icon: typeof Package }[] = [
+  { key: 'all', label: 'All', icon: Package },
+  { key: 'guns', label: 'Weapons', icon: Crosshair },
+  { key: 'cards', label: 'Cards', icon: CreditCard },
+  { key: 'ammo', label: 'Ammo', icon: Package },
+  { key: 'special', label: 'Items', icon: Sparkles },
 ];
 
 function getRepairCost(rarity: string) {
@@ -52,8 +57,10 @@ export default function Inventory({ items, onRepairItem, playerCoins, playerGems
       <div className="flex flex-col gap-4 sm:gap-6 max-w-5xl mx-auto">
         {/* Header */}
         <div className="text-center">
-          <h2 className="text-xl sm:text-2xl font-black text-transparent bg-clip-text bg-gradient-to-r from-sky-200 via-lime-200 to-yellow-200">
-            👛 WALLET
+          <h2 className="text-xl sm:text-2xl font-extrabold text-transparent bg-clip-text flex items-center justify-center gap-2"
+            style={{ backgroundImage: 'linear-gradient(135deg, #a5f3fc, #a3e635, #fde68a)' }}>
+            <Wallet size={22} className="text-teal-400" />
+            WALLET
           </h2>
           <p className="text-[11px] text-slate-500 mt-1">
             {totalItems} items • Manage your assets & exchange
@@ -62,42 +69,42 @@ export default function Inventory({ items, onRepairItem, playerCoins, playerGems
 
         {/* Currency Cards */}
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-          <div className="rounded-xl p-3 text-center" style={{ background: 'linear-gradient(135deg, rgba(234,179,8,0.1), rgba(245,158,11,0.05))', border: '1px solid rgba(234,179,8,0.25)' }}>
-            <span className="text-2xl">🪙</span>
-            <div className="text-lg font-black text-yellow-400 mt-1">{playerCoins.toLocaleString()}</div>
-            <div className="text-[9px] text-yellow-400/60 font-semibold uppercase">Coins</div>
+          <div className="rounded-xl p-4 text-center" style={{ background: 'linear-gradient(135deg, rgba(234,179,8,0.08), rgba(245,158,11,0.04))', border: '1px solid rgba(234,179,8,0.2)' }}>
+            <Coins size={24} className="text-yellow-400 mx-auto" />
+            <div className="text-lg font-extrabold text-yellow-400 mt-2">{playerCoins.toLocaleString()}</div>
+            <div className="text-[10px] text-yellow-400/60 font-semibold uppercase">Coins</div>
           </div>
-          <div className="rounded-xl p-3 text-center" style={{ background: 'linear-gradient(135deg, rgba(6,182,212,0.1), rgba(14,165,233,0.05))', border: '1px solid rgba(6,182,212,0.25)' }}>
-            <span className="text-2xl">💎</span>
-            <div className="text-lg font-black text-cyan-400 mt-1">{playerGems.toLocaleString()}</div>
-            <div className="text-[9px] text-cyan-400/60 font-semibold uppercase">Gems</div>
+          <div className="rounded-xl p-4 text-center" style={{ background: 'linear-gradient(135deg, rgba(6,182,212,0.08), rgba(14,165,233,0.04))', border: '1px solid rgba(6,182,212,0.2)' }}>
+            <Gem size={24} className="text-cyan-400 mx-auto" />
+            <div className="text-lg font-extrabold text-cyan-400 mt-2">{playerGems.toLocaleString()}</div>
+            <div className="text-[10px] text-cyan-400/60 font-semibold uppercase">Gems</div>
           </div>
-          <div className="rounded-xl p-3 text-center" style={{ background: 'linear-gradient(135deg, rgba(34,197,94,0.1), rgba(16,185,129,0.05))', border: '1px solid rgba(34,197,94,0.25)' }}>
-            <span className="text-2xl">💵</span>
-            <div className="text-lg font-black text-green-400 mt-1">{playerUsdt.toFixed(2)}</div>
-            <div className="text-[9px] text-green-400/60 font-semibold uppercase">USDT</div>
+          <div className="rounded-xl p-4 text-center" style={{ background: 'linear-gradient(135deg, rgba(34,197,94,0.08), rgba(16,185,129,0.04))', border: '1px solid rgba(34,197,94,0.2)' }}>
+            <DollarSign size={24} className="text-emerald-400 mx-auto" />
+            <div className="text-lg font-extrabold text-emerald-400 mt-2">{playerUsdt.toFixed(2)}</div>
+            <div className="text-[10px] text-emerald-400/60 font-semibold uppercase">USDT</div>
             {onTopUp && (
               <button
                 onClick={() => { playClickSound(); setShowTopUp(true); }}
-                className="mt-1.5 px-3 py-1 rounded-lg text-[9px] font-bold uppercase text-green-300 bg-green-500/15 border border-green-500/30 hover:bg-green-500/25 transition-all cursor-pointer hover:scale-105 active:scale-95"
+                className="mt-2 px-3 py-1 rounded-lg text-[9px] font-bold uppercase text-emerald-300 bg-emerald-500/12 border border-emerald-500/25 hover:bg-emerald-500/20 transition-all cursor-pointer hover:scale-105 active:scale-95 flex items-center gap-1 mx-auto"
               >
-                ➕ Top Up
+                <Plus size={10} /> Top Up
               </button>
             )}
           </div>
           <div
-            className="rounded-xl p-3 text-center cursor-pointer hover:scale-105 active:scale-95 transition-all"
-            style={{ background: 'linear-gradient(135deg, rgba(56,189,248,0.16), rgba(52,211,153,0.08))', border: '1px solid rgba(125,211,252,0.36)', boxShadow: '0 0 15px rgba(56,189,248,0.12)' }}
+            className="rounded-xl p-4 text-center cursor-pointer hover:scale-105 active:scale-95 transition-all"
+            style={{ background: 'linear-gradient(135deg, rgba(34,211,238,0.1), rgba(52,211,153,0.06))', border: '1px solid rgba(34,211,238,0.25)', boxShadow: '0 0 12px rgba(34,211,238,0.06)' }}
             onClick={() => { playClickSound(); setShowExchange(true); }}
           >
-            <span className="text-2xl">💱</span>
-            <div className="text-sm font-black text-sky-300 mt-1">Exchange</div>
-            <div className="text-[9px] text-sky-300/70 font-semibold uppercase">Swap Now</div>
+            <ArrowRightLeft size={24} className="text-teal-300 mx-auto" />
+            <div className="text-sm font-extrabold text-teal-300 mt-2">Exchange</div>
+            <div className="text-[10px] text-teal-300/60 font-semibold uppercase">Swap Now</div>
           </div>
         </div>
 
         {/* Divider */}
-        <div className="h-px bg-gradient-to-r from-transparent via-cyan-200/35 to-transparent" />
+        <div className="h-px bg-gradient-to-r from-transparent via-teal-500/20 to-transparent" />
 
         {/* Category Tabs */}
         <div className="flex gap-2 justify-center flex-wrap">
@@ -115,7 +122,7 @@ export default function Inventory({ items, onRepairItem, playerCoins, playerGems
                   color: isActive ? '#67e8f9' : '#94a3b8',
                 }}
               >
-                <span>{tab.icon}</span>
+                <span>{tab.icon && <tab.icon size={13} />}</span>
                 <span>{tab.label}</span>
                 {count > 0 && (
                   <span className="ml-1 px-1.5 py-0.5 rounded-full text-[9px]"
@@ -129,8 +136,8 @@ export default function Inventory({ items, onRepairItem, playerCoins, playerGems
         {/* Items Grid */}
         {filtered.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-16 gap-3 rounded-xl"
-            style={{ background: 'rgba(15,23,42,0.5)', border: '1px dashed rgba(100,116,139,0.3)' }}>
-            <span className="text-4xl">🎒</span>
+            style={{ background: 'rgba(6,28,44,0.6)', border: '1px dashed rgba(100,116,139,0.2)' }}>
+            <Backpack size={36} className="text-slate-600" />
             <span className="text-sm text-slate-500 font-semibold">Your bag is empty</span>
             <span className="text-[11px] text-slate-600">Buy items from the Marketplace or pop balloons!</span>
           </div>
@@ -163,17 +170,17 @@ export default function Inventory({ items, onRepairItem, playerCoins, playerGems
 
                   {/* Broken badge */}
                   {isBroken && (
-                    <div className="absolute top-2 left-2 z-10 px-2 py-0.5 rounded-full text-[10px] font-black text-red-400 animate-pulse"
-                      style={{ background: 'rgba(239,68,68,0.2)', border: '1px solid rgba(239,68,68,0.4)' }}>
-                      💔 BROKEN
+                    <div className="absolute top-2 left-2 z-10 px-2 py-0.5 rounded-full text-[10px] font-bold text-red-400 animate-pulse flex items-center gap-0.5"
+                      style={{ background: 'rgba(239,68,68,0.15)', border: '1px solid rgba(239,68,68,0.3)' }}>
+                      <AlertTriangle size={10} /> BROKEN
                     </div>
                   )}
 
                   {/* Listed badge */}
                   {isListed && !isBroken && (
-                    <div className="absolute top-2 left-2 z-10 px-2 py-0.5 rounded-full text-[10px] font-black text-green-400"
-                      style={{ background: 'rgba(34,197,94,0.2)', border: '1px solid rgba(34,197,94,0.4)' }}>
-                      📢 LISTED
+                    <div className="absolute top-2 left-2 z-10 px-2 py-0.5 rounded-full text-[10px] font-bold text-emerald-400 flex items-center gap-0.5"
+                      style={{ background: 'rgba(34,197,94,0.15)', border: '1px solid rgba(34,197,94,0.3)' }}>
+                      <Megaphone size={10} /> LISTED
                     </div>
                   )}
 
@@ -271,8 +278,10 @@ export default function Inventory({ items, onRepairItem, playerCoins, playerGems
             <div className="relative px-5 pt-5 pb-3">
               <button onClick={() => setShowTopUp(false)}
                 className="absolute top-4 right-4 w-8 h-8 rounded-full flex items-center justify-center text-slate-400 hover:text-white hover:bg-slate-700/50 transition-all cursor-pointer z-10">✕</button>
-              <h2 className="text-lg font-black text-transparent bg-clip-text bg-gradient-to-r from-green-200 via-emerald-200 to-lime-200">
-                💵 TOP UP USDT
+              <h2 className="text-lg font-extrabold text-transparent bg-clip-text flex items-center gap-2"
+                style={{ backgroundImage: 'linear-gradient(135deg, #86efac, #4ade80, #a3e635)' }}>
+                <DollarSign size={20} className="text-emerald-400" style={{ WebkitTextFillColor: 'initial' }} />
+                TOP UP USDT
               </h2>
               <p className="text-[10px] text-slate-500 mt-0.5">Deposit USDT to your game wallet</p>
             </div>
@@ -281,20 +290,20 @@ export default function Inventory({ items, onRepairItem, playerCoins, playerGems
               {/* Current balance */}
               <div className="rounded-xl p-3 text-center" style={{ background: 'rgba(34,197,94,0.08)', border: '1px solid rgba(34,197,94,0.25)' }}>
                 <div className="text-sm text-slate-400 mb-1">Current Balance</div>
-                <div className="text-2xl font-black text-green-400">💵 {playerUsdt.toFixed(2)} USDT</div>
+                <div className="text-2xl font-extrabold text-emerald-400 flex items-center justify-center gap-1.5"><DollarSign size={22} /> {playerUsdt.toFixed(2)} USDT</div>
               </div>
 
               {/* Deposit address */}
               <div className="rounded-xl p-3 space-y-2" style={{ background: 'rgba(8,47,73,0.58)', border: '1px solid rgba(125,211,252,0.18)' }}>
-                <div className="text-[10px] font-bold text-sky-300 uppercase tracking-wider">📋 Deposit Address (ERC-20)</div>
+                <div className="text-[10px] font-bold text-sky-300 uppercase tracking-wider flex items-center gap-1"><Copy size={10} /> Deposit Address (ERC-20)</div>
                 <div className="flex items-center gap-2">
                   <code className="flex-1 text-[10px] text-green-300 font-mono bg-slate-900/60 rounded-lg p-2 break-all">0x8F21a5b7C3dE9f42A1b8D6E7c90F12345678a3B</code>
                   <button
                     onClick={() => { playClickSound(); navigator.clipboard?.writeText('0x8F21a5b7C3dE9f42A1b8D6E7c90F12345678a3B'); }}
-                    className="px-2.5 py-1.5 rounded-lg text-[10px] font-bold text-cyan-300 bg-cyan-500/15 border border-cyan-500/30 hover:bg-cyan-500/25 transition-all cursor-pointer hover:scale-105 active:scale-95"
-                  >📋 Copy</button>
+                    className="px-2.5 py-1.5 rounded-lg text-[10px] font-bold text-cyan-300 bg-cyan-500/15 border border-cyan-500/30 hover:bg-cyan-500/25 transition-all cursor-pointer hover:scale-105 active:scale-95 flex items-center gap-1"
+                  ><Copy size={10} /> Copy</button>
                 </div>
-                <div className="text-[9px] text-amber-400/80">⚠️ Send only USDT (ERC-20) to this address</div>
+                <div className="text-[9px] text-amber-400/80 flex items-center gap-1"><AlertTriangle size={10} /> Send only USDT (ERC-20) to this address</div>
               </div>
 
               {/* Quick amounts */}
@@ -317,7 +326,7 @@ export default function Inventory({ items, onRepairItem, playerCoins, playerGems
               {/* Custom amount */}
               <div className="flex items-center gap-2">
                 <div className="flex items-center gap-1.5 flex-1 px-3 py-2.5 rounded-xl bg-slate-800/80 border border-slate-700/50">
-                  <span className="text-sm">💵</span>
+                  <DollarSign size={16} className="text-emerald-400" />
                   <input
                     type="number"
                     value={topUpAmount}
@@ -356,11 +365,11 @@ export default function Inventory({ items, onRepairItem, playerCoins, playerGems
                   boxShadow: topUpAmount && parseFloat(topUpAmount) > 0 ? '0 0 20px rgba(34,197,94,0.28)' : 'none',
                 }}
               >
-                <span>💵</span>
+                <span><DollarSign size={16} /></span>
                 <span>{topUpAmount && parseFloat(topUpAmount) > 0 ? `Deposit $${parseFloat(topUpAmount).toFixed(2)} USDT` : 'Enter Amount'}</span>
               </button>
 
-              <p className="text-[9px] text-center text-slate-500">⏱ Deposits are typically confirmed within 1-5 minutes</p>
+              <p className="text-[9px] text-center text-slate-500 flex items-center justify-center gap-1"><Clock size={10} /> Deposits are typically confirmed within 1-5 minutes</p>
             </div>
           </div>
         </div>
@@ -443,15 +452,15 @@ function ItemDetailModal({ item, gunStats, playerCoins, onRepair, onClose }: Ite
 
           {/* Badges */}
           {isBroken && (
-            <div className="absolute top-3 left-3 px-2.5 py-1 rounded-full text-[10px] font-black text-red-400 animate-pulse"
-              style={{ background: 'rgba(239,68,68,0.2)', border: '1px solid rgba(239,68,68,0.4)' }}>
-              💔 BROKEN
+            <div className="absolute top-3 left-3 px-2.5 py-1 rounded-full text-[10px] font-bold text-red-400 animate-pulse flex items-center gap-0.5"
+              style={{ background: 'rgba(239,68,68,0.15)', border: '1px solid rgba(239,68,68,0.3)' }}>
+              <AlertTriangle size={10} /> BROKEN
             </div>
           )}
           {item.listedPrice && (
-            <div className="absolute top-3 left-3 px-2.5 py-1 rounded-full text-[10px] font-black text-green-400"
-              style={{ background: 'rgba(34,197,94,0.2)', border: '1px solid rgba(34,197,94,0.4)' }}>
-              📢 Listed: 🪙{item.listedPrice}
+            <div className="absolute top-3 left-3 px-2.5 py-1 rounded-full text-[10px] font-bold text-emerald-400 flex items-center gap-0.5"
+              style={{ background: 'rgba(34,197,94,0.15)', border: '1px solid rgba(34,197,94,0.3)' }}>
+              <Tag size={10} /> Listed: <Coins size={10} />{item.listedPrice}
             </div>
           )}
           {item.quantity > 1 && (
@@ -485,17 +494,17 @@ function ItemDetailModal({ item, gunStats, playerCoins, onRepair, onClose }: Ite
           {gunStats && (
             <div className="rounded-xl p-3 space-y-2"
               style={{ background: 'rgba(8,47,73,0.56)', border: '1px solid rgba(125,211,252,0.18)' }}>
-              <h4 className="text-[10px] font-bold text-sky-300 uppercase tracking-wider">⚔️ Weapon Stats</h4>
+              <h4 className="text-[10px] font-bold text-sky-300 uppercase tracking-wider flex items-center gap-1"><Swords size={12} /> Weapon Stats</h4>
               <div className="grid grid-cols-2 gap-2">
                 {[
-                  { label: 'DMG', value: gunStats.dmg, icon: '💥', color: '#ef4444' },
-                  { label: 'Energy', value: gunStats.energy, icon: '⚡', color: '#f59e0b' },
-                  { label: 'Durability', value: `${item.durability ?? gunStats.durability}/${gunStats.durability}`, icon: '🔧', color: '#06b6d4' },
-                  { label: 'Cooldown', value: `${gunStats.cooldownSec}s`, icon: '⏱️', color: '#38bdf8' },
+                  { label: 'DMG', value: gunStats.dmg, lucideIcon: Zap, color: '#ef4444' },
+                  { label: 'Energy', value: gunStats.energy, lucideIcon: Zap, color: '#f59e0b' },
+                  { label: 'Durability', value: `${item.durability ?? gunStats.durability}/${gunStats.durability}`, lucideIcon: Wrench, color: '#06b6d4' },
+                  { label: 'Cooldown', value: `${gunStats.cooldownSec}s`, lucideIcon: Clock, color: '#38bdf8' },
                 ].map((stat) => (
                   <div key={stat.label} className="flex items-center gap-2 px-2.5 py-1.5 rounded-lg"
                     style={{ background: `${stat.color}08`, border: `1px solid ${stat.color}15` }}>
-                    <span className="text-sm">{stat.icon}</span>
+                    <stat.lucideIcon size={16} style={{ color: stat.color }} />
                     <div>
                       <div className="text-[9px] text-slate-500 font-semibold uppercase">{stat.label}</div>
                       <div className="text-xs font-bold" style={{ color: stat.color }}>{stat.value}</div>
@@ -510,7 +519,7 @@ function ItemDetailModal({ item, gunStats, playerCoins, onRepair, onClose }: Ite
           {hasDurability && (
             <div className="space-y-1.5">
               <div className="flex justify-between items-center">
-                <span className="text-[10px] font-semibold text-cyan-400">🔧 Durability</span>
+                <span className="text-[10px] font-semibold text-cyan-400 flex items-center gap-1"><Wrench size={12} /> Durability</span>
                 <span className="text-[10px] text-slate-500 font-mono">{item.durability}/{item.maxDurability}</span>
               </div>
               <div className="h-2.5 rounded-full bg-slate-800/80 overflow-hidden border border-slate-700/30">
@@ -541,7 +550,7 @@ function ItemDetailModal({ item, gunStats, playerCoins, onRepair, onClose }: Ite
           {/* Attributes */}
           <div className="rounded-xl p-3 space-y-2"
             style={{ background: 'rgba(8,47,73,0.56)', border: '1px solid rgba(125,211,252,0.18)' }}>
-            <h4 className="text-[10px] font-bold text-sky-300 uppercase tracking-wider">📋 Attributes</h4>
+            <h4 className="text-[10px] font-bold text-sky-300 uppercase tracking-wider flex items-center gap-1"><FileText size={12} /> Attributes</h4>
             <div className="space-y-1.5">
               <div className="flex justify-between items-center text-[11px]">
                 <span className="text-slate-500">Category</span>
@@ -562,7 +571,7 @@ function ItemDetailModal({ item, gunStats, playerCoins, onRepair, onClose }: Ite
               {item.listedPrice && (
                 <div className="flex justify-between items-center text-[11px]">
                   <span className="text-slate-500">Listed Price</span>
-                  <span className="text-green-400 font-bold">🪙 {item.listedPrice.toLocaleString()}</span>
+                  <span className="text-emerald-400 font-bold flex items-center gap-0.5"><Coins size={10} /> {item.listedPrice.toLocaleString()}</span>
                 </div>
               )}
             </div>
@@ -572,7 +581,7 @@ function ItemDetailModal({ item, gunStats, playerCoins, onRepair, onClose }: Ite
           {item.tokenId && (
             <div className="rounded-xl p-3 space-y-2"
               style={{ background: 'linear-gradient(135deg, rgba(56,189,248,0.08), rgba(52,211,153,0.05))', border: '1px solid rgba(125,211,252,0.2)' }}>
-              <h4 className="text-[10px] font-bold text-sky-300 uppercase tracking-wider">🔗 NFT Information</h4>
+              <h4 className="text-[10px] font-bold text-sky-300 uppercase tracking-wider flex items-center gap-1"><Link2 size={12} /> NFT Information</h4>
               <div className="space-y-1.5">
                 <div className="flex justify-between items-center text-[11px]">
                   <span className="text-slate-500">Token ID</span>
@@ -616,8 +625,8 @@ function ItemDetailModal({ item, gunStats, playerCoins, onRepair, onClose }: Ite
                 }`}
               >
                 {needsRepair
-                  ? <>🔧 Repair {isBroken ? '(BROKEN)' : ''} <span className="text-yellow-400">🪙{repairCost}</span></>
-                  : '✅ Full Durability'
+                  ? <><Wrench size={14} /> Repair {isBroken ? '(BROKEN)' : ''} <span className="text-yellow-400 flex items-center gap-0.5"><Coins size={12} />{repairCost}</span></>
+                  : <><Check size={14} /> Full Durability</>
                 }
               </button>
             )}

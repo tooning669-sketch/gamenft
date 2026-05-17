@@ -10,6 +10,7 @@ import {
   GOLD_TO_THB,
 } from '@/lib/gameTypes';
 import { playClickSound, playRewardSound } from './SoundManager';
+import { Coins, Gem, DollarSign, ArrowUpDown, Check, BarChart3 } from 'lucide-react';
 
 interface ExchangePanelProps {
   coins: number;
@@ -199,8 +200,10 @@ export default function ExchangePanel({ coins, gems, usdt, onExchange, onClose }
         <div className="relative px-5 pt-5 pb-3">
           <button onClick={onClose}
             className="absolute top-4 right-4 w-8 h-8 rounded-full flex items-center justify-center text-slate-400 hover:text-white hover:bg-slate-700/50 transition-all cursor-pointer z-10">✕</button>
-          <h2 className="text-lg font-black text-transparent bg-clip-text bg-gradient-to-r from-sky-200 via-lime-200 to-yellow-200">
-            💱 CURRENCY EXCHANGE
+          <h2 className="text-lg font-extrabold text-transparent bg-clip-text flex items-center gap-2"
+            style={{ backgroundImage: 'linear-gradient(135deg, #a5f3fc, #a3e635, #fde68a)' }}>
+            <ArrowUpDown size={20} className="text-teal-400" style={{ WebkitTextFillColor: 'initial' }} />
+            CURRENCY EXCHANGE
           </h2>
           <p className="text-[10px] text-slate-500 mt-0.5">Swap your currencies instantly • {EXCHANGE_FEE_PERCENT}% fee</p>
         </div>
@@ -336,7 +339,7 @@ export default function ExchangePanel({ coins, gems, usdt, onExchange, onClose }
               boxShadow: canExchange ? '0 0 20px rgba(56,189,248,0.28)' : 'none',
             }}
           >
-            <span>💱</span>
+            <span><ArrowUpDown size={16} /></span>
             <span>{canExchange ? 'Exchange Now' : numAmount > fromBalance ? 'Insufficient Balance' : 'Enter Amount'}</span>
           </button>
 
@@ -369,7 +372,7 @@ export default function ExchangePanel({ coins, gems, usdt, onExchange, onClose }
           {/* Exchange Rate Table */}
           <div className="rounded-xl p-3"
             style={{ background: 'rgba(8,47,73,0.48)', border: '1px solid rgba(125,211,252,0.14)' }}>
-            <div className="text-[9px] font-bold text-slate-500 uppercase tracking-wider mb-2">📊 Live Rates</div>
+            <div className="text-[9px] font-bold text-slate-500 uppercase tracking-wider mb-2 flex items-center gap-1"><BarChart3 size={12} /> Live Rates</div>
             <div className="space-y-1">
               {[
                 { label: '1 USDT', value: `${USDT_TO_GOLD} Gold`, icon: '💵', subtext: `≈ ฿${(USDT_TO_GOLD * GOLD_TO_THB).toFixed(0)}` },
@@ -396,7 +399,7 @@ export default function ExchangePanel({ coins, gems, usdt, onExchange, onClose }
             style={{ background: 'rgba(0,0,0,0.6)', backdropFilter: 'blur(4px)' }}>
             <div className="rounded-2xl p-6 text-center space-y-3 animate-skin-picker-enter"
               style={{ background: 'linear-gradient(135deg, rgba(34,197,94,0.15), rgba(16,185,129,0.08))', border: '1px solid rgba(34,197,94,0.4)', boxShadow: '0 0 40px rgba(34,197,94,0.2)' }}>
-              <div className="text-4xl">✅</div>
+              <div className="text-4xl"><Check size={40} className="text-emerald-400" /></div>
               <div className="text-lg font-black text-green-400">Exchange Successful!</div>
               <div className="text-sm text-slate-300">
                 <span className="text-rose-400">{successInfo.from}</span>

@@ -1,6 +1,10 @@
 'use client';
 
 import React, { useState, useCallback, useEffect, useRef, useMemo } from 'react';
+import {
+  Gamepad2, Wallet, ShoppingBag, Gift, Coins, Gem, Zap, Wrench,
+  Timer, Map, Menu, X, Play, Clock, Star
+} from 'lucide-react';
 import HomePage from './HomePage';
 import {
   Ball as BallType,
@@ -792,26 +796,30 @@ export default function GameBoard() {
       <header
         className="py-3 sm:py-4 px-5 sm:px-8 flex items-center justify-between border-b"
         style={{
-          background: 'linear-gradient(90deg, rgba(4,47,70,0.92), rgba(8,115,124,0.88), rgba(4,47,70,0.92))',
-          borderColor: 'rgba(125, 211, 252, 0.32)',
-          boxShadow: '0 10px 30px rgba(8,47,73,0.18)',
+          background: 'linear-gradient(90deg, rgba(4,24,40,0.96), rgba(6,42,58,0.94), rgba(4,24,40,0.96))',
+          borderColor: 'rgba(45,212,191,0.15)',
+          boxShadow: '0 4px 24px rgba(0,0,0,0.2)',
         }}
       >
         <div className="flex items-center gap-3">
-          <h1 className="text-2xl sm:text-3xl font-black text-transparent bg-clip-text bg-gradient-to-r from-sky-200 via-cyan-200 to-yellow-200">
-            🎮 BUBBLE BLAST
-          </h1>
-          <span className="hidden sm:inline text-xs px-3 py-1 rounded-full bg-yellow-300/20 text-yellow-100 border border-yellow-200/40 font-semibold">
+          <div className="flex items-center gap-2">
+            <Gamepad2 size={24} className="text-teal-400" />
+            <h1 className="text-xl sm:text-2xl font-extrabold text-transparent bg-clip-text"
+              style={{ backgroundImage: 'linear-gradient(135deg, #a5f3fc, #22d3ee, #fde68a)' }}>
+              BUBBLE BLAST
+            </h1>
+          </div>
+          <span className="hidden sm:inline text-[10px] px-2.5 py-1 rounded-full bg-amber-400/10 text-amber-300 border border-amber-400/20 font-bold uppercase tracking-wider">
             NFT
           </span>
         </div>
 
-        <nav className="hidden md:flex items-center gap-5 text-sm font-semibold text-cyan-100/75">
+        <nav className="hidden md:flex items-center gap-1 text-sm font-semibold">
           {[
-            { label: 'HOME', tab: 'home' as const },
-            { label: 'GAME', tab: 'game' as const },
-            { label: 'MARKETPLACE', tab: 'marketplace' as const },
-            { label: '🎰 GACHA', tab: 'gacha' as const },
+            { label: 'Home', tab: 'home' as const, icon: null },
+            { label: 'Game', tab: 'game' as const, icon: null },
+            { label: 'Marketplace', tab: 'marketplace' as const, icon: null },
+            { label: 'Gacha', tab: 'gacha' as const, icon: Gift },
           ].map((item) => (
             <button
               key={item.label}
@@ -819,33 +827,34 @@ export default function GameBoard() {
                 playClickSound();
                 setActiveTab(item.tab);
               }}
-              className={`px-4 py-2 rounded-lg transition-all cursor-pointer ${
+              className={`px-4 py-2 rounded-xl text-xs font-bold uppercase tracking-wider transition-all cursor-pointer flex items-center gap-1.5 ${
                 item.tab === activeTab
-                  ? 'bg-yellow-300/20 text-yellow-100 border border-yellow-200/40'
-                  : 'hover:text-white hover:bg-cyan-900/35'
+                  ? 'bg-teal-500/15 text-teal-200 border border-teal-400/25'
+                  : 'text-slate-400 hover:text-white hover:bg-slate-800/50 border border-transparent'
               }`}
             >
+              {item.icon && <item.icon size={14} />}
               {item.label}
             </button>
           ))}
         </nav>
 
-        <div className="flex items-center gap-3 sm:gap-4">
+        <div className="flex items-center gap-2.5 sm:gap-3">
           <SoundToggle />
           <button
             onClick={() => { playClickSound(); setActiveTab('inventory'); }}
-            className={`hidden sm:flex items-center gap-2 px-4 py-2 rounded-lg text-sm transition-all cursor-pointer hover:scale-105 active:scale-95 ${
+            className={`hidden sm:flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold uppercase tracking-wider transition-all cursor-pointer hover:scale-105 active:scale-95 ${
               activeTab === 'inventory'
-                ? 'bg-yellow-300/20 text-yellow-100 border border-yellow-200/40'
-                : 'bg-cyan-950/35 border border-cyan-200/20 hover:bg-cyan-800/35'
+                ? 'bg-teal-500/15 text-teal-200 border border-teal-400/25'
+                : 'bg-slate-800/40 border border-slate-700/30 text-slate-400 hover:text-white hover:bg-slate-700/40'
             }`}
           >
-            <span className="text-lg">👛</span>
-            <span className="text-cyan-50 font-semibold">Wallet</span>
+            <Wallet size={14} />
+            Wallet
           </button>
-          <div className="hidden sm:flex items-center gap-2 px-4 py-2 rounded-lg bg-cyan-950/35 border border-cyan-200/20 text-sm">
-            <span className="text-lime-300">●</span>
-            <span className="text-cyan-50 font-mono">0x8F...7a3B</span>
+          <div className="hidden sm:flex items-center gap-2 px-3 py-2 rounded-xl bg-slate-800/40 border border-slate-700/30 text-xs">
+            <span className="w-2 h-2 rounded-full bg-emerald-400" />
+            <span className="text-slate-300 font-mono">0x8F...7a3B</span>
           </div>
         </div>
       </header>
@@ -871,17 +880,19 @@ export default function GameBoard() {
               {/* Title + Round Timer */}
               <div className="text-center">
                 <h2
-                  className="text-xl sm:text-3xl font-black text-transparent bg-clip-text bg-gradient-to-r from-amber-400 via-yellow-300 to-amber-400"
-                  style={{ textShadow: '0 0 30px rgba(251, 191, 36, 0.4)' }}
+                  className="text-xl sm:text-2xl font-extrabold text-transparent bg-clip-text flex items-center justify-center gap-2"
+                  style={{ backgroundImage: 'linear-gradient(135deg, #fde68a, #fbbf24, #f59e0b)' }}
                 >
-                  ⭐ BUBBLE SHOOTER ⭐
+                  <Star size={20} className="text-amber-400" />
+                  BUBBLE SHOOTER
+                  <Star size={20} className="text-amber-400" />
                 </h2>
                 {/* 30s Timer Bar */}
                 {isRoundActive && (
                   <div className="mt-3 max-w-xl mx-auto">
                     <div className="flex items-center gap-3">
-                      <span className={`text-sm font-bold font-mono ${roundTimeLeft <= 10 ? 'text-red-400 animate-pulse' : 'text-amber-300'}`}>
-                        ⏱️ {roundTimeLeft}s
+                      <span className={`text-sm font-bold font-mono flex items-center gap-1 ${roundTimeLeft <= 10 ? 'text-red-400 animate-pulse' : 'text-amber-300'}`}>
+                        <Timer size={14} /> {roundTimeLeft}s
                       </span>
                       <div className="flex-1 h-3 rounded-full bg-slate-800/80 overflow-hidden border border-amber-900/30">
                         <div
@@ -903,14 +914,14 @@ export default function GameBoard() {
               </div>
 
               {/* Mobile player info bar */}
-              <div className="lg:hidden flex items-center justify-between gap-3 rounded-xl p-3 bg-cyan-950/70 border border-cyan-200/20">
+              <div className="lg:hidden flex items-center justify-between gap-3 rounded-xl p-3 bg-slate-900/70 border border-teal-500/15">
                 <div className="flex items-center gap-4">
-                  <span className="text-sm">🪙 <span className="text-yellow-400 font-bold">{player.coins.toLocaleString()}</span></span>
-                  <span className="text-sm">💎 <span className="text-cyan-400 font-bold">{player.gems.toLocaleString()}</span></span>
+                  <span className="text-sm flex items-center gap-1"><Coins size={14} className="text-yellow-400" /> <span className="text-yellow-400 font-bold">{player.coins.toLocaleString()}</span></span>
+                  <span className="text-sm flex items-center gap-1"><Gem size={14} className="text-cyan-400" /> <span className="text-cyan-400 font-bold">{player.gems.toLocaleString()}</span></span>
                 </div>
                 <div className="flex items-center gap-3">
-                  <span className="text-xs text-amber-400">⚡{player.energy}/{player.maxEnergy}</span>
-                  <span className="text-xs text-cyan-400">🔧{durability}/{maxDurability}</span>
+                  <span className="text-xs text-amber-400 flex items-center gap-0.5"><Zap size={12} />{player.energy}/{player.maxEnergy}</span>
+                  <span className="text-xs text-cyan-400 flex items-center gap-0.5"><Wrench size={12} />{durability}/{maxDurability}</span>
                 </div>
               </div>
 
@@ -950,9 +961,9 @@ export default function GameBoard() {
                             textShadow: '0 2px 8px rgba(0,0,0,0.5)',
                           }}
                         >
-                          <span className="text-2xl">🎮</span>
+                          <Play size={22} className="text-white" />
                           <span className="text-white">START GAME</span>
-                          <span className="text-yellow-300 text-sm">🪙{RANDOMIZE_COST}</span>
+                          <span className="text-yellow-300 text-sm flex items-center gap-0.5"><Coins size={12} />{RANDOMIZE_COST}</span>
                         </button>
                       </div>
                     )}
@@ -972,7 +983,7 @@ export default function GameBoard() {
                             textShadow: '0 1px 4px rgba(0,0,0,0.4)',
                           }}
                         >
-                          <span>🗺️</span>
+                          <Map size={14} className="text-white" />
                           <span className="text-white">CHANGE MAP</span>
                         </button>
                       </div>
@@ -1221,7 +1232,7 @@ export default function GameBoard() {
               {countdownValue === 0 ? 'GO!' : countdownValue}
             </div>
             <div className="text-slate-300 text-base mt-5 font-semibold tracking-wider uppercase">
-              {countdownValue === 0 ? '🔥 FIRE AT WILL!' : 'Get Ready...'}
+              {countdownValue === 0 ? 'FIRE AT WILL!' : 'Get Ready...'}
             </div>
           </div>
         </div>
@@ -1238,8 +1249,10 @@ export default function GameBoard() {
               boxShadow: '0 0 60px rgba(45,212,191,0.24)',
             }}
           >
-            <h2 className="text-2xl font-black text-center text-transparent bg-clip-text bg-gradient-to-r from-amber-400 via-yellow-300 to-amber-400 mb-2">
-              ⏰ TIME&apos;S UP!
+            <h2 className="text-2xl font-extrabold text-center text-transparent bg-clip-text mb-2 flex items-center justify-center gap-2"
+              style={{ backgroundImage: 'linear-gradient(135deg, #fde68a, #fbbf24, #f59e0b)' }}>
+              <Clock size={24} className="text-amber-400" />
+              TIME&apos;S UP!
             </h2>
             <div className="text-center text-slate-400 text-sm mb-5">Round Complete</div>
 
@@ -1295,7 +1308,7 @@ export default function GameBoard() {
                 border: '1px solid rgba(125, 211, 252, 0.42)',
               }}
             >
-              ✅ Continue
+              Continue
             </button>
           </div>
         </div>
