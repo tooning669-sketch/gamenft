@@ -1,7 +1,8 @@
 'use client';
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { GRID_ROWS, GRID_COLS } from '@/lib/gameTypes';
-import { Save, RotateCcw } from 'lucide-react';
+import { fetchConfig, saveConfig } from '@/lib/adminApi';
+import { Save, RotateCcw, Loader2 } from 'lucide-react';
 
 const DEFAULTS = {
   gridRows: GRID_ROWS,
@@ -17,12 +18,8 @@ function Field({ label, value, onChange, suffix }: { label: string; value: numbe
     <div className="flex items-center justify-between gap-4 py-3 px-4 rounded-xl bg-slate-800/40 border border-slate-700/20">
       <label className="text-sm font-medium text-slate-300">{label}</label>
       <div className="flex items-center gap-2">
-        <input
-          type="number"
-          value={value}
-          onChange={(e) => onChange(Number(e.target.value))}
-          className="w-24 px-3 py-1.5 rounded-lg bg-slate-900/80 border border-slate-600/30 text-teal-200 text-sm text-right focus:outline-none focus:border-teal-500/50"
-        />
+        <input type="number" value={value} onChange={(e) => onChange(Number(e.target.value))}
+          className="w-24 px-3 py-1.5 rounded-lg bg-slate-900/80 border border-slate-600/30 text-teal-200 text-sm text-right focus:outline-none focus:border-teal-500/50" />
         {suffix && <span className="text-xs text-slate-500">{suffix}</span>}
       </div>
     </div>
@@ -31,29 +28,39 @@ function Field({ label, value, onChange, suffix }: { label: string; value: numbe
 
 export default function GameSettingsTab() {
   const [settings, setSettings] = useState(DEFAULTS);
+  const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    fetchConfig().then((cfg) => {
+      if (cfg.game_settings) setSettings(cfg.game_settings as typeof DEFAULTS);
+    }).finally(() => setLoading(false));
+  }, []);
 
   const update = (key: keyof typeof DEFAULTS, val: number) => {
     setSettings((p) => ({ ...p, [key]: val }));
     setSaved(false);
   };
 
-  const handleSave = () => {
-    localStorage.setItem('admin_game_settings', JSON.stringify(settings));
-    setSaved(true);
-    setTimeout(() => setSaved(false), 2000);
+  const handleSave = async () => {
+    setSaving(true);
+    try {
+      await saveConfig('game_settings', settings);
+      setSaved(true);
+      setTimeout(() => setSaved(false), 2000);
+    } catch (e) { alert('Save failed: ' + (e as Error).message); }
+    finally { setSaving(false); }
   };
 
-  const handleReset = () => setSettings(DEFAULTS);
+  if (loading) return <div className="flex items-center gap-2 text-slate-400 p-8"><Loader2 size={20} className="animate-spin" /> Loading...</div>;
 
   return (
     <div className="space-y-6 max-w-2xl">
       <div>
         <h1 className="text-2xl font-extrabold text-transparent bg-clip-text"
-          style={{ backgroundImage: 'linear-gradient(135deg, #a5f3fc, #22d3ee)' }}>
-          Game Settings
-        </h1>
-        <p className="text-sm text-slate-400 mt-1">Configure core gameplay parameters</p>
+          style={{ backgroundImage: 'linear-gradient(135deg, #a5f3fc, #22d3ee)' }}>Game Settings</h1>
+        <p className="text-sm text-slate-400 mt-1">Configure core gameplay parameters • <span className="text-teal-400">Synced to Turso DB</span></p>
       </div>
 
       <div className="glass-card p-6 space-y-3">
@@ -71,11 +78,11 @@ export default function GameSettingsTab() {
       </div>
 
       <div className="flex gap-3">
-        <button onClick={handleSave}
-          className="flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-bold bg-teal-500/20 text-teal-300 border border-teal-500/30 hover:bg-teal-500/30 transition-all cursor-pointer">
-          <Save size={16} /> {saved ? '✓ Saved!' : 'Save Changes'}
+        <button onClick={handleSave} disabled={saving}
+          className="flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-bold bg-teal-500/20 text-teal-300 border border-teal-500/30 hover:bg-teal-500/30 transition-all cursor-pointer disabled:opacity-50">
+          {saving ? <Loader2 size={16} className="animate-spin" /> : <Save size={16} />} {saved ? '✓ Saved to DB!' : 'Save to Database'}
         </button>
-        <button onClick={handleReset}
+        <button onClick={() => setSettings(DEFAULTS)}
           className="flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-bold bg-slate-700/30 text-slate-400 border border-slate-600/30 hover:bg-slate-700/50 transition-all cursor-pointer">
           <RotateCcw size={16} /> Reset
         </button>
