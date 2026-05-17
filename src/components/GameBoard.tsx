@@ -33,7 +33,7 @@ import PlayerPanel from './PlayerPanel';
 import GunSkinPicker from './GunSkinPicker';
 import CardPicker from './CardPicker';
 import Marketplace from './Marketplace';
-import Inventory from './Inventory';
+import WalletDashboard from './WalletDashboard';
 import GachaPanel from './GachaPanel';
 import SoundToggle, { playShootSound, playPopSound, playRewardSound, playClickSound, playCountdownBeep, startTenseMusic, stopTenseMusic, playTimeUpSound, playMapChangeSound } from './SoundManager';
 
@@ -1153,8 +1153,8 @@ export default function GameBoard() {
             }}
           />
         ) : (
-          /* Inventory Tab */
-          <Inventory
+          /* Wallet Dashboard Tab */
+          <WalletDashboard
             items={inventory}
             onRepairItem={(item) => {
               const repairCost = Math.floor((item.rarity === 'Legendary' ? 500 : item.rarity === 'Rare' ? 250 : 100));
